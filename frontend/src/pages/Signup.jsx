@@ -1,77 +1,143 @@
 // eslint-disable-next-line no-unused-vars
-import React, { useState } from 'react';
+import React, { useState } from "react";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 function Signup() {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
     // Simple form validation
     if (password !== confirmPassword) {
-      alert("Passwords don't match!");
+      toast.error("Passwords don't match!", { position: toast.POSITION.TOP_CENTER });
       return;
     }
 
     // Handle signup logic
-    console.log('Name:', name);
-    console.log('Email:', email);
-    console.log('Password:', password);
+    toast.success("Signup Successful!", { position: toast.POSITION.TOP_CENTER });
+    console.log("Name:", name);
+    console.log("Email:", email);
+    console.log("Password:", password);
   };
 
   return (
-    <div className="p-4">
-      <h1 className="text-3xl font-bold">Signup</h1>
-      <form onSubmit={handleSubmit} className="mt-4">
-        <div>
-          <label htmlFor="name" className="block text-lg">Name</label>
-          <input
-            type="text"
-            id="name"
-            className="mt-1 p-2 border rounded-md w-full"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-          />
-        </div>
-        <div className="mt-4">
-          <label htmlFor="email" className="block text-lg">Email</label>
-          <input
-            type="email"
-            id="email"
-            className="mt-1 p-2 border rounded-md w-full"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-        </div>
-        <div className="mt-4">
-          <label htmlFor="password" className="block text-lg">Password</label>
-          <input
-            type="password"
-            id="password"
-            className="mt-1 p-2 border rounded-md w-full"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-        </div>
-        <div className="mt-4">
-          <label htmlFor="confirmPassword" className="block text-lg">Confirm Password</label>
-          <input
-            type="password"
-            id="confirmPassword"
-            className="mt-1 p-2 border rounded-md w-full"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            required
-          />
-        </div>
-        <button type="submit" className="mt-4 px-6 py-2 bg-blue-600 text-white rounded-md">Sign Up</button>
-      </form>
+    <div className="relative min-h-screen bg-gray-50 flex items-center justify-center px-4 overflow-hidden">
+      {/* Overlay Effects */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-20 left-10 w-96 h-96 bg-pink-400 opacity-40 blur-3xl rounded-full"></div>
+        <div className="absolute bottom-10 right-10 w-80 h-80 bg-purple-400 opacity-30 blur-2xl rounded-full"></div>
+      </div>
+
+      {/* Signup Form */}
+      <div className="relative w-full max-w-md p-8 rounded-xl bg-white shadow-lg">
+        {/* Toast Notification Container */}
+        <ToastContainer />
+
+        <h1 className="text-3xl font-semibold text-gray-800 text-center">
+          Create Account
+        </h1>
+        <p className="text-gray-500 text-center mt-2">
+          Sign up to start using our platform
+        </p>
+        <form className="mt-6" onSubmit={handleSubmit}>
+          {/* Name Field */}
+          <div className="mb-4">
+            <label
+              className="block text-gray-700 font-medium mb-2"
+              htmlFor="name"
+            >
+              Full Name
+            </label>
+            <input
+              type="text"
+              id="name"
+              placeholder="Enter your name"
+              className="w-full px-4 py-2 border bg-gray-100 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+            />
+          </div>
+
+          {/* Email Field */}
+          <div className="mb-4">
+            <label
+              className="block text-gray-700 font-medium mb-2"
+              htmlFor="email"
+            >
+              Email Address
+            </label>
+            <input
+              type="email"
+              id="email"
+              placeholder="Enter your email"
+              className="w-full px-4 py-2 border bg-gray-100 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
+
+          {/* Password Field */}
+          <div className="mb-4">
+            <label
+              className="block text-gray-700 font-medium mb-2"
+              htmlFor="password"
+            >
+              Password
+            </label>
+            <input
+              type="password"
+              id="password"
+              placeholder="Enter your password"
+              className="w-full px-4 py-2 bg-gray-100 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
+
+          {/* Confirm Password Field */}
+          <div className="mb-4">
+            <label
+              className="block text-gray-700 font-medium mb-2"
+              htmlFor="confirmPassword"
+            >
+              Confirm Password
+            </label>
+            <input
+              type="password"
+              id="confirmPassword"
+              placeholder="Re-enter your password"
+              className="w-full px-4 py-2 bg-gray-100 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+            />
+          </div>
+
+          {/* Signup Button */}
+          <button
+            type="submit"
+            className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition duration-200 shadow-md"
+          >
+            Sign Up
+          </button>
+        </form>
+
+        {/* Footer */}
+        <p className="mt-6 text-center text-sm text-gray-600">
+          Already have an account?{" "}
+          <a href="/login" className="text-blue-500 hover:underline">
+            Log in
+          </a>
+        </p>
+      </div>
     </div>
   );
 }

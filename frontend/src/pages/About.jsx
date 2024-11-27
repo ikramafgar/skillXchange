@@ -29,7 +29,7 @@ const About = () => {
           <p className="text-lg md:text-xl text-gray-600 mb-6 font-bold">
             We are a platform dedicated to skill exchange, empowering individuals to learn, share, and grow together.
           </p>
-          <p className="text-2xl md:text-3xl text-gray-700 mb-6  font-bold leading-relaxed">
+          <p className="text-2xl md:text-3xl text-gray-700 mb-6  leading-relaxed">
             At SkillXchange, we believe that everyone has something valuable to share. Whether you&apos;re looking to learn a new skill, teach others, or collaborate, our platform connects individuals with diverse skills, fostering mutual growth and personal development.
           </p>
 

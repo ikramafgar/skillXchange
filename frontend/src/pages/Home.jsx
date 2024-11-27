@@ -209,8 +209,8 @@ function Home() {
           </motion.div>
         </motion.div>
       </motion.section>
-         {/* Call to action */}
-         <motion.section
+      {/* Call to action */}
+      <motion.section
         className="relative bg-cover bg-center py-20 px-8 md:px-16 lg:px-24 text-gray-700"
         whileInView={{ opacity: 1, y: 0 }}
         initial={{ opacity: 0, y: 50 }}
@@ -236,16 +236,16 @@ function Home() {
               >
                 Get Started
               </motion.button>
-              </Link>
-              <Link to="/about">
+            </Link>
+            <Link to="/about">
               <motion.button
                 whileHover={{ scale: 1.1 }}
                 className="border border-gray-300 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-200 transition duration-300"
               >
                 Learn More
               </motion.button>
-              </Link>
-            </div>
+            </Link>
+          </div>
         </div>
       </motion.section>
 

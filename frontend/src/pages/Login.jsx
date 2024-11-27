@@ -1,92 +1,128 @@
 // eslint-disable-next-line no-unused-vars
 import React, { useState } from "react";
+import axios from "axios";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Email:", email);
-    console.log("Password:", password);
+    try {
+      const response = await axios.post("/api/auth/login", { email, password });
+      toast.success("Login Successful!", { position: toast.POSITION.TOP_CENTER });
+      // Redirect user or perform any other actions after successful login
+    } catch (error) {
+      const errorMessage =
+        error.response?.data?.message || "Login failed. Please try again.";
+      toast.error(errorMessage, { position: toast.POSITION.TOP_CENTER });
+    }
   };
 
-  const handleGoogleAuth = () => {
-    console.log("Google Authentication");
-    // Implement Google Authentication Logic
+  const handleGoogleAuth = async () => {
+    try {
+      window.location.href = "/auth/google"; // Redirect to Google OAuth endpoint
+    } catch {
+      toast.error("Google authentication failed. Try again.", {
+        position: toast.POSITION.TOP_CENTER,
+      });
+    }
   };
 
   const handleGithubAuth = () => {
-    console.log("GitHub Authentication");
-    // Implement GitHub Authentication Logic
+    try {
+      window.location.href = "/auth/github"; // Redirect to GitHub OAuth endpoint
+    } catch  {
+      toast.error("GitHub authentication failed. Try again.", {
+        position: toast.POSITION.TOP_CENTER,
+      });
+    }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-       <div className="absolute inset-0 pointer-events-none flex justify-center items-center">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-yellow-300 opacity-40 blur-3xl rounded-full"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-72 h-72 bg-pink-400 opacity-20 blur-2xl rounded-full"></div>
+    <div className="relative min-h-screen bg-gray-50 flex items-center justify-center px-4 overflow-hidden">
+      {/* Overlay Effects */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-20 left-10 w-96 h-96 bg-yellow-400 opacity-40 blur-3xl rounded-full"></div>
+        <div className="absolute bottom-10 right-10 w-80 h-80 bg-blue-400 opacity-30 blur-2xl rounded-full"></div>
       </div>
-      <div className="w-full max-w-md p-8 bg-white shadow-lg rounded-lg">
+
+      {/* Login Form */}
+      <div className="relative w-full max-w-md p-8 rounded-xl">
+        {/* Toast Notification Container */}
+        <ToastContainer />
+
         <h1 className="text-3xl font-semibold text-gray-800 text-center">
           Welcome Back
         </h1>
-        <p className="text-gray-600 text-center mt-2">
-          Login to your account
+        <p className="text-gray-500 text-center mt-2">
+          Login to access your account
         </p>
         <form className="mt-6" onSubmit={handleSubmit}>
-          {/* Email */}
+          {/* Email Field */}
           <div className="mb-4">
-            <label className="block text-gray-700 mb-2" htmlFor="email">
-              Email
+            <label
+              className="block text-gray-700 font-medium mb-2"
+              htmlFor="email"
+            >
+              Email Address
             </label>
             <input
               type="email"
               id="email"
               placeholder="Enter your email"
-              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
+              className="w-full px-4 py-2 border bg-gray-100 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
             />
           </div>
-          {/* Password */}
+
+          {/* Password Field */}
           <div className="mb-4">
-            <label className="block text-gray-700 mb-2" htmlFor="password">
+            <label
+              className="block text-gray-700 font-medium mb-2"
+              htmlFor="password"
+            >
               Password
             </label>
             <input
               type="password"
               id="password"
               placeholder="Enter your password"
-              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
+              className="w-full px-4 py-2 bg-gray-100 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
             />
           </div>
-          {/* Submit Button */}
+
+          {/* Login Button */}
           <button
             type="submit"
-            className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition duration-200"
+            className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition duration-200 shadow-md"
           >
             Login
           </button>
         </form>
+
         {/* Divider */}
-        <div className="mt-6 flex items-center justify-center">
-          <div className="w-1/4 border-b border-gray-300"></div>
-          <span className="mx-2 text-sm text-gray-500">or</span>
-          <div className="w-1/4 border-b border-gray-300"></div>
+        <div className="flex items-center mt-6">
+          <div className="w-full border-t border-gray-300"></div>
+          <span className="px-4 text-sm text-gray-500">or</span>
+          <div className="w-full border-t border-gray-300"></div>
         </div>
-        {/* Social Buttons */}
-        <div className="mt-6 flex flex-col gap-4">
+
+        {/* Social Login Buttons */}
+        <div className="mt-6 space-y-4">
           <button
             onClick={handleGoogleAuth}
-            className="flex items-center justify-center gap-2 border rounded-lg py-2 hover:bg-gray-100 transition duration-200"
+            className="flex items-center justify-center gap-2 w-full border border-gray-300 py-2 rounded-lg hover:bg-gray-100 transition duration-200"
           >
             <img
-              src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Google_%22G%22_Logo.svg/512px-Google_%22G%22_Logo.svg.png"
+              src="https://developers.google.com/identity/images/g-logo.png"
               alt="Google"
               className="w-5 h-5"
             />
@@ -94,7 +130,7 @@ function Login() {
           </button>
           <button
             onClick={handleGithubAuth}
-            className="flex items-center justify-center gap-2 border rounded-lg py-2 hover:bg-gray-100 transition duration-200"
+            className="flex items-center justify-center gap-2 w-full border border-gray-300 py-2 rounded-lg hover:bg-gray-100 transition duration-200"
           >
             <img
               src="https://upload.wikimedia.org/wikipedia/commons/9/91/Octicons-mark-github.svg"
@@ -104,10 +140,11 @@ function Login() {
             Continue with GitHub
           </button>
         </div>
+
         {/* Footer */}
         <p className="mt-6 text-center text-sm text-gray-600">
           Don’t have an account?{" "}
-          <a href="#" className="text-blue-500 hover:underline">
+          <a href="/signup" className="text-blue-500 hover:underline">
             Sign up
           </a>
         </p>
