@@ -63,7 +63,7 @@ function Home() {
           variants={fadeInVariants}
         >
           <motion.div
-            className="absolute w-[500px] h-[500px] bg-yellow-600 opacity-60 blur-3xl rounded-full"
+            className="absolute w-[500px] h-[300px] bg-yellow-600 opacity-60 blur-3xl rounded-full"
             animate={{ scale: [1, 1.2, 1] }}
             transition={{ duration: 6, repeat: Infinity }}
           ></motion.div>
