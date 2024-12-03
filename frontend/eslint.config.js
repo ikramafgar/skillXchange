@@ -33,6 +33,9 @@ export default [
         'warn',
         { allowConstantExport: true },
       ],
+      // Add this rule to check for missing PropTypes
+      'react/prop-types': 'warn', // or 'error' for stricter enforcement
     },
   },
-]
+];
+

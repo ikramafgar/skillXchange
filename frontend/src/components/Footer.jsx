@@ -1,6 +1,7 @@
 /* eslint-disable no-unused-vars */
 import React from "react";
 
+
 function Footer() {
   return (
     <footer className="bg-gray-800 text-gray-200 py-10 px-6 md:px-12 lg:px-24">

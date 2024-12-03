@@ -1,23 +1,28 @@
-// eslint-disable-next-line no-unused-vars
-import React, { useState } from "react";
-import axios from "axios";
+
+import  { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useAuthStore } from "../store/authStore";
 
-function Login() {
+function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const { login} = useAuthStore();
+  const navigate = useNavigate(); 
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+   
     try {
-      const response = await axios.post("/api/auth/login", { email, password });
-      toast.success("Login Successful!", { position: toast.POSITION.TOP_CENTER });
+      await login(email, password);
+      toast.success("Login Successful!", { position: "top-center" } );
+      navigate('/about');
       // Redirect user or perform any other actions after successful login
     } catch (error) {
       const errorMessage =
         error.response?.data?.message || "Login failed. Please try again.";
-      toast.error(errorMessage, { position: toast.POSITION.TOP_CENTER });
+      toast.error(errorMessage, { position: "top-center" });
     }
   };
 
@@ -153,4 +158,4 @@ function Login() {
   );
 }
 
-export default Login;
+export default LoginPage;

@@ -4,7 +4,8 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom"; // Corrected import for Link
 import Footer from "../components/Footer";
 
-function Home() {
+
+function HomePage() {
   // Variants for animations
   const containerVariants = {
     hidden: { opacity: 0, scale: 0.9 },
@@ -56,7 +57,7 @@ function Home() {
         initial="hidden"
         animate="visible"
         exit="exit"
-      >
+      >                  
         {/* Abstract Shapes */}
         <motion.div
           className="absolute inset-0 pointer-events-none flex justify-center items-center"
@@ -255,4 +256,4 @@ function Home() {
   );
 }
 
-export default Home;
+export default HomePage;
