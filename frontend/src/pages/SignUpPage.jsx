@@ -39,12 +39,12 @@ const SignUpPage = () => {
     <div className="relative min-h-screen bg-gray-50 flex items-center justify-center px-4 overflow-hidden">
       {/* Overlay Effects */}
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-20 left-10 w-96 h-96 bg-pink-400 opacity-40 blur-3xl rounded-full"></div>
-        <div className="absolute bottom-10 right-10 w-80 h-80 bg-purple-400 opacity-30 blur-2xl rounded-full"></div>
+        <div className="absolute top-20 left-10 w-96 h-96 bg-yellow-400 opacity-40 blur-3xl rounded-full"></div>
+        <div className="absolute bottom-10 right-10 w-80 h-80 bg-blue-400 opacity-30 blur-2xl rounded-full"></div>
       </div>
 
       {/* Signup Form */}
-      <div className="relative w-full max-w-md p-8 rounded-xl bg-white shadow-lg">
+      <div className="relative w-full max-w-md p-8 rounded-xl mt-11 ">
         {/* Toast Notification Container */}
         <ToastContainer />
 

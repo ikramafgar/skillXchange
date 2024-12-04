@@ -4,7 +4,6 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom"; // Corrected import for Link
 import Footer from "../components/Footer";
 
-
 function HomePage() {
   // Variants for animations
   const containerVariants = {
@@ -57,7 +56,7 @@ function HomePage() {
         initial="hidden"
         animate="visible"
         exit="exit"
-      >                  
+      >
         {/* Abstract Shapes */}
         <motion.div
           className="absolute inset-0 pointer-events-none flex justify-center items-center"
@@ -238,14 +237,7 @@ function HomePage() {
                 Get Started
               </motion.button>
             </Link>
-            <Link to="/about">
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                className="border border-gray-300 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-200 transition duration-300"
-              >
-                Learn More
-              </motion.button>
-            </Link>
+           
           </div>
         </div>
       </motion.section>

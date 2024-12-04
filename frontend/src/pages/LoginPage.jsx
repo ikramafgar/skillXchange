@@ -1,6 +1,6 @@
 
 import  { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useAuthStore } from "../store/authStore";
@@ -36,18 +36,18 @@ function LoginPage() {
     }
   };
 
-  const handleGithubAuth = () => {
-    try {
-      window.location.href = "/auth/github"; // Redirect to GitHub OAuth endpoint
-    } catch  {
-      toast.error("GitHub authentication failed. Try again.", {
-        position: toast.POSITION.TOP_CENTER,
-      });
-    }
-  };
+  // const handleGithubAuth = () => {
+  //   try {
+  //     window.location.href = "/auth/github"; // Redirect to GitHub OAuth endpoint
+  //   } catch  {
+  //     toast.error("GitHub authentication failed. Try again.", {
+  //       position: toast.POSITION.TOP_CENTER,
+  //     });
+  //   }
+  // };
 
   return (
-    <div className="relative min-h-screen bg-gray-50 flex items-center justify-center px-4 overflow-hidden">
+    <div className="relative min-h-screen bg-gray-50 flex items-center justify-center px-4  overflow-hidden">
       {/* Overlay Effects */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-20 left-10 w-96 h-96 bg-yellow-400 opacity-40 blur-3xl rounded-full"></div>
@@ -55,7 +55,7 @@ function LoginPage() {
       </div>
 
       {/* Login Form */}
-      <div className="relative w-full max-w-md p-8 rounded-xl">
+      <div className="relative w-full max-w-md p-8 rounded-xl mt-20">
         {/* Toast Notification Container */}
         <ToastContainer />
 
@@ -65,7 +65,29 @@ function LoginPage() {
         <p className="text-gray-500 text-center mt-2">
           Login to access your account
         </p>
+                {/* Social Login Buttons */}
+                <div className="mt-6 space-y-4">
+          <button
+            onClick={handleGoogleAuth}
+            className="flex items-center justify-center gap-2 w-full border border-gray-300 py-2 rounded-lg hover:bg-gray-100 transition duration-200"
+          >
+            <img
+              src="https://developers.google.com/identity/images/g-logo.png"
+              alt="Google"
+              className="w-5 h-5"
+            />
+            Continue with Google
+          </button>
+        </div>
+          {/* Divider */}
+          <div className="flex items-center mt-6">
+          <div className="w-full border-t border-gray-300"></div>
+          <span className="px-4 text-sm text-gray-500">or</span>
+          <div className="w-full border-t border-gray-300"></div>
+        </div>
+
         <form className="mt-6" onSubmit={handleSubmit}>
+   
           {/* Email Field */}
           <div className="mb-4">
             <label
@@ -103,6 +125,11 @@ function LoginPage() {
               required
             />
           </div>
+          <div className='flex justify-end items-center mb-2'>
+						<Link to='/forgot-password' className='text-sm text-gray-800 hover:underline'>
+							Forgot password?
+						</Link>
+					</div>
 
           {/* Login Button */}
           <button
@@ -112,28 +139,7 @@ function LoginPage() {
             Login
           </button>
         </form>
-
-        {/* Divider */}
-        <div className="flex items-center mt-6">
-          <div className="w-full border-t border-gray-300"></div>
-          <span className="px-4 text-sm text-gray-500">or</span>
-          <div className="w-full border-t border-gray-300"></div>
-        </div>
-
-        {/* Social Login Buttons */}
-        <div className="mt-6 space-y-4">
-          <button
-            onClick={handleGoogleAuth}
-            className="flex items-center justify-center gap-2 w-full border border-gray-300 py-2 rounded-lg hover:bg-gray-100 transition duration-200"
-          >
-            <img
-              src="https://developers.google.com/identity/images/g-logo.png"
-              alt="Google"
-              className="w-5 h-5"
-            />
-            Continue with Google
-          </button>
-          <button
+          {/* <button
             onClick={handleGithubAuth}
             className="flex items-center justify-center gap-2 w-full border border-gray-300 py-2 rounded-lg hover:bg-gray-100 transition duration-200"
           >
@@ -143,9 +149,8 @@ function LoginPage() {
               className="w-5 h-5"
             />
             Continue with GitHub
-          </button>
-        </div>
-
+          </button> */}
+       
         {/* Footer */}
         <p className="mt-6 text-center text-sm text-gray-600">
           Don’t have an account?{" "}
