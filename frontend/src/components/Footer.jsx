@@ -8,7 +8,18 @@ function Footer() {
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8">
         {/* Logo and About */}
         <div className="lg:w-1/3">
-          <h2 className="text-2xl font-bold text-white">SkillXchange</h2>
+           {/* Logo */}
+        <div className="flex text-center ml-4">
+          <a href="/" >
+            <div className="w-16 h-12  flex justify-center items-center">
+              <img
+                className="w-full h-auto scale-150 object-contain"
+                src="./images/logowhite.png"
+                alt="Skill Logo"
+              />
+            </div>
+          </a>
+        </div>
           <p className="mt-4 text-gray-400">
             Empowering individuals to learn, share, and grow by connecting
             through skill-based exchanges.

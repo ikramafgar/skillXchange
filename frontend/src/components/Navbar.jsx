@@ -10,7 +10,13 @@ const Navbar = () => {
         {/* Logo */}
         <div className="flex text-center">
           <a href="/" className="text-lg lg:text-xl font-bold text-blue-600 ">
-            SkillXChange
+            <div className="w-16 h-12  flex justify-center items-center">
+              <img
+                className="w-full h-auto scale-150 object-contain"
+                src="./images/logoblack.png"
+                alt="Skill Logo"
+              />
+            </div>
           </a>
         </div>
 
@@ -38,7 +44,7 @@ const Navbar = () => {
             href="/login"
             className="text-lg lg:text-xl text-blue-500 font-medium flex items-center"
           >
-           Login
+            Login
           </a>
         </div>
 
@@ -86,7 +92,7 @@ const Navbar = () => {
             href="/login"
             className=" bg-blue-500 text-white px-4 py-2 rounded-lg shadow-md hover:bg-blue-600 transition flex items-center gap-2"
           >
-             Login
+            Login
           </a>
         </div>
       </div>
