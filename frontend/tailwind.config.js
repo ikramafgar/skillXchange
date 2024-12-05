@@ -5,7 +5,7 @@ export const content = [
 export const theme = {
   extend: {
     fontFamily: {
-      sans: ['Bricolage Grotesque', 'sans-serif'],
+      sans: ['Montserrat', 'sans-serif'],
     },
   },
 };
