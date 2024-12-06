@@ -9,6 +9,7 @@ import {
 import { useAuthStore } from "./store/authStore";
 import { useEffect } from "react";
 import Navbar from "./components/Navbar"; // Import Navbar
+import Contact from "./components/ContactUs";
 
 // Pages
 import HomePage from "./pages/HomePage"; // Home page
@@ -64,6 +65,7 @@ function App() {
         <Route path="/signup" element={<SignUpPage />} />
         <Route path="/skills" element={<SkillsPage />} />
         <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/contact" element={<Contact />} />
 
         <Route
           path="/dashboard"
