@@ -5,7 +5,7 @@ export const content = [
 export const theme = {
   extend: {
     fontFamily: {
-      sans: ['Montserrat', 'sans-serif'],
+      sans: ['Space Grotesk', 'sans-serif'],
     },
   },
 };
