@@ -1,6 +1,4 @@
-/* eslint-disable no-unused-vars */
-import React from "react";
-
+import { Heart} from "lucide-react";
 
 function Footer() {
   return (
@@ -8,18 +6,16 @@ function Footer() {
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8">
         {/* Logo and About */}
         <div className="lg:w-1/3">
-           {/* Logo */}
-        <div className="flex text-center ml-4">
-          <a href="/" >
-            <div className="w-16 h-12  flex justify-center items-center">
-              <img
-                className="w-full h-auto scale-150 object-contain"
-                src="./images/logowhite.png"
-                alt="Skill Logo"
-              />
-            </div>
-          </a>
-        </div>
+          {/* Logo */}
+          <div className="flex text-center ">
+            <a href="/">
+              <div className="  flex justify-center items-center">
+                <h1 className="text-2xl font-bold text-gray-100">Skill</h1>
+                <span className="text-4xl font-bold text-blue-600 ">X</span>
+                <h1 className="text-2xl font-bold text-gray-100">Change</h1>
+              </div>
+            </a>
+          </div>
           <p className="mt-4 text-gray-400">
             Empowering individuals to learn, share, and grow by connecting
             through skill-based exchanges.
@@ -27,12 +23,12 @@ function Footer() {
         </div>
 
         {/* Navigation Links */}
-        <div className="lg:w-1/3 flex flex-col sm:flex-row justify-between gap-8">
-          <div>
+  
+          <div className="mt-8">
             <h3 className="text-lg font-semibold text-white">Quick Links</h3>
             <ul className="mt-4 space-y-2">
               <li>
-                <a href="#" className="hover:text-blue-500">
+                <a href="/" className="hover:text-blue-500">
                   Home
                 </a>
               </li>
@@ -41,44 +37,16 @@ function Footer() {
                   About
                 </a>
               </li>
+             
               <li>
-                <a href="#" className="hover:text-blue-500">
-                  Features
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-blue-500">
+                <a href="/contact" className="hover:text-blue-500">
                   Contact
                 </a>
               </li>
             </ul>
           </div>
-          <div>
-            <h3 className="text-lg font-semibold text-white">Support</h3>
-            <ul className="mt-4 space-y-2">
-              <li>
-                <a href="#" className="hover:text-blue-500">
-                  FAQs
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-blue-500">
-                  Help Center
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-blue-500">
-                  Privacy Policy
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-blue-500">
-                  Terms of Service
-                </a>
-              </li>
-            </ul>
-          </div>
-        </div>
+         
+    
 
         {/* Social Media and Contact */}
         <div className="lg:w-1/3">
@@ -98,13 +66,8 @@ function Footer() {
             </a>
           </div>
           <p className="mt-4 text-gray-400">
-            Contact us:{" "}
-            <a
-              href="mailto:support@skillxchange.com"
-              className="text-blue-500 hover:underline"
-            >
-              support@skillxchange.com
-            </a>
+            Built with{" "}
+            <Heart className="inline-block text-red-500 w-5 h-5 mx-1" /> in the City of Flowers, Peshawar.
           </p>
         </div>
       </div>

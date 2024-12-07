@@ -1,102 +1,141 @@
-// eslint-disable-next-line no-unused-vars
-import React, { useState } from "react";
+import { useState, useEffect } from "react";
+import { motion, useScroll } from "framer-motion";
+import {
+  Menu,
+  X,
+  Layers,
+  Cpu,
+  Send,
+  Home,
+  Info,
+  MessageCircle,
+  KeyRound,
+} from "lucide-react"; // Added icons
+import { useAuthStore } from "../store/authStore"; // Import the authStore
 
 const Navbar = () => {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const { scrollY } = useScroll();
+  const { isAuthenticated, login, logout, checkAuth } = useAuthStore(
+    (state) => state
+  ); // Access state and actions from the authStore
+
+  useEffect(() => {
+    checkAuth(); // Check authentication status on load
+    return scrollY.onChange(() => setIsScrolled(scrollY.get() > 20));
+  }, [scrollY, checkAuth]);
+
+  const navItemsBeforeLogin = [
+    { name: "Home", href: "/", icon: <Home className="w-4 h-4" /> },
+    { name: "About", href: "/about", icon: <Info className="w-4 h-4" /> },
+    { name: "Contact", href: "/contact", icon: <Send className="w-4 h-4" /> },
+    {
+      name: "Login",
+      href: "/login",
+      icon: <KeyRound className="w-4 h-4" />,
+      onClick: () => login("email@example.com", "password"),
+    }, // For testing, add login functionality
+  ];
+
+  const navItemsAfterLogin = [
+    { name: "Skills", href: "/skills", icon: <Layers className="w-4 h-4" /> },
+    { name: "Profile", href: "/profile", icon: <Cpu className="w-4 h-4" /> },
+    {
+      name: "Dashboard",
+      href: "/dashboard",
+      icon: <Cpu className="w-4 h-4" />,
+    },
+    {
+      name: "Messages",
+      href: "/messages",
+      icon: <MessageCircle className="w-4 h-4" />,
+    },
+    {
+      name: "Logout",
+      href: "/",
+      icon: <X className="w-4 h-4" />,
+      onClick: logout,
+    },
+  ];
 
   return (
-    <nav className="backdrop-blur-lg bg-white/10 shadow-md fixed top-5 left-1/2 transform -translate-x-1/2 w-[90%] md:w-[70%] lg:w-[50%] max-w-screen-xl z-50 rounded-2xl border-solid border-[1px] border-gray-300 ring-zinc-300 py-2 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl w-full mx-auto flex justify-between items-center gap-3">
-        {/* Logo */}
-        <div className="flex text-center">
-          <a href="/" className="text-lg lg:text-xl font-bold text-blue-600 ">
-            <div className="w-16 h-12  flex justify-center items-center">
-              <img
-                className="w-full h-auto scale-150 object-contain"
-                src="./images/logoblack.png"
-                alt="Skill Logo"
-              />
+    <motion.nav
+      initial={{ y: -100 }}
+      animate={{ y: 0 }}
+      className={`fixed w-full z-50 transition-all duration-300 ${
+        isScrolled ? "bg-white/60 backdrop-blur-lg shadow-lg" : "bg-transparent"
+      }`}
+    >
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 lg:px-24">
+        <div className="flex items-center justify-between h-16">
+          {/* Logo - Left side */}
+          <a href="/">
+            <div className="flex items-center leading-tight">
+              <h1 className="text-2xl font-bold text-gray-800">Skill</h1>
+              <span className="text-4xl font-bold text-blue-600 ">X</span>
+              <h1 className="text-2xl font-bold text-gray-800">Change</h1>
             </div>
           </a>
-        </div>
 
-        {/* Desktop Links */}
-        <div className="hidden md:flex space-x-6 items-center">
-          <a
-            href="/"
-            className="text-gray-700 hover:text-blue-500 font-medium px-4 py-2 border-solid border-[1px] border-gray-300 rounded-lg bg-white transition flex items-center gap-2"
-          >
-            <i className="fas fa-home"></i> Home
-          </a>
-          <a
-            href="/about"
-            className="text-gray-700 hover:text-blue-500 font-medium px-4 py-2 border-solid border-[1px] border-gray-300  rounded-lg bg-white transition flex items-center gap-2"
-          >
-            <i className="fas fa-info-circle"></i> About
-          </a>
-          <a
-            href="/contact"
-            className="text-gray-700 hover:text-blue-500 font-medium px-4 py-2 border-solid border-[1px] border-gray-300  rounded-lg bg-white transition flex items-center gap-2"
-          >
-            <i className="fas fa-envelope"></i> Contact
-          </a>
-          <a
-            href="/login"
-            className="text-lg lg:text-xl text-blue-500 font-medium flex items-center"
-          >
-            Login
-          </a>
-        </div>
+          {/* Desktop Navigation - Right side */}
+          <div className="hidden md:flex ml-auto items-center space-x-8">
+            {(isAuthenticated ? navItemsAfterLogin : navItemsBeforeLogin).map(
+              (item) => (
+                <motion.a
+                  key={item.name}
+                  href={item.href}
+                  onClick={item.onClick}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="flex items-center gap-2 text-gray-700 font-bold hover:text-violet-400 transition-colors"
+                >
+                  {item.icon}
+                  <span>{item.name}</span>
+                </motion.a>
+              )
+            )}
+          </div>
 
-        {/* Hamburger Menu */}
-        <div className="md:hidden">
-          <button
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="text-gray-700 hover:text-blue-500 focus:outline-none"
-          >
-            <i
-              className={`fas ${
-                isMobileMenuOpen ? "fa-times" : "fa-bars"
-              } text-lg`}
-            ></i>
-          </button>
+          {/* Mobile menu button */}
+          <div className="md:hidden">
+            <motion.button
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setIsOpen(!isOpen)}
+              className="text-gray-700 hover:text-violet-400"
+            >
+              {isOpen ? <X /> : <Menu />}
+            </motion.button>
+          </div>
         </div>
       </div>
 
-      {/* Mobile Menu */}
-      <div
-        className={`${
-          isMobileMenuOpen ? "block" : "hidden"
-        } md:hidden bg-white p-4 mt-2 rounded-lg shadow-lg`}
+      {/* Mobile Navigation */}
+      <motion.div
+        initial={false}
+        animate={
+          isOpen ? { height: "auto", opacity: 1 } : { height: 0, opacity: 0 }
+        }
+        className="md:hidden overflow-hidden bg-blur"
       >
-        <div className="space-y-4">
-          <a
-            href="/"
-            className=" text-gray-700 hover:text-blue-500 font-medium flex items-center gap-2"
-          >
-            <i className="fas fa-home"></i> Home
-          </a>
-          <a
-            href="/about"
-            className=" text-gray-700 hover:text-blue-500 font-medium flex items-center gap-2"
-          >
-            <i className="fas fa-info-circle"></i> About
-          </a>
-          <a
-            href="/contact"
-            className=" text-gray-700 hover:text-blue-500 font-medium flex items-center gap-2"
-          >
-            <i className="fas fa-envelope"></i> Contact
-          </a>
-          <a
-            href="/login"
-            className=" bg-blue-500 text-white px-4 py-2 rounded-lg shadow-md hover:bg-blue-600 transition flex items-center gap-2"
-          >
-            Login
-          </a>
+        <div className="px-2 pt-2 pb-3 space-y-1">
+          {(isAuthenticated ? navItemsAfterLogin : navItemsBeforeLogin).map(
+            (item) => (
+              <motion.a
+                key={item.name}
+                href={item.href}
+                onClick={item.onClick}
+                whileTap={{ scale: 0.95 }}
+                className="items-center gap-2 text-gray-700 hover:text-violet-400 block px-3 py-2"
+              >
+                {item.icon}
+                <span>{item.name}</span>
+              </motion.a>
+            )
+          )}
         </div>
-      </div>
-    </nav>
+      </motion.div>
+    </motion.nav>
   );
 };
 
