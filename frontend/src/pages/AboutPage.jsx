@@ -12,9 +12,9 @@ const About = () => {
         {/* Image Section */}
         <div className="w-full md:w-1/2 flex justify-center">
           <img
-            src="images/about.png"
+            src="images/aboutUs.png"
             alt="Skill Exchange"
-            className="w-full h-auto max-w-lg rounded-lg shadow-lg transform hover:scale-105 transition duration-300"
+            className="w-full h-auto max-w-lg rounded-lg  transform hover:scale-105 transition duration-300"
           />
         </div>
 

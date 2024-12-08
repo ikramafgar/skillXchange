@@ -75,7 +75,7 @@ function HomePage() {
         </motion.div>
 
         <motion.div
-          className="flex flex-col-reverse lg:flex-row items-center w-full gap-12 relative z-10"
+          className="flex flex-col-reverse lg:flex-row items-center w-full gap-12 relative z-10 mt-20"
           variants={staggerContainer}
         >
           {/* Content Section */}
@@ -83,7 +83,7 @@ function HomePage() {
             className="text-center lg:text-left lg:w-1/2"
             variants={textVariants}
           >
-            <h1 className="text-4xl md:text-5xl font-extrabold text-gray-800 leading-tight tracking-normal">
+            <h1 className="text-5xl md:text-5xl font-extrabold text-gray-800 leading-tight tracking-normal">
               Unlock New Skills with{" "}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">
                 SkillXChange.
