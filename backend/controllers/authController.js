@@ -4,7 +4,7 @@ import {
   sendWelcomeEmail,
   sendPasswordResetEmail,
   sendResetSuccessEmail,
-} from "../mailtrap/emails.js";
+} from "../nodemailer/emails.js";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import { generateVerificationCode } from "../utils/generateVerificationCode.js";
@@ -65,7 +65,7 @@ export const verifyEmail = async (req, res) => {
     await user.save();
     res.status(200).json({ message: "Email verified successfully" });
 
-    await sendVerificationEmail(user.email, user.name);
+    await sendWelcomeEmail(user.email, user.name);
   } catch (error) {}
 };
 export const login = async (req, res) => {

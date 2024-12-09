@@ -48,29 +48,29 @@ const EmailVerificationPage = () => {
     const verificationCode = code.join("");
     try {
       await verifyEmail(verificationCode);
-      navigate("/");
+      navigate("/profile");
       toast.success("Email verified successfully");
     } catch (error) {
       console.log(error);
     }
   };
 
-  // Auto submit when all fields are filled
+  // Auto submit when all fields are filled, but only trigger when all fields are filled
   useEffect(() => {
-    if (code.every((digit) => digit !== "")) {
+    if (code.every((digit) => digit !== "") && !isLoading) {
       handleSubmit(new Event("submit"));
     }
-  });
+  }, [code, isLoading]); // This will trigger the submit only when the code is complete and not loading
 
   return (
     <div className="relative min-h-screen bg-gray-50 flex items-center justify-center px-4  overflow-hidden">
-    {/* Overlay Effects */}
-    <div className="absolute inset-0 pointer-events-none">
-      <div className="absolute top-20 left-10 w-96 h-96 bg-yellow-400 opacity-40 blur-3xl rounded-full"></div>
-      <div className="absolute bottom-10 right-10 w-80 h-80 bg-blue-400 opacity-30 blur-2xl rounded-full"></div>
-    </div>
-     {/* form */}
-    <div className="relative w-full max-w-md p-8 rounded-xl mt-20">
+      {/* Overlay Effects */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-20 left-10 w-96 h-96 bg-yellow-400 opacity-40 blur-3xl rounded-full"></div>
+        <div className="absolute bottom-10 right-10 w-80 h-80 bg-blue-400 opacity-30 blur-2xl rounded-full"></div>
+      </div>
+      {/* form */}
+      <div className="relative w-full max-w-md p-8 rounded-xl mt-20">
         <h2 className="text-3xl font-bold mb-6 text-center text-gray-800 ">
           Verify Your Email
         </h2>
@@ -108,4 +108,5 @@ const EmailVerificationPage = () => {
     </div>
   );
 };
+
 export default EmailVerificationPage;
