@@ -1,3 +1,5 @@
+// add edit functionality after saving and the data should display
+
 import { useState } from "react";
 import { Camera, Mail, Phone, MapPin, Github, Linkedin, Edit } from "lucide-react";
 
@@ -8,7 +10,7 @@ const ProfilePage = () => {
     skillsToLearn: "",
     skillsToTeach: "",
     skillLevel: "Beginner",
-    email: "johndoe@example.com",
+    email: "",
     phone: "",
     location: "",
     github: "",

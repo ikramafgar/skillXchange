@@ -1,6 +1,7 @@
 import passport, { serializeUser, deserializeUser, use } from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
-import User, { findById, findOne } from "./UserModel"; // Adjust the path based on your project structure
+import User from "../models/User";
+
 
 // Serialize user to store in session
 serializeUser((user, done) => {
