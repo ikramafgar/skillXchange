@@ -17,14 +17,11 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const { scrollY } = useScroll();
-  const { isAuthenticated, login, logout, checkAuth } = useAuthStore(
-    (state) => state
-  ); // Access state and actions from the authStore
+  const { isAuthenticated, logout } = useAuthStore((state) => state);
 
   useEffect(() => {
-    checkAuth(); // Check authentication status on load
-    return scrollY.onChange(() => setIsScrolled(scrollY.get() > 20));
-  }, [scrollY, checkAuth]);
+    return scrollY.on("change", () => setIsScrolled(scrollY.get() > 20));
+  }, [scrollY]);
 
   const navItemsBeforeLogin = [
     { name: "Home", href: "/", icon: <Home className="w-4 h-4" /> },
@@ -34,18 +31,13 @@ const Navbar = () => {
       name: "Login",
       href: "/login",
       icon: <KeyRound className="w-4 h-4" />,
-      onClick: () => login("email@example.com", "password"),
-    }, // For testing, add login functionality
+    },
   ];
 
   const navItemsAfterLogin = [
+    { name: "Home", href: "/", icon: <Home className="w-4 h-4" /> },
     { name: "Skills", href: "/skills", icon: <Layers className="w-4 h-4" /> },
     { name: "Profile", href: "/profile", icon: <Cpu className="w-4 h-4" /> },
-    {
-      name: "Dashboard",
-      href: "/dashboard",
-      icon: <Cpu className="w-4 h-4" />,
-    },
     {
       name: "Messages",
       href: "/messages",
@@ -55,9 +47,14 @@ const Navbar = () => {
       name: "Logout",
       href: "/",
       icon: <X className="w-4 h-4" />,
-      onClick: logout,
+      onClick: (e) => {
+        e.preventDefault();
+        logout();
+      },
     },
   ];
+
+  const navigationItems = isAuthenticated ? navItemsAfterLogin : navItemsBeforeLogin;
 
   return (
     <motion.nav
@@ -80,21 +77,19 @@ const Navbar = () => {
 
           {/* Desktop Navigation - Right side */}
           <div className="hidden md:flex ml-auto items-center space-x-8">
-            {(isAuthenticated ? navItemsAfterLogin : navItemsBeforeLogin).map(
-              (item) => (
-                <motion.a
-                  key={item.name}
-                  href={item.href}
-                  onClick={item.onClick}
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="flex items-center gap-2 text-gray-700 font-bold hover:text-violet-400 transition-colors"
-                >
-                  {item.icon}
-                  <span>{item.name}</span>
-                </motion.a>
-              )
-            )}
+            {navigationItems.map((item) => (
+              <motion.a
+                key={item.name}
+                href={item.href}
+                onClick={item.onClick}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
+                className="flex items-center gap-2 text-gray-700 font-bold hover:text-violet-400 transition-colors"
+              >
+                {item.icon}
+                <span>{item.name}</span>
+              </motion.a>
+            ))}
           </div>
 
           {/* Mobile menu button */}
@@ -119,20 +114,18 @@ const Navbar = () => {
         className="md:hidden overflow-hidden bg-blur"
       >
         <div className="px-2 pt-2 pb-3 space-y-1">
-          {(isAuthenticated ? navItemsAfterLogin : navItemsBeforeLogin).map(
-            (item) => (
-              <motion.a
-                key={item.name}
-                href={item.href}
-                onClick={item.onClick}
-                whileTap={{ scale: 0.95 }}
-                className="items-center gap-2 text-gray-700 hover:text-violet-400 block px-3 py-2"
-              >
-                {item.icon}
-                <span>{item.name}</span>
-              </motion.a>
-            )
-          )}
+          {navigationItems.map((item) => (
+            <motion.a
+              key={item.name}
+              href={item.href}
+              onClick={item.onClick}
+              whileTap={{ scale: 0.95 }}
+              className=" items-center gap-2 text-gray-700 hover:text-violet-400 block px-3 py-2"
+            >
+              {item.icon}
+              <span>{item.name}</span>
+            </motion.a>
+          ))}
         </div>
       </motion.div>
     </motion.nav>

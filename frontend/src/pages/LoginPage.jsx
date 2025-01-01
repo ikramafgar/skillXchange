@@ -1,5 +1,4 @@
-
-import  { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -8,16 +7,37 @@ import { useAuthStore } from "../store/authStore";
 function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const { login} = useAuthStore();
-  const navigate = useNavigate(); 
+  const { login, googleLogin } = useAuthStore();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const handleGoogleCallback = async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const credential = urlParams.get('credential');
+      
+      if (credential) {
+        try {
+          await googleLogin(credential);
+          toast.success("Login Successful!", { position: "top-center" });
+          navigate("/profile");
+        } catch {
+          toast.error("Google login failed. Please try again.", {
+            position: "top-center",
+          });
+        }
+      }
+    };
+
+    handleGoogleCallback();
+  }, [googleLogin, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-   
+
     try {
       await login(email, password);
-      toast.success("Login Successful!", { position: "top-center" } );
-      navigate('/profile');
+      toast.success("Login Successful!", { position: "top-center" });
+      navigate("/profile");
       // Redirect user or perform any other actions after successful login
     } catch (error) {
       const errorMessage =
@@ -26,26 +46,9 @@ function LoginPage() {
     }
   };
 
-  const handleGoogleAuth = async () => {
-    try {
-      window.location.href = "/auth/google"; // Redirect to Google OAuth endpoint
-    } catch {
-      toast.error("Google authentication failed. Try again.", {
-        position: toast.POSITION.TOP_CENTER,
-      });
-    }
+  const handleGoogleAuth = () => {
+    window.location.href = `${import.meta.env.VITE_API_URL}/api/auth/google`;
   };
-
-  // const handleGithubAuth = () => {
-  //   try {
-  //     window.location.href = "/auth/github"; // Redirect to GitHub OAuth endpoint
-  //   } catch  {
-  //     toast.error("GitHub authentication failed. Try again.", {
-  //       position: toast.POSITION.TOP_CENTER,
-  //     });
-  //   }
-  // };
-
   return (
     <div className="relative min-h-screen bg-gray-50 flex items-center justify-center px-4  overflow-hidden">
       {/* Overlay Effects */}
@@ -65,8 +68,8 @@ function LoginPage() {
         <p className="text-gray-500 text-center mt-2">
           Login to access your account
         </p>
-                {/* Social Login Buttons */}
-                <div className="mt-6 space-y-4">
+        {/* Social Login Buttons */}
+        <div className="mt-6 space-y-4">
           <button
             onClick={handleGoogleAuth}
             className="flex items-center justify-center gap-2 w-full border border-gray-300 py-2 rounded-lg hover:bg-gray-100 transition duration-200"
@@ -79,15 +82,14 @@ function LoginPage() {
             Continue with Google
           </button>
         </div>
-          {/* Divider */}
-          <div className="flex items-center mt-6">
+        {/* Divider */}
+        <div className="flex items-center mt-6">
           <div className="w-full border-t border-gray-300"></div>
           <span className="px-4 text-sm text-gray-500">or</span>
           <div className="w-full border-t border-gray-300"></div>
         </div>
 
         <form className="mt-6" onSubmit={handleSubmit}>
-   
           {/* Email Field */}
           <div className="mb-4">
             <label
@@ -125,11 +127,14 @@ function LoginPage() {
               required
             />
           </div>
-          <div className='flex justify-end items-center mb-2'>
-						<Link to='/forgot-password' className='text-sm text-gray-800 hover:underline'>
-							Forgot password?
-						</Link>
-					</div>
+          <div className="flex justify-end items-center mb-2">
+            <Link
+              to="/forgot-password"
+              className="text-sm text-gray-800 hover:underline"
+            >
+              Forgot password?
+            </Link>
+          </div>
 
           {/* Login Button */}
           <button
@@ -139,18 +144,7 @@ function LoginPage() {
             Login
           </button>
         </form>
-          {/* <button
-            onClick={handleGithubAuth}
-            className="flex items-center justify-center gap-2 w-full border border-gray-300 py-2 rounded-lg hover:bg-gray-100 transition duration-200"
-          >
-            <img
-              src="https://upload.wikimedia.org/wikipedia/commons/9/91/Octicons-mark-github.svg"
-              alt="GitHub"
-              className="w-5 h-5"
-            />
-            Continue with GitHub
-          </button> */}
-       
+
         {/* Footer */}
         <p className="mt-6 text-center text-sm text-gray-600">
           Don’t have an account?{" "}

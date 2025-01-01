@@ -1,27 +1,28 @@
+import  { useEffect } from "react";
 import {
-  Navigate,
   BrowserRouter as Router,
   Route,
   Routes,
+  Navigate,
 } from "react-router-dom";
+import PropTypes from "prop-types"; // Import PropTypes
 import { useAuthStore } from "./store/authStore";
-import { useEffect } from "react";
-import Navbar from "./components/Navbar"; // Import Navbar
+import Navbar from "./components/Navbar"; // Navbar component
 import Contact from "./components/ContactUs";
 
 // Pages
-import HomePage from "./pages/HomePage"; // Home page
-import AboutPage from "./pages/AboutPage"; // About page
-import LoginPage from "./pages/LoginPage"; // Login page
-import SignUpPage from "./pages/SignUpPage"; // Signup page
-import SkillsPage from "./pages/SkillsPage"; // Skills page
-import ProfilePage from "./pages/ProfilePage"; // Profile page
-import DashboardPage from "./pages/DashboardPage"; // Dashboard page
+import HomePage from "./pages/HomePage";
+import AboutPage from "./pages/AboutPage";
+import LoginPage from "./pages/LoginPage";
+import SignUpPage from "./pages/SignUpPage";
+import SkillsPage from "./pages/SkillsPage";
+import ProfilePage from "./pages/ProfilePage";
+import DashboardPage from "./pages/DashboardPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import EmailVerificationPage from "./pages/EmailVerificationPage";
 
-// protect routes that require authentication
+// Protect routes that require authentication
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, user } = useAuthStore();
 
@@ -29,28 +30,37 @@ const ProtectedRoute = ({ children }) => {
     return <Navigate to="/login" replace />;
   }
 
-  if (!user.isVerified) {
+  if (user && !user.isVerified) {
     return <Navigate to="/verify-email" replace />;
   }
 
   return children;
 };
 
-// redirect authenticated users to the home page
+ProtectedRoute.propTypes = {
+  children: PropTypes.node.isRequired,
+};
+
+// Redirect authenticated users to the home page
 const RedirectAuthenticatedUser = ({ children }) => {
   const { isAuthenticated, user } = useAuthStore();
 
-  if (isAuthenticated && user.isVerified) {
+  if (isAuthenticated && user && user.isVerified) {
     return <Navigate to="/" replace />;
   }
 
   return children;
 };
 
+RedirectAuthenticatedUser.propTypes = {
+  children: PropTypes.node.isRequired,
+};
+
 function App() {
   const { checkAuth } = useAuthStore();
+
   useEffect(() => {
-    checkAuth();
+    checkAuth(); // Check authentication status on app load
   }, [checkAuth]);
 
   return (
@@ -59,7 +69,7 @@ function App() {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/about" element={<AboutPage />} />
-        {/* <Route path="/login" element={<LoginPage/>} /> */}
+        <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignUpPage />} />
         <Route path="/skills" element={<SkillsPage />} />
         <Route path="/profile" element={<ProfilePage />} />
@@ -73,8 +83,9 @@ function App() {
             </ProtectedRoute>
           }
         />
-        <Route path="/login" element={<LoginPage />} />
+
         <Route path="/verify-email" element={<EmailVerificationPage />} />
+
         <Route
           path="/forgot-password"
           element={
@@ -82,8 +93,8 @@ function App() {
               <ForgotPasswordPage />
             </RedirectAuthenticatedUser>
           }
-         
         />
+
         <Route
           path="/reset-password/:token"
           element={
