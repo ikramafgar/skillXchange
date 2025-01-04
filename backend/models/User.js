@@ -4,9 +4,8 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true,
         unique: true    
-
     },
-    password : {
+    password: {
         type: String,
         required: false  
     },
@@ -15,10 +14,45 @@ const userSchema = new mongoose.Schema({
         unique: true,
         sparse: true
     },
-    name:{
+    name: {
         type: String,
         required: true  
-
+    },
+    bio: {
+        type: String,
+        default: ''
+    },
+    skillsToLearn: {
+        type: String,
+        default: ''
+    },
+    skillsToTeach: {
+        type: String,
+        default: ''
+    },
+    skillLevel: {
+        type: String,
+        default: 'Beginner'
+    },
+    phone: {
+        type: String,
+        default: ''
+    },
+    location: {
+        type: String,
+        default: ''
+    },
+    github: {
+        type: String,
+        default: ''
+    },
+    linkedin: {
+        type: String,
+        default: ''
+    },
+    profilePic: {
+        type: String,
+        default: 'https://via.placeholder.com/150'
     },
     lastLogin: {
         type: Date,
@@ -34,4 +68,5 @@ const userSchema = new mongoose.Schema({
     verificationTokenExpiresAt: Date
 }, {timestamps: true});
 
-export const User = mongoose.model("User", userSchema);
+const User = mongoose.model("User", userSchema);
+export default User;
