@@ -1,4 +1,4 @@
-import  { useEffect } from "react";
+// import  { useEffect } from "react";
 import {
   BrowserRouter as Router,
   Route,
@@ -7,8 +7,11 @@ import {
 } from "react-router-dom";
 import PropTypes from "prop-types"; // Import PropTypes
 import { useAuthStore } from "./store/authStore";
+
 import Navbar from "./components/Navbar"; // Navbar component
 import Contact from "./components/ContactUs";
+// import LoadingSpinner from "./components/LoadingSpinner";
+import MouseTracker from "./components/MouseTracker";
 
 // Pages
 import HomePage from "./pages/HomePage";
@@ -57,14 +60,19 @@ RedirectAuthenticatedUser.propTypes = {
 };
 
 function App() {
-  const { checkAuth } = useAuthStore();
+//   const { checkAuth,isCheckingAuth } = useAuthStore();
 
-  useEffect(() => {
-    checkAuth(); // Check authentication status on app load
-  }, [checkAuth]);
+//   useEffect(() => {
+//     checkAuth(); // Check authentication status on app load
+//   }, [checkAuth]);
+  
+//   if (isCheckingAuth) {
+//     return <LoadingSpinner/>; 
+// }
 
   return (
     <Router>
+       <MouseTracker />
       <Navbar /> {/* Navbar is used here */}
       <Routes>
         <Route path="/" element={<HomePage />} />
@@ -72,7 +80,7 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignUpPage />} />
         <Route path="/skills" element={<SkillsPage />} />
-        <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/profile" element={  <ProfilePage />} />
         <Route path="/contact" element={<Contact />} />
 
         <Route

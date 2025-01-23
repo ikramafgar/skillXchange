@@ -6,6 +6,7 @@ import cors from 'cors';
 import connectDB from './config/db.js'; // Import database connection
 import authRoutes from './routes/auth.js'; // Import auth routes
 import session from 'express-session'; // Add this import
+import profileRoutes from './routes/profileRoutes.js'; // Add this import
 
 // Configure environment variables
 config();
@@ -16,9 +17,9 @@ import './config/passport.js';
 const app = express();
 
 // Middleware
+app.use(cookieParser()); // Parse cookies
 app.use(express.json()); // Built-in middleware for parsing JSON
 // app.use(cors()); // Enable Cross-Origin Resource Sharing
-app.use(cookieParser()); // Parse cookies
 app.use(session({
   secret: process.env.SESSION_SECRET || 'your-secret-key',
   resave: false,
@@ -30,7 +31,7 @@ app.use(session({
 }));
 app.use(
   cors({
-    origin: "http://localhost:5173", // or your frontend URL
+    origin: "http://localhost:5173",
     credentials: true,
   })
 );
@@ -48,6 +49,7 @@ app.get('/', (req, res) => {
 });
 
 app.use('/api/auth', authRoutes); // Use auth routes
+app.use('/api/profile', profileRoutes);
 
 // Start Server
 const PORT = process.env.PORT || 5000;

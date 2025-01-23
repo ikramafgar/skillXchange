@@ -1,6 +1,5 @@
 import { create } from "zustand";
 import axios from "axios";
-
 const API_URL = import.meta.env.MODE === "development" ? "http://localhost:5000/api/auth" : "/api/auth";
 
 axios.defaults.withCredentials = true;
@@ -14,12 +13,12 @@ export const useAuthStore = create((set) => ({
 	message: null,
 	token: null,
 
+
 	signup: async (name, email, password) => {
 		set({ isLoading: true, error: null });
 		try {
 			const response = await axios.post(`${API_URL}/signup`, { name, email, password });
-			set({ user: response.data.user, isAuthenticated: true, isLoading: false });
-			console.log(response.data);
+			set({ message: response.data.message, isLoading: false });
 		} catch (error) {
 			set({ error: error.response.data.message || "Error signing up", isLoading: false });
 			throw error;
@@ -29,6 +28,7 @@ export const useAuthStore = create((set) => ({
 		set({ isLoading: true, error: null });
 		try {
 			const response = await axios.post(`${API_URL}/login`, { email, password });
+		
 			set({
 				isAuthenticated: true,
 				user: response.data.user,
@@ -47,6 +47,7 @@ export const useAuthStore = create((set) => ({
 		try {
 			await axios.post(`${API_URL}/logout`);
 			set({ user: null, isAuthenticated: false, error: null, isLoading: false, token: null });
+			window.location.href = "/";
 		} catch (error) {
 			set({ error: "Error logging out", isLoading: false });
 			throw error;
@@ -66,18 +67,23 @@ export const useAuthStore = create((set) => ({
 	checkAuth: async () => {
 		set({ isCheckingAuth: true, error: null });
 		try {
-			const response = await axios.get(`${API_URL}/check-auth`);
-			set({ 
-				user: response.data.user, 
-				isAuthenticated: true, 
-				token: response.data.token,
-				isCheckingAuth: false 
-			});
-		} catch (error) {
-			console.log(error)
-			set({ error: null, isCheckingAuth: false, isAuthenticated: false, token: null });
+		  const response = await axios.get(`${API_URL}/check-auth`);
+		  set({
+			user: response.data.user,
+			isAuthenticated: true,
+			token: response.data.token, // Optional, if needed
+			isCheckingAuth: false,
+		  });
+		} catch  {
+		  set({
+			isAuthenticated: false,
+			user: null,
+			token: null,
+			isCheckingAuth: false,
+		  });
 		}
-	},
+	  },
+	
 	forgotPassword: async (email) => {
 		set({ isLoading: true, error: null });
 		try {

@@ -16,13 +16,12 @@ export const verifyToken = (req, res, next) => {
         message: "Token is not valid",
       });
     }
-    req.userId = decoded.userId;
+    req.userId = decoded.id; 
     next();
   } catch (error) {
     return res.status(500).json({
       success: false,
       message: "Server error",
     });
-
   }
 };

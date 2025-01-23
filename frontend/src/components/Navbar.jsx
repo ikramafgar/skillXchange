@@ -10,18 +10,23 @@ import {
   Info,
   MessageCircle,
   KeyRound,
-} from "lucide-react"; // Added icons
-import { useAuthStore } from "../store/authStore"; // Import the authStore
+} from "lucide-react"; 
+import { useAuthStore } from "../store/authStore"; 
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const { scrollY } = useScroll();
-  const { isAuthenticated, logout } = useAuthStore((state) => state);
+  const { isAuthenticated, logout, checkAuth } = useAuthStore((state) => state);
+  console.log("isAuthenticated:", isAuthenticated);
 
   useEffect(() => {
     return scrollY.on("change", () => setIsScrolled(scrollY.get() > 20));
   }, [scrollY]);
+  
+useEffect(() => {
+    checkAuth();
+} , [checkAuth]);
 
   const navItemsBeforeLogin = [
     { name: "Home", href: "/", icon: <Home className="w-4 h-4" /> },
