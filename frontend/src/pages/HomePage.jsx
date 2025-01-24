@@ -1,5 +1,3 @@
-/* eslint-disable no-unused-vars */
-import React from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom"; // Corrected import for Link
 import Footer from "../components/Footer";
@@ -83,13 +81,13 @@ function HomePage() {
             className="text-center lg:text-left lg:w-1/2"
             variants={textVariants}
           >
-            <h1 className="text-5xl md:text-5xl font-extrabold text-gray-800 leading-tight tracking-normal">
+            <h1 className="text-5xl md:text-6xl tracking-tighter font-extrabold text-gray-800 leading-tight">
               Unlock New Skills with{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">
+              <span className="text-transparent tracking-tighter bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">
                 SkillXChange.
               </span>
             </h1>
-            <p className="mt-6 text-2xl md:text-3xl text-gray-700 mb-6 font-bold leading-relaxed">
+            <p className="mt-6 text-2xl md:text-3xl tracking-tighter text-gray-700 mb-6 font-bold leading-relaxed">
               Join a community where skills are shared, learned, and exchanged.
               Grow your expertise and help others succeed.
             </p>

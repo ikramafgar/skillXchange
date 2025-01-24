@@ -2,14 +2,16 @@ import { useState, useEffect } from "react";
 import { motion, useScroll } from "framer-motion";
 import {
   Menu,
+  LogOut,
   X,
   Layers,
-  Cpu,
+  UserRoundPen,
   Send,
   Home,
   Info,
-  MessageCircle,
+  MessageSquare ,
   KeyRound,
+  LayoutDashboard
 } from "lucide-react"; 
 import { useAuthStore } from "../store/authStore"; 
 
@@ -40,18 +42,18 @@ useEffect(() => {
   ];
 
   const navItemsAfterLogin = [
-    { name: "Home", href: "/", icon: <Home className="w-4 h-4" /> },
+    { name: "DashBoard", href: "/dashboard", icon: <LayoutDashboard className="w-4 h-4" /> },
     { name: "Skills", href: "/skills", icon: <Layers className="w-4 h-4" /> },
-    { name: "Profile", href: "/profile", icon: <Cpu className="w-4 h-4" /> },
+    { name: "Profile", href: "/profile", icon: < UserRoundPen className="w-4 h-4" /> },
     {
-      name: "Messages",
+      name: "Chat Box",
       href: "/messages",
-      icon: <MessageCircle className="w-4 h-4" />,
+      icon: < MessageSquare  className="w-4 h-4" />,
     },
     {
       name: "Logout",
       href: "/",
-      icon: <X className="w-4 h-4" />,
+      icon: < LogOut className="w-4 h-4" />,
       onClick: (e) => {
         e.preventDefault();
         logout();
