@@ -24,7 +24,7 @@ import DashboardPage from "./pages/DashboardPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import EmailVerificationPage from "./pages/EmailVerificationPage";
-
+import HelpPage from "./pages/HelpPage";
 // Protect routes that require authentication
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, user } = useAuthStore();
@@ -82,6 +82,7 @@ function App() {
         <Route path="/skills" element={<SkillsPage />} />
         <Route path="/profile" element={  <ProfilePage />} />
         <Route path="/contact" element={<Contact />} />
+        <Route path="/help" element={<HelpPage />} />
 
         <Route
           path="/dashboard"
