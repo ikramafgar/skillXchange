@@ -117,6 +117,49 @@ const ProfilePage = () => {
           {/* Form or Display Mode */}
           {editMode ? (
             <form onSubmit={handleSubmit} className="w-full space-y-4">
+              {/* Role selection at the top */}
+              <div>
+                <label className="flex items-center gap-2 text-gray-600 font-medium">
+                  <UserCheck size={18} className="text-gray-500" /> Role
+                </label>
+                <select
+                  name="role"
+                  value={formData.role}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-2 border bg-gray-100 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
+                >
+                  <option value="teacher">Teacher</option>
+                  <option value="learner">Learner</option>
+                  <option value="both">Both</option>
+                </select>
+              </div>
+              {(formData.role === 'teacher' || formData.role === 'both') && (
+                <>
+                  <div>
+                    <label className="flex items-center gap-2 text-gray-600 font-medium">
+                      <Camera size={18} className="text-gray-500" /> Upload Certificates
+                    </label>
+                    <input
+                      type="file"
+                      name="certificates"
+                      onChange={handleProfilePicChange}
+                      className="w-full px-4 py-2 border bg-gray-100 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
+                      multiple
+                    />
+                  </div>
+                  <div>
+                    <label className="flex items-center gap-2 text-gray-600 font-medium">
+                      <Camera size={18} className="text-gray-500" /> Upload Experience Certificate
+                    </label>
+                    <input
+                      type="file"
+                      name="experienceCertificate"
+                      onChange={handleProfilePicChange}
+                      className="w-full px-4 py-2 border bg-gray-100 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
+                    />
+                  </div>
+                </>
+              )}
               {/* Editable fields */}
               <div>
                 <label className="flex items-center gap-2 text-gray-600 font-medium">
@@ -132,35 +175,39 @@ const ProfilePage = () => {
                 ></textarea>
               </div>
               {/* Skills to Learn */}
-              <div>
-                <label className="flex items-center gap-2 text-gray-600 font-medium">
-                  <Book size={18} className="text-gray-500" /> Skills to Learn
-                </label>
-                <input
-                  type="text"
-                  name="skillsToLearn"
-                  value={formData.skillsToLearn}
-                  onChange={handleInputChange}
-                  placeholder="E.g., React, Tailwind CSS"
-                  className="w-full px-4 py-2 border bg-gray-100 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
-                />
-              </div>
+              {formData.role === 'learner' && (
+                <div>
+                  <label className="flex items-center gap-2 text-gray-600 font-medium">
+                    <Book size={18} className="text-gray-500" /> Skills to Learn
+                  </label>
+                  <input
+                    type="text"
+                    name="skillsToLearn"
+                    value={formData.skillsToLearn}
+                    onChange={handleInputChange}
+                    placeholder="E.g., React, Tailwind CSS"
+                    className="w-full px-4 py-2 border bg-gray-100 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
+                  />
+                </div>
+              )}
 
               {/* Skills to Teach */}
-              <div>
-                <label className="flex items-center gap-2 text-gray-600 font-medium">
-                  <Lightbulb size={18} className="text-gray-500" /> Skills to
-                  Teach
-                </label>
-                <input
-                  type="text"
-                  name="skillsToTeach"
-                  value={formData.skillsToTeach}
-                  onChange={handleInputChange}
-                  placeholder="E.g., Node.js, Python"
-                  className="w-full px-4 py-2 border bg-gray-100 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
-                />
-              </div>
+              {(formData.role === 'teacher' || formData.role === 'both') && (
+                <div>
+                  <label className="flex items-center gap-2 text-gray-600 font-medium">
+                    <Lightbulb size={18} className="text-gray-500" /> Skills to
+                    Teach
+                  </label>
+                  <input
+                    type="text"
+                    name="skillsToTeach"
+                    value={formData.skillsToTeach}
+                    onChange={handleInputChange}
+                    placeholder="E.g., Node.js, Python"
+                    className="w-full px-4 py-2 border bg-gray-100 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
+                  />
+                </div>
+              )}
 
               {/* Skill Level */}
               <div>
@@ -263,19 +310,31 @@ const ProfilePage = () => {
                 <p className="text-gray-600">{formData.bio || "N/A"}</p>
               </div>
 
-              <div className="flex items-center gap-2">
-                <Book size={18} className="text-gray-500" />
-                <p className="text-gray-600">
-                  {formData.skillsToLearn || "N/A"}
-                </p>
-              </div>
+              {formData.role === 'learner' && (
+                <div className="flex items-center gap-2">
+                  <Book size={18} className="text-gray-500" />
+                  <p className="text-gray-600">
+                    {formData.skillsToLearn || "N/A"}
+                  </p>
+                </div>
+              )}
 
-              <div className="flex items-center gap-2">
-                <Lightbulb size={18} className="text-gray-500" />
-                <p className="text-gray-600">
-                  {formData.skillsToTeach || "N/A"}
-                </p>
-              </div>
+              {(formData.role === 'teacher' || formData.role === 'both') && (
+                <>
+                  <div className="flex items-center gap-2">
+                    <Lightbulb size={18} className="text-gray-500" />
+                    <p className="text-gray-600">
+                      {formData.skillsToTeach || "N/A"}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <UserCheck size={18} className="text-gray-500" />
+                    <p className="text-gray-600">
+                      Verification Status: {formData.verificationStatus || "N/A"}
+                    </p>
+                  </div>
+                </>
+              )}
 
               <div className="flex items-center gap-2">
                 <Star size={18} className="text-gray-500" />

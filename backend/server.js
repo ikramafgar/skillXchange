@@ -18,8 +18,8 @@ const app = express();
 
 // Middleware
 app.use(cookieParser()); // Parse cookies
-app.use(express.json()); // Built-in middleware for parsing JSON
-// app.use(cors()); // Enable Cross-Origin Resource Sharing
+app.use(express.json({ limit: '50mb' })); // Increase payload size limit
+app.use(express.urlencoded({ limit: '50mb', extended: true })); // Increase payload size limit for URL-encoded data
 app.use(session({
   secret: process.env.SESSION_SECRET || 'your-secret-key',
   resave: false,
@@ -50,6 +50,13 @@ app.get('/', (req, res) => {
 
 app.use('/api/auth', authRoutes); // Use auth routes
 app.use('/api/profile', profileRoutes);
+
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error('Server error:', err);
+  res.status(500).json({ message: 'Server error', error: err.message });
+});
 
 // Start Server
 const PORT = process.env.PORT || 5000;

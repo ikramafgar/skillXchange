@@ -1,4 +1,3 @@
-// import  { useEffect } from "react";
 import {
   BrowserRouter as Router,
   Route,
@@ -10,7 +9,6 @@ import { useAuthStore } from "./store/authStore";
 
 import Navbar from "./components/Navbar"; // Navbar component
 import Contact from "./components/ContactUs";
-// import LoadingSpinner from "./components/LoadingSpinner";
 import MouseTracker from "./components/MouseTracker";
 
 // Pages
@@ -60,16 +58,6 @@ RedirectAuthenticatedUser.propTypes = {
 };
 
 function App() {
-//   const { checkAuth,isCheckingAuth } = useAuthStore();
-
-//   useEffect(() => {
-//     checkAuth(); // Check authentication status on app load
-//   }, [checkAuth]);
-  
-//   if (isCheckingAuth) {
-//     return <LoadingSpinner/>; 
-// }
-
   return (
     <Router>
        <MouseTracker />
@@ -80,21 +68,11 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignUpPage />} />
         <Route path="/skills" element={<SkillsPage />} />
-        <Route path="/profile" element={  <ProfilePage />} />
+        <Route path="/profile" element={<ProfilePage />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/help" element={<HelpPage />} />
-
-        <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute>
-              <DashboardPage />
-            </ProtectedRoute>
-          }
-        />
-
+        <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/verify-email" element={<EmailVerificationPage />} />
-
         <Route
           path="/forgot-password"
           element={
@@ -103,7 +81,6 @@ function App() {
             </RedirectAuthenticatedUser>
           }
         />
-
         <Route
           path="/reset-password/:token"
           element={

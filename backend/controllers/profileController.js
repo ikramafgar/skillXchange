@@ -1,4 +1,4 @@
-import User  from '../models/User.js';
+import User from '../models/User.js';
 
 export const getProfile = async (req, res) => {
   try {
@@ -8,18 +8,39 @@ export const getProfile = async (req, res) => {
     }
     res.json(user);
   } catch (error) {
+    console.error('Error fetching profile:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
 
 export const updateProfile = async (req, res) => {
   try {
-    const user = await User.findByIdAndUpdate(req.user.id, req.body, { new: true });
+    const { role, sessionsTaught, points, badges, ...updateData } = req.body;
+    const user = await User.findByIdAndUpdate(req.user.id, { ...updateData, role }, { new: true });
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
+    if (req.files && req.files.certificates) {
+      user.certificates = req.files.certificates.map(file => file.path);
+      user.verificationStatus = 'pending'; // Set status to pending on certificate upload
+    }
+    if (req.files && req.files.experienceCertificate) {
+      user.experienceCertificate = req.files.experienceCertificate[0].path;
+      user.verificationStatus = 'pending'; // Set status to pending on experience certificate upload
+    }
+    if (sessionsTaught !== undefined) {
+      user.sessionsTaught = sessionsTaught;
+    }
+    if (points !== undefined) {
+      user.points = points;
+    }
+    if (badges) {
+      user.badges = badges;
+    }
+    await user.save();
     res.json(user);
   } catch (error) {
+    console.error('Error updating profile:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
@@ -39,6 +60,7 @@ export const updateProfilePicture = async (req, res) => {
     }
     res.json(user);
   } catch (error) {
+    console.error('Error updating profile picture:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };

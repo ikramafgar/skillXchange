@@ -20,7 +20,7 @@ const userSchema = new mongoose.Schema(
       required: true,
     },
     bio: { type: String },
-    skillsToLearn: { type: String},
+    skillsToLearn: { type: String },
     skillsToTeach: { type: String },
     profilePic: { type: String },
     skillLevel: { type: String },
@@ -28,6 +28,11 @@ const userSchema = new mongoose.Schema(
     phone: { type: String },
     github: { type: String },
     linkedin: { type: String },
+    role: {
+      type: String,
+      enum: ['teacher', 'learner', 'both'],
+      default: 'learner',
+    },
     lastLogin: {
       type: Date,
       default: Date.now,
@@ -40,6 +45,27 @@ const userSchema = new mongoose.Schema(
     resetPasswordExpiresAt: Date,
     verificationToken: String,
     verificationTokenExpiresAt: Date,
+    verificationStatus: {
+      type: String,
+      enum: ['pending', 'approved', 'rejected'],
+      default: 'pending',
+    },
+    certificates: [{ type: String }], // Array to store certificate file paths
+
+    sessionsTaught: {
+      type: Number,
+      default: 0,
+    },
+    points: {
+      type: Number,
+      default: 0,
+    },
+    badges: [{ type: String }], // Array to store badges
+    coursesEnrolled: {
+      type: Number,
+      default: 0,
+    },
+    achievements: [{ type: String }], // Array to store achievements
   },
   { timestamps: true }
 );

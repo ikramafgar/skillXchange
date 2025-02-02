@@ -7,6 +7,12 @@ const initialState = {
     profile: null,
     isLoading: false,
     error: null,
+    role: null, // Add role to initial state
+    sessionsTaught: 0, // Add sessionsTaught to initial state
+    points: 0, // Add points to initial state
+    badges: [], // Add badges to initial state
+    coursesEnrolled: 0, // Add coursesEnrolled to initial state
+    achievements: [], // Add achievements to initial state
 };
 
 const actions = (set) => ({
@@ -16,7 +22,7 @@ const actions = (set) => ({
             const response = await axios.get(`${API_URL}/profile`, {
                 withCredentials: true, // Include credentials (cookies) in the request
             });
-            set({ profile: response.data, isLoading: false });
+            set({ profile: response.data, role: response.data.role, isLoading: false });
         } catch (error) {
             set({ error: error.response ? error.response.data.message : error.message, isLoading: false });
         }
@@ -41,6 +47,10 @@ const actions = (set) => ({
 
   toggleEditMode: () => {
       set((state) => ({ editMode: !state.editMode })); // Action to toggle editMode
+  },
+
+  setRole: (role) => {
+      set({ role }); // Action to set role
   },
 });
 
