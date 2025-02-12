@@ -7,6 +7,7 @@ import connectDB from './config/db.js'; // Import database connection
 import authRoutes from './routes/auth.js'; // Import auth routes
 import session from 'express-session'; // Add this import
 import profileRoutes from './routes/profileRoutes.js'; // Add this import
+import userRoutes from './routes/userRoutes.js'; // Add this import
 
 // Configure environment variables
 config();
@@ -50,7 +51,7 @@ app.get('/', (req, res) => {
 
 app.use('/api/auth', authRoutes); // Use auth routes
 app.use('/api/profile', profileRoutes);
-
+app.use(userRoutes); // Use user routes
 
 // Error handling middleware
 app.use((err, req, res, next) => {

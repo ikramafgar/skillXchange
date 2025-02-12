@@ -37,7 +37,7 @@ function LoginPage() {
     try {
       await login(email, password);
       toast.success("Login Successful!", { position: "top-center" });
-      navigate("/profile");
+      navigate("/dashboard");
       // Redirect user or perform any other actions after successful login
     } catch (error) {
       const errorMessage =

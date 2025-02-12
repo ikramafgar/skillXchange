@@ -9,7 +9,7 @@ import { useAuthStore } from "./store/authStore";
 
 import Navbar from "./components/Navbar"; // Navbar component
 import Contact from "./components/ContactUs";
-import MouseTracker from "./components/MouseTracker";
+// import MouseTracker from "./components/MouseTracker";
 
 // Pages
 import HomePage from "./pages/HomePage";
@@ -18,6 +18,7 @@ import LoginPage from "./pages/LoginPage";
 import SignUpPage from "./pages/SignUpPage";
 import SkillsPage from "./pages/SkillsPage";
 import ProfilePage from "./pages/ProfilePage";
+import UserProfilePage from "./pages/UserProfilePage"; // New Profile Page
 import DashboardPage from "./pages/DashboardPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
@@ -60,7 +61,7 @@ RedirectAuthenticatedUser.propTypes = {
 function App() {
   return (
     <Router>
-       <MouseTracker />
+       {/* <MouseTracker /> */}
       <Navbar /> {/* Navbar is used here */}
       <Routes>
         <Route path="/" element={<HomePage />} />
@@ -69,6 +70,7 @@ function App() {
         <Route path="/signup" element={<SignUpPage />} />
         <Route path="/skills" element={<SkillsPage />} />
         <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/profile/:userId" element={<UserProfilePage />} /> {/* New Profile Page */}
         <Route path="/contact" element={<Contact />} />
         <Route path="/help" element={<HelpPage />} />
         <Route path="/dashboard" element={<DashboardPage />} />

@@ -9,26 +9,35 @@ import {
   Send,
   Home,
   Info,
-  MessageSquare ,
+  MessageSquare,
   KeyRound,
   LayoutDashboard
-} from "lucide-react"; 
-import { useAuthStore } from "../store/authStore"; 
+} from "lucide-react";
+import { useAuthStore } from "../store/authStore";
+import { useNavigate } from "react-router-dom";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const { scrollY } = useScroll();
   const { isAuthenticated, logout, checkAuth } = useAuthStore((state) => state);
-  console.log("isAuthenticated:", isAuthenticated);
+  const navigate = useNavigate();
 
   useEffect(() => {
     return scrollY.on("change", () => setIsScrolled(scrollY.get() > 20));
   }, [scrollY]);
-  
-useEffect(() => {
+
+  useEffect(() => {
     checkAuth();
-} , [checkAuth]);
+  }, [checkAuth]);
+
+  const handleLogoClick = () => {
+    if (isAuthenticated) {
+      navigate('/skills');
+    } else {
+      navigate('/');
+    }
+  };
 
   const navItemsBeforeLogin = [
     { name: "Home", href: "/", icon: <Home className="w-4 h-4" /> },
@@ -44,16 +53,16 @@ useEffect(() => {
   const navItemsAfterLogin = [
     { name: "DashBoard", href: "/dashboard", icon: <LayoutDashboard className="w-4 h-4" /> },
     { name: "Skills", href: "/skills", icon: <Layers className="w-4 h-4" /> },
-    { name: "Profile", href: "/profile", icon: < UserRoundPen className="w-4 h-4" /> },
+    { name: "Profile", href: "/profile", icon: <UserRoundPen className="w-4 h-4" /> },
     {
       name: "Chat Box",
       href: "/messages",
-      icon: < MessageSquare  className="w-4 h-4" />,
+      icon: <MessageSquare className="w-4 h-4" />,
     },
     {
       name: "Logout",
       href: "/",
-      icon: < LogOut className="w-4 h-4" />,
+      icon: <LogOut className="w-4 h-4" />,
       onClick: (e) => {
         e.preventDefault();
         logout();
@@ -67,20 +76,16 @@ useEffect(() => {
     <motion.nav
       initial={{ y: -100 }}
       animate={{ y: 0 }}
-      className={`fixed w-full z-50 transition-all duration-300 ${
-        isScrolled ? "bg-white/60 backdrop-blur-lg shadow-lg" : "bg-transparent"
-      }`}
+      className={`fixed w-full z-50 transition-all duration-300 ${isScrolled ? "bg-white/60 backdrop-blur-lg shadow-lg" : "bg-transparent"}`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 lg:px-24">
         <div className="flex items-center justify-between h-16">
           {/* Logo - Left side */}
-          <a href="/">
-            <div className="flex items-center ">
-              <h1 className="text-2xl font-bold text-gray-800">Skill</h1>
-              <img src="images/swap.svg" alt="Swap Icon" className="w-8 h-8" />
-              <h1 className="text-2xl font-bold text-gray-800">Change</h1>
-            </div>
-          </a>
+          <div className="flex items-center cursor-pointer" onClick={handleLogoClick}>
+            <h1 className="text-2xl font-bold text-gray-800">Skill</h1>
+            <img src="images/swap.svg" alt="Swap Icon" className="w-8 h-8" />
+            <h1 className="text-2xl font-bold text-gray-800">Change</h1>
+          </div>
 
           {/* Desktop Navigation - Right side */}
           <div className="hidden md:flex ml-auto items-center space-x-8">
@@ -115,9 +120,7 @@ useEffect(() => {
       {/* Mobile Navigation */}
       <motion.div
         initial={false}
-        animate={
-          isOpen ? { height: "auto", opacity: 1 } : { height: 0, opacity: 0 }
-        }
+        animate={isOpen ? { height: "auto", opacity: 1 } : { height: 0, opacity: 0 }}
         className="md:hidden overflow-hidden bg-blur"
       >
         <div className="px-2 pt-2 pb-3 space-y-1">
