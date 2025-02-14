@@ -56,7 +56,7 @@ const Navbar = () => {
     { name: "Profile", href: "/profile", icon: <UserRoundPen className="w-4 h-4" /> },
     {
       name: "Chat Box",
-      href: "/messages",
+      href: "/chat",
       icon: <MessageSquare className="w-4 h-4" />,
     },
     {
