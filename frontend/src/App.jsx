@@ -23,7 +23,6 @@ import DashboardPage from "./pages/DashboardPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import EmailVerificationPage from "./pages/EmailVerificationPage";
-import ChatPage from "./pages/ChatPage";
 import HelpPage from "./pages/HelpPage";
 // Protect routes that require authentication
 const ProtectedRoute = ({ children }) => {
@@ -76,8 +75,6 @@ function App() {
         <Route path="/help" element={<HelpPage />} />
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/verify-email" element={<EmailVerificationPage />} />
-        <Route path="/chat" element={<ChatPage />} />
-        <Route path="/chat/:userId" element={<ChatPage />} /> {/* New Chat Page */}
         <Route
           path="/forgot-password"
           element={
