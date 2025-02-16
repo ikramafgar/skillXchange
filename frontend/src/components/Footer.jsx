@@ -11,7 +11,7 @@ function Footer() {
             <a href="/">
               <div className="  flex justify-center items-center">
                 <h1 className="text-2xl font-bold text-gray-100">Skill</h1>
-                <img src="images/swap.svg" alt="Swap Icon" className="w-8 h-8" />
+                <img src="images/logos.png" alt="Swap Icon" className="w-8 h-8 rounded-full" />
                 <h1 className="text-2xl font-bold text-gray-100">Change</h1>
               </div>
             </a>

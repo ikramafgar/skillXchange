@@ -83,7 +83,7 @@ const Navbar = () => {
           {/* Logo - Left side */}
           <div className="flex items-center cursor-pointer" onClick={handleLogoClick}>
             <h1 className="text-2xl font-bold text-gray-800">Skill</h1>
-            <img src="images/swap.svg" alt="Swap Icon" className="w-8 h-8" />
+            <img src="images/logo.png" alt="Swap Icon" className="w-8 h-8" />
             <h1 className="text-2xl font-bold text-gray-800">Change</h1>
           </div>
 
