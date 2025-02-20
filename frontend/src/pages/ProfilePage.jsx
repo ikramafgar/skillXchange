@@ -84,36 +84,14 @@ const ProfilePage = () => {
     <div className="relative min-h-screen bg-gray-50 flex items-center justify-center px-4 overflow-hidden">
       {/* Overlay Effects */}
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-20 left-10 w-96 h-96 bg-yellow-400 opacity-40 blur-3xl rounded-full"></div>
+        <div className="absolute top-20 left-10 w-96 h-96 bg-yellow-300 opacity-20 blur-3xl rounded-full"></div>
         <div className="absolute bottom-10 right-10 w-80 h-80 bg-blue-400 opacity-30 blur-2xl rounded-full"></div>
       </div>
 
       <div className="p-6 w-full max-w-2xl mt-10">
         <ToastContainer />
-        <h1 className="text-2xl font-semibold text-center text-gray-700 mb-6">
-          Welcome, {formData.name || "User"}!
-        </h1>
-
+        
         <div className="flex flex-col items-center">
-          {/* Profile Picture */}
-          <div className="relative mb-6">
-            <img
-              src={formData.profilePic || "/default-profile-pic.jpg"}
-              alt="Profile"
-              className="w-32 h-32 rounded-full border-4 border-gray-300 object-cover"
-            />
-            {editMode && (
-              <label className="absolute bottom-0 right-0 bg-blue-500 text-white p-2 rounded-full cursor-pointer hover:bg-blue-600">
-                <input
-                  type="file"
-                  className="hidden"
-                  onChange={handleProfilePicChange}
-                />
-                <Camera size={18} />
-              </label>
-            )}
-          </div>
-
           {/* Form or Display Mode */}
           {editMode ? (
             <form onSubmit={handleSubmit} className="w-full space-y-4">
@@ -303,85 +281,137 @@ const ProfilePage = () => {
               </button>
             </form>
           ) : (
-            <div className="w-full space-y-4">
-              {/* Display fields */}
-              <div className="flex items-center gap-2">
-                <UserCheck size={18} className="text-gray-500" />
-                <p className="text-gray-600">{formData.bio || "N/A"}</p>
-              </div>
-
-              {formData.role === 'learner' && (
-                <div className="flex items-center gap-2">
-                  <Book size={18} className="text-gray-500" />
-                  <p className="text-gray-600">
-                    {formData.skillsToLearn || "N/A"}
-                  </p>
+            <div className="w-full bg-white rounded-2xl shadow-xl overflow-hidden">
+              {/* Main Profile Content */}
+              <div className="p-6">
+                {/* Profile Header */}
+                <div className="flex flex-col sm:flex-row gap-6 items-start mb-8">
+                  <div className="relative">
+                    <img
+                      src={formData.profilePic || "/default-profile-pic.jpg"}
+                      alt="Profile"
+                      className="w-24 h-24 sm:w-32 sm:h-32 rounded-full border-4 border-gray-100 object-cover shadow-lg"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-2">
+                      <div>
+                        <h2 className="text-2xl font-bold text-gray-800">{formData.name || "User"}</h2>
+                        <p className="text-gray-600">{formData.role ? formData.role.charAt(0).toUpperCase() + formData.role.slice(1) : "N/A"}</p>
+                        <p className="text-gray-500 flex items-center gap-1 mt-1">
+                          <MapPin size={14} className="text-gray-400" />
+                          {formData.location || "N/A"}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => setEditMode(true)}
+                        className="bg-indigo-500 text-white px-4 py-2 rounded-lg hover:bg-indigo-600 transition duration-200 shadow-md flex items-center gap-2 w-full sm:w-auto justify-center"
+                      >
+                        <Edit size={16} />
+                        Edit Profile
+                      </button>
+                    </div>
+                  </div>
                 </div>
-              )}
 
-              {(formData.role === 'teacher' || formData.role === 'both') && (
-                <>
-                  <div className="flex items-center gap-2">
-                    <Lightbulb size={18} className="text-gray-500" />
-                    <p className="text-gray-600">
-                      {formData.skillsToTeach || "N/A"}
-                    </p>
+                {/* Bio Section */}
+                <div className="bg-gray-50 rounded-xl p-4 mb-6">
+                  <p className="text-gray-700 leading-relaxed">{formData.bio || "No bio added yet"}</p>
+                </div>
+
+                {/* Stats Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+                  <div className="bg-gray-50 rounded-xl p-4 text-center">
+                    <p className="text-2xl font-bold text-indigo-500">{formData.skillLevel || "N/A"}</p>
+                    <p className="text-gray-600 text-sm">Skill Level</p>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <UserCheck size={18} className="text-gray-500" />
-                    <p className="text-gray-600">
-                      Verification Status: {formData.verificationStatus || "N/A"}
+                  <div className="bg-gray-50 rounded-xl p-4 text-center">
+                    <p className="text-2xl font-bold text-indigo-500">
+                      {formData.role === 'teacher' || formData.role === 'both' ? 'Teacher' : 'Learner'}
                     </p>
+                    <p className="text-gray-600 text-sm">Role</p>
                   </div>
-                </>
-              )}
+                  <div className="bg-gray-50 rounded-xl p-4 text-center">
+                    <p className="text-2xl font-bold text-indigo-500">
+                      {formData.verificationStatus || "Pending"}
+                    </p>
+                    <p className="text-gray-600 text-sm">Status</p>
+                  </div>
+                </div>
 
-              <div className="flex items-center gap-2">
-                <Star size={18} className="text-gray-500" />
-                <p className="text-gray-600">{formData.skillLevel || "N/A"}</p>
-              </div>
-              <div className="flex items-center gap-2">
-                <Mail size={18} className="text-gray-500" />
-                <p className="text-gray-600">{formData.email || "N/A"}</p>
-              </div>
+                {/* Skills Section */}
+                <div className="space-y-6">
+                  {formData.role === 'learner' && (
+                    <div className="bg-gray-50 rounded-xl p-4">
+                      <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                        <Book size={18} className="text-indigo-500" />
+                        Skills to Learn
+                      </h3>
+                      <div className="flex flex-wrap gap-2">
+                        {(formData.skillsToLearn || "").split(',').map((skill, index) => (
+                          <span key={index} className="bg-white px-3 py-1 rounded-full text-sm text-gray-700 border border-gray-200">
+                            {skill.trim()}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
-              <div className="flex items-center gap-2">
-                <Phone size={18} className="text-gray-500" />
-                <p className="text-gray-600">{formData.phone || "N/A"}</p>
-              </div>
+                  {(formData.role === 'teacher' || formData.role === 'both') && (
+                    <div className="bg-gray-50 rounded-xl p-4">
+                      <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                        <Lightbulb size={18} className="text-indigo-500" />
+                        Skills to Teach
+                      </h3>
+                      <div className="flex flex-wrap gap-2">
+                        {(formData.skillsToTeach || "").split(',').map((skill, index) => (
+                          <span key={index} className="bg-white px-3 py-1 rounded-full text-sm text-gray-700 border border-gray-200">
+                            {skill.trim()}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
 
-              <div className="flex items-center gap-2">
-                <MapPin size={18} className="text-gray-500" />
-                <p className="text-gray-600">{formData.location || "N/A"}</p>
-              </div>
+                {/* Contact Information */}
+                <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <a href={`mailto:${formData.email}`} className="flex items-center gap-2 bg-gray-50 rounded-xl p-4 hover:bg-gray-100 transition-colors">
+                    <Mail size={18} className="text-indigo-500 flex-shrink-0" />
+                    <span className="text-gray-700 truncate">{formData.email || "N/A"}</span>
+                  </a>
+                  <a href={`tel:${formData.phone}`} className="flex items-center gap-2 bg-gray-50 rounded-xl p-4 hover:bg-gray-100 transition-colors">
+                    <Phone size={18} className="text-indigo-500 flex-shrink-0" />
+                    <span className="text-gray-700 truncate">{formData.phone || "N/A"}</span>
+                  </a>
+                </div>
 
-              <div className="flex items-center gap-2">
-                <Github size={18} className="text-gray-500" />
-                <a
-                  href={formData.github || "#"}
-                  className="text-blue-500 hover:underline"
-                >
-                  {formData.github || "N/A"}
-                </a>
+                {/* Social Links */}
+                <div className="mt-6 flex flex-wrap gap-4">
+                  {formData.github && (
+                    <a
+                      href={formData.github}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="bg-gray-800 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-gray-900 transition-colors"
+                    >
+                      <Github size={18} />
+                      GitHub
+                    </a>
+                  )}
+                  {formData.linkedin && (
+                    <a
+                      href={formData.linkedin}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700 transition-colors"
+                    >
+                      <Linkedin size={18} />
+                      LinkedIn
+                    </a>
+                  )}
+                </div>
               </div>
-
-              <div className="flex items-center gap-2">
-                <Linkedin size={18} className="text-gray-500" />
-                <a
-                  href={formData.linkedin || "#"}
-                  className="text-blue-500 hover:underline"
-                >
-                  {formData.linkedin || "N/A"}
-                </a>
-              </div>
-
-              <button
-                onClick={() => setEditMode(true)}
-                className="w-full bg-indigo-500 text-white py-2 rounded-lg hover:bg-indigo-600 transition duration-200 shadow-md"
-              >
-                <Edit className="w-4 h-4 mr-2 inline-block" />
-                Edit Profile
-              </button>
             </div>
           )}
         </div>
