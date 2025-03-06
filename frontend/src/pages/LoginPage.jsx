@@ -3,11 +3,12 @@ import { useNavigate, Link } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useAuthStore } from "../store/authStore";
+import { Loader } from "lucide-react";
 
 function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const { login, googleLogin } = useAuthStore();
+  const { login, googleLogin,isLoading } = useAuthStore();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -33,15 +34,19 @@ function LoginPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    if (!email || !password) {
+      toast.error("Please fill in all fields", { position: "top-center" });
+      return;
+    }
 
     try {
       await login(email, password);
       toast.success("Login Successful!", { position: "top-center" });
       navigate("/dashboard");
-      // Redirect user or perform any other actions after successful login
     } catch (error) {
-      const errorMessage =
-        error.response?.data?.message || "Login failed. Please try again.";
+      console.error("Login failed:", error);
+      const errorMessage = error.response?.data?.message || "Login failed. Please try again.";
       toast.error(errorMessage, { position: "top-center" });
     }
   };
@@ -139,9 +144,15 @@ function LoginPage() {
           {/* Login Button */}
           <button
             type="submit"
-            className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition duration-200 shadow-md"
+            disabled={isLoading}
+            className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition duration-200 shadow-md flex items-center justify-center  focus:outline-none  focus:ring-offset-2 focus:ring-offset-gray-900"
           >
-            Login
+            {isLoading ? (
+                <Loader className="size-6 animate-spin mx-auto" />
+              ) 
+            : (
+              "Login"
+            )}
           </button>
         </form>
 

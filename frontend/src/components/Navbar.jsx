@@ -14,7 +14,7 @@ import {
   LayoutDashboard
 } from "lucide-react";
 import { useAuthStore } from "../store/authStore";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -22,6 +22,7 @@ const Navbar = () => {
   const { scrollY } = useScroll();
   const { isAuthenticated, logout, checkAuth } = useAuthStore((state) => state);
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     return scrollY.on("change", () => setIsScrolled(scrollY.get() > 20));
@@ -43,22 +44,14 @@ const Navbar = () => {
     { name: "Home", href: "/", icon: <Home className="w-4 h-4" /> },
     { name: "About", href: "/about", icon: <Info className="w-4 h-4" /> },
     { name: "Contact", href: "/contact", icon: <Send className="w-4 h-4" /> },
-    {
-      name: "Login",
-      href: "/login",
-      icon: <KeyRound className="w-4 h-4" />,
-    },
+    { name: "Login", href: "/login", icon: <KeyRound className="w-4 h-4" /> },
   ];
 
   const navItemsAfterLogin = [
     { name: "DashBoard", href: "/dashboard", icon: <LayoutDashboard className="w-4 h-4" /> },
     { name: "Skills", href: "/skills", icon: <Layers className="w-4 h-4" /> },
     { name: "Profile", href: "/profile", icon: <UserRoundPen className="w-4 h-4" /> },
-    {
-      name: "Chat Box",
-      href: "/chat",
-      icon: <MessageSquare className="w-4 h-4" />,
-    },
+    { name: "Chat Box", href: "/chat", icon: <MessageSquare className="w-4 h-4" /> },
     {
       name: "Logout",
       href: "/",
@@ -70,6 +63,7 @@ const Navbar = () => {
     },
   ];
 
+  // Use the last known authentication state during loading
   const navigationItems = isAuthenticated ? navItemsAfterLogin : navItemsBeforeLogin;
 
   return (
@@ -90,17 +84,29 @@ const Navbar = () => {
           {/* Desktop Navigation - Right side */}
           <div className="hidden md:flex ml-auto items-center space-x-8">
             {navigationItems.map((item) => (
-              <motion.a
+              <Link
                 key={item.name}
-                href={item.href}
+                to={item.href}
                 onClick={item.onClick}
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.95 }}
-                className="flex items-center gap-2 text-gray-700 font-bold hover:text-violet-400 transition-colors"
+                className={`flex items-center gap-2 text-gray-700 font-bold hover:text-violet-400 transition-colors relative group`}
               >
-                {item.icon}
-                <span>{item.name}</span>
-              </motion.a>
+                <motion.div
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="flex items-center gap-2"
+                >
+                  {item.icon}
+                  <span>{item.name}</span>
+                </motion.div>
+                {/* Modern underline effect */}
+                <span
+                  className={`absolute -bottom-1 left-0 h-1 bg-violet-400 rounded-full transition-all duration-300 ${
+                    location.pathname === item.href 
+                      ? 'w-full opacity-100' 
+                      : 'w-0 opacity-0 group-hover:w-1/2 group-hover:opacity-100'
+                  }`}
+                />
+              </Link>
             ))}
           </div>
 
@@ -121,20 +127,32 @@ const Navbar = () => {
       <motion.div
         initial={false}
         animate={isOpen ? { height: "auto", opacity: 1 } : { height: 0, opacity: 0 }}
-        className="md:hidden overflow-hidden bg-blur"
+        className={`md:hidden overflow-hidden ${
+          isOpen 
+            ? 'bg-white/60 backdrop-blur-md border border-white/20 shadow-lg' 
+            : 'bg-transparent'
+        }`}
       >
         <div className="px-2 pt-2 pb-3 space-y-1">
           {navigationItems.map((item) => (
-            <motion.a
+            <Link
               key={item.name}
-              href={item.href}
-              onClick={item.onClick}
-              whileTap={{ scale: 0.95 }}
-              className=" items-center gap-2 text-gray-700 hover:text-violet-400 block px-3 py-2"
+              to={item.href}
+              onClick={(e) => {
+                if (item.onClick) item.onClick(e);
+                setIsOpen(false);
+              }}
+              className={`flex items-center gap-2 text-gray-700 hover:text-violet-400 px-3 py-2 rounded-md
+                ${location.pathname === item.href ? 'bg-violet-400/20 text-violet-600' : ''}`}
             >
-              {item.icon}
-              <span>{item.name}</span>
-            </motion.a>
+              <motion.div
+                whileTap={{ scale: 0.95 }}
+                className="flex items-center gap-2"
+              >
+                {item.icon}
+                <span>{item.name}</span>
+              </motion.div>
+            </Link>
           ))}
         </div>
       </motion.div>
