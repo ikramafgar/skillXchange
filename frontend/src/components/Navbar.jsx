@@ -2,16 +2,13 @@ import { useState, useEffect } from "react";
 import { motion, useScroll } from "framer-motion";
 import {
   Menu,
-  LogOut,
   X,
   Layers,
-  UserRoundPen,
-  Send,
   Home,
   Info,
-  MessageSquare,
+  Send,
   KeyRound,
-  LayoutDashboard
+  LayoutDashboard,
 } from "lucide-react";
 import { useAuthStore } from "../store/authStore";
 import { useNavigate, useLocation, Link } from "react-router-dom";
@@ -48,19 +45,8 @@ const Navbar = () => {
   ];
 
   const navItemsAfterLogin = [
-    { name: "DashBoard", href: "/dashboard", icon: <LayoutDashboard className="w-4 h-4" /> },
+    { name: "Dashboard", href: "/dashboard", icon: <LayoutDashboard className="w-4 h-4" /> },
     { name: "Skills", href: "/skills", icon: <Layers className="w-4 h-4" /> },
-    { name: "Profile", href: "/profile", icon: <UserRoundPen className="w-4 h-4" /> },
-    { name: "Chat Box", href: "/chat", icon: <MessageSquare className="w-4 h-4" /> },
-    {
-      name: "Logout",
-      href: "/",
-      icon: <LogOut className="w-4 h-4" />,
-      onClick: (e) => {
-        e.preventDefault();
-        logout();
-      },
-    },
   ];
 
   // Use the last known authentication state during loading

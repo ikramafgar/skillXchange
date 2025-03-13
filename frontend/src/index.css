@@ -1,3 +1,15 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Custom styles */
+.notification-dropdown {
+  position: fixed !important;
+  z-index: 9999 !important;
+}
+
+/* Ensure notifications are always visible */
+.notifications-container {
+  position: relative;
+  z-index: 100;
+}

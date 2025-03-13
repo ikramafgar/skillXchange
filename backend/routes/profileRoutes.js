@@ -1,18 +1,25 @@
 import express from 'express';
 import { getProfile, updateProfile, updateProfilePicture } from '../controllers/profileController.js';
-import authenticateToken from '../middleware/authenticateToken.js';
+import { verifyToken } from '../middleware/verifyToken.js';
 import { upload } from '../middleware/multerMiddleware.js';
+import { validateSkills } from '../middleware/skillValidation.js';
+import User from '../models/User.js';
 
 const router = express.Router();
 
-router.get('/', authenticateToken, getProfile);
-router.put('/', authenticateToken, upload.fields([
+// Get user profile
+router.get('/me', verifyToken, getProfile);
+
+// Update user profile
+router.put('/update', verifyToken, validateSkills, upload.fields([
   { name: 'certificates', maxCount: 5 },
   { name: 'experienceCertificate', maxCount: 1 }
 ]), updateProfile);
-router.put('/picture', authenticateToken, upload.single('profilePicture'), updateProfilePicture);
 
-router.put('/verify/:id', authenticateToken, async (req, res) => {
+// Update profile picture
+router.put('/update-picture', verifyToken, upload.single('profilePicture'), updateProfilePicture);
+
+router.put('/verify/:id', verifyToken, async (req, res) => {
   try {
     const { status } = req.body;
     const user = await User.findByIdAndUpdate(req.params.id, { verificationStatus: status }, { new: true });

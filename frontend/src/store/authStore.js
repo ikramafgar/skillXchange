@@ -1,8 +1,5 @@
 import { create } from "zustand";
-import axios from "axios";
-const API_URL = import.meta.env.MODE === "development" ? "http://localhost:5000/api/auth" : "/api/auth";
-
-axios.defaults.withCredentials = true;
+import customAxios from "../utils/axios";
 
 export const useAuthStore = create((set) => ({
 	user: null,
@@ -17,27 +14,28 @@ export const useAuthStore = create((set) => ({
 	signup: async (name, email, password) => {
 		set({ isLoading: true, error: null });
 		try {
-			const response = await axios.post(`${API_URL}/signup`, { name, email, password });
+			const response = await customAxios.post(`/api/auth/signup`, { name, email, password });
 			set({ message: response.data.message, isLoading: false });
 		} catch (error) {
-			set({ error: error.response.data.message || "Error signing up", isLoading: false });
+			set({ error: error.response?.data?.message || "Error signing up", isLoading: false });
 			throw error;
 		}
 	},
 	login: async (email, password) => {
 		set({ isLoading: true, error: null });
 		try {
-			const response = await axios.post(`${API_URL}/login`, { email, password });
-		
-			set({
-				isAuthenticated: true,
-				user: response.data.user,
-				token: response.data.token,
-				error: null,
+			const response = await customAxios.post(`/api/auth/login`, { email, password });
+			set({ 
+				user: response.data.user, 
+				isAuthenticated: true, 
 				isLoading: false,
+				error: null
 			});
 		} catch (error) {
-			set({ error: error.response?.data?.message || "Error logging in", isLoading: false });
+			set({ 
+				error: error.response?.data?.message || "Error logging in", 
+				isLoading: false 
+			});
 			throw error;
 		}
 	},
@@ -45,7 +43,7 @@ export const useAuthStore = create((set) => ({
 	logout: async () => {
 		set({ isLoading: true, error: null });
 		try {
-			await axios.post(`${API_URL}/logout`);
+			await customAxios.post(`/api/auth/logout`);
 			set({ user: null, isAuthenticated: false, error: null, isLoading: false, token: null });
 			window.location.href = "/";
 		} catch (error) {
@@ -56,7 +54,7 @@ export const useAuthStore = create((set) => ({
 	verifyEmail: async (code) => {
 		set({ isLoading: true, error: null });
 		try {
-			const response = await axios.post(`${API_URL}/verify-email`, { code });
+			const response = await customAxios.post(`/api/auth/verify-email`, { code });
 			set({ user: response.data.user, isAuthenticated: true, isLoading: false });
 			return response.data;
 		} catch (error) {
@@ -67,7 +65,7 @@ export const useAuthStore = create((set) => ({
 	checkAuth: async () => {
 		set({ isCheckingAuth: true, error: null });
 		try {
-		  const response = await axios.get(`${API_URL}/check-auth`);
+		  const response = await customAxios.get(`/api/auth/check-auth`);
 		  set({
 			user: response.data.user,
 			isAuthenticated: true,
@@ -87,7 +85,7 @@ export const useAuthStore = create((set) => ({
 	forgotPassword: async (email) => {
 		set({ isLoading: true, error: null });
 		try {
-			const response = await axios.post(`${API_URL}/forgot-password`, { email });
+			const response = await customAxios.post(`/api/auth/forgot-password`, { email });
 			set({ message: response.data.message, isLoading: false });
 		} catch (error) {
 			set({
@@ -100,7 +98,7 @@ export const useAuthStore = create((set) => ({
 	resetPassword: async (token, password) => {
 		set({ isLoading: true, error: null });
 		try {
-			const response = await axios.post(`${API_URL}/reset-password/${token}`, { password });
+			const response = await customAxios.post(`/api/auth/reset-password/${token}`, { password });
 			set({ message: response.data.message, isLoading: false });
 		} catch (error) {
 			set({
@@ -113,7 +111,7 @@ export const useAuthStore = create((set) => ({
 	googleLogin: async (credential) => {
 		set({ isLoading: true, error: null });
 		try {
-			const response = await axios.post(`${API_URL}/google-login`, { credential });
+			const response = await customAxios.post(`/api/auth/google-login`, { credential });
 			set({
 				isAuthenticated: true,
 				user: response.data.user,

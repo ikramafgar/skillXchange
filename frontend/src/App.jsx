@@ -6,6 +6,9 @@ import {
 } from "react-router-dom";
 import PropTypes from "prop-types"; // Import PropTypes
 import { useAuthStore } from "./store/authStore";
+import { useEffect } from "react";
+import { authenticateSocket } from "./socket";
+import { Toaster } from "react-hot-toast"; // Import Toaster component
 
 import Navbar from "./components/Navbar"; // Navbar component
 import Contact from "./components/ContactUs";
@@ -24,6 +27,7 @@ import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import EmailVerificationPage from "./pages/EmailVerificationPage";
 import HelpPage from "./pages/HelpPage";
+// import Notifications from "./components/Notifications";
 // Protect routes that require authentication
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, user } = useAuthStore();
@@ -59,10 +63,26 @@ RedirectAuthenticatedUser.propTypes = {
 };
 
 function App() {
+  const { isAuthenticated, user, checkAuth } = useAuthStore();
+
+  // Check authentication status when app loads
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
+
+  // Initialize socket connection when user is authenticated
+  useEffect(() => {
+    if (isAuthenticated && user?._id) {
+      authenticateSocket(user._id);
+    }
+  }, [isAuthenticated, user]);
+
   return (
     <Router>
        {/* <MouseTracker /> */}
       <Navbar /> {/* Navbar is used here */}
+      {/* Add Toaster component for toast notifications */}
+      <Toaster position="top-right" toastOptions={{ duration: 4000 }} />
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/about" element={<AboutPage />} />

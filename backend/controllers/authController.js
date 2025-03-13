@@ -9,7 +9,7 @@ import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import { generateVerificationCode } from "../utils/generateVerificationCode.js";
 import { generateTokenAndSetCookie } from "../utils/generateTokenAndSetCookie.js";
-
+import { processSkillsArray } from "../utils/skillUtils.js";
 
 export const signup = async (req, res) => {
   console.log("Request Body:", req.body);
@@ -23,16 +23,24 @@ export const signup = async (req, res) => {
     if (userAlreadyExists) {
       return res.status(400).json({ message: "User already exists" });
     }
+    
     const hashedPassword = await bcrypt.hash(password, 10);
     const verificationToken = generateVerificationCode();
-    const user = new User({
+    
+    // Create user with minimal required fields
+    const userData = {
       name,
       email,
       password: hashedPassword,
       verificationToken,
       verificationTokenExpiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
-    });
+      skillsToLearn: [], // Empty array by default - will be set up during profile setup
+      skillsToTeach: []  // Empty array by default - will be set up during profile setup
+    };
+    
+    const user = new User(userData);
     await user.save();
+    
     // jwt
     generateTokenAndSetCookie(user._id, res);
     await sendVerificationEmail(user.email, verificationToken);
@@ -45,6 +53,7 @@ export const signup = async (req, res) => {
       },
     });
   } catch (error) {
+    console.error("Signup error:", error);
     return res.status(400).json({ message: error.message });
   }
 };
