@@ -1,6 +1,8 @@
 import { ToastContainer, toast } from "react-toastify";
 import { useEffect, useState, useRef } from "react";
 import { useProfileStore } from "../store/ProfileStore";
+import { useAuthStore } from "../store/authStore";
+import { useNavigate } from "react-router-dom";
 import LoadingSpinner from "../components/LoadingSpinner";
 import AcceptedConnections from "../components/AcceptedConnections";
 import {
@@ -34,15 +36,28 @@ const ProfilePage = () => {
     setEditMode,
   } = useProfileStore();
 
+  const { isAuthenticated, isCheckingAuth, checkAuth } = useAuthStore();
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState({});
   const [previewImage, setPreviewImage] = useState(null);
   const [profilePicFile, setProfilePicFile] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef(null);
 
-  // Fetch profile data on component mount
+  // Check authentication status
   useEffect(() => {
-    fetchProfile();
-  }, [fetchProfile]);
+    checkAuth();
+  }, [checkAuth]);
+
+  // Fetch profile data when authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchProfile();
+    } else if (!isCheckingAuth) {
+      navigate('/login');
+    }
+  }, [isAuthenticated, isCheckingAuth, fetchProfile, navigate]);
 
   // Update local form data when profile changes
   useEffect(() => {
@@ -85,15 +100,77 @@ const ProfilePage = () => {
   // Handle form field changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    
+    // Special handling for role changes
+    if (name === 'role') {
+      // Create updated form data with the new role
+      const updatedFormData = { ...formData, [name]: value };
+      
+      // If changing to a role that doesn't need skillLevel, we can keep it but don't need to show it
+      // If changing to a role that doesn't need certain skills, we preserve them in case user switches back
+      
+      setFormData(updatedFormData);
+      
+      // Log the role change
+      console.log(`Role changed to: ${value}`);
+    } else {
+      // Regular field update
+      setFormData({ ...formData, [name]: value });
+    }
+  };
+
+  // Handle profile picture upload
+  const handleProfilePicChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      try {
+        // Validate file
+        if (file.size > 5 * 1024 * 1024) {
+          toast.error("File size exceeds 5MB limit", { position: "top-center" });
+          return;
+        }
+        
+        if (!file.type.startsWith('image/')) {
+          toast.error("Only image files are allowed", { position: "top-center" });
+          return;
+        }
+        
+        // Store the file for upload later when form is submitted
+        setProfilePicFile(file);
+        
+        // Create a preview URL
+        const reader = new FileReader();
+        reader.onload = () => {
+          setPreviewImage(reader.result);
+        };
+        reader.readAsDataURL(file);
+        
+        // Show toast notification
+        toast.info("Profile picture selected. Click 'Save Changes' to upload.", { position: "top-center" });
+      } catch (error) {
+        toast.error(`Error: ${error.message}`, { position: "top-center" });
+      }
+    }
+  };
+
+  // Trigger file input click
+  const handleUploadClick = () => {
+    fileInputRef.current.click();
   };
 
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Set submitting state to show loading indicator
+    setIsSubmitting(true);
+    
     try {
+      // Store current role to ensure it's preserved throughout all uploads
+      const currentRole = formData.role;
+      console.log('Current role before uploads:', currentRole);
+      
       // Create a simplified copy of the form data for submission
-      // Only include fields that we know the backend can handle
       const submissionData = {
         name: formData.name,
         email: formData.email,
@@ -102,9 +179,13 @@ const ProfilePage = () => {
         location: formData.location,
         github: formData.github,
         linkedin: formData.linkedin,
-        role: formData.role,
-        skillLevel: formData.skillLevel
+        role: currentRole
       };
+      
+      // Only include skillLevel for learners
+      if (currentRole === 'learner') {
+        submissionData.skillLevel = formData.skillLevel || 'Beginner';
+      }
       
       // Handle skills to learn
       if (formData.role === 'learner' || formData.role === 'both') {
@@ -152,8 +233,101 @@ const ProfilePage = () => {
       
       console.log('Submitting profile data:', submissionData);
       
-      // Update the profile and get the updated data
-      const updatedProfile = await updateProfile(submissionData);
+      // First, update the basic profile information
+      let updatedProfile = await updateProfile(submissionData);
+      console.log('Basic profile updated:', updatedProfile);
+      
+      // Then handle file uploads one by one, preserving the role each time
+      
+      // 1. Upload profile picture if a new one was selected
+      if (profilePicFile) {
+        toast.info("Uploading profile picture...", { position: "top-center" });
+        
+        try {
+          const profilePicResponse = await updateProfilePicture(profilePicFile);
+          
+          // Make sure the role is preserved
+          if (profilePicResponse && profilePicResponse.role !== currentRole) {
+            console.log(`Role changed from ${currentRole} to ${profilePicResponse.role}. Fixing...`);
+            // Update the profile again with the correct role if needed
+            await updateProfile({ role: currentRole });
+          }
+          
+          // Update our local state with the new profile picture URL
+          updatedProfile = {
+            ...updatedProfile,
+            profilePic: profilePicResponse.profilePic
+          };
+          
+          toast.success("Profile picture uploaded successfully!", { position: "top-center" });
+        } catch (error) {
+          toast.error(`Failed to upload profile picture: ${error.message}`, { position: "top-center" });
+          // Continue with other updates even if profile picture upload fails
+        }
+      }
+      
+      // 2. Upload certificates if any were selected
+      if (formData.certificateFiles && formData.certificateFiles.length > 0) {
+        toast.info(`Uploading ${formData.certificateFiles.length} certificate(s)...`, { position: "top-center" });
+        
+        try {
+          const certificatesResponse = await uploadCertificates(formData.certificateFiles);
+          
+          // Make sure the role is preserved
+          if (certificatesResponse && certificatesResponse.role !== currentRole) {
+            console.log(`Role changed from ${currentRole} to ${certificatesResponse.role}. Fixing...`);
+            // Update the profile again with the correct role if needed
+            await updateProfile({ role: currentRole });
+          }
+          
+          // Update our local state with the new certificates
+          updatedProfile = {
+            ...updatedProfile,
+            certificates: certificatesResponse.certificates
+          };
+          
+          toast.success("Certificates uploaded successfully!", { position: "top-center" });
+        } catch (error) {
+          toast.error(`Failed to upload certificates: ${error.message}`, { position: "top-center" });
+          // Continue with other updates even if certificate upload fails
+        }
+      }
+      
+      // 3. Upload experience certificate if one was selected
+      if (formData.experienceCertificateFile) {
+        toast.info("Uploading experience certificate...", { position: "top-center" });
+        
+        try {
+          const expCertResponse = await uploadExperienceCertificate(formData.experienceCertificateFile);
+          
+          // Make sure the role is preserved
+          if (expCertResponse && expCertResponse.role !== currentRole) {
+            console.log(`Role changed from ${currentRole} to ${expCertResponse.role}. Fixing...`);
+            // Update the profile again with the correct role if needed
+            await updateProfile({ role: currentRole });
+          }
+          
+          // Update our local state with the new verified skills
+          updatedProfile = {
+            ...updatedProfile,
+            verifiedSkills: expCertResponse.verifiedSkills
+          };
+          
+          toast.success("Experience certificate uploaded successfully!", { position: "top-center" });
+        } catch (error) {
+          toast.error(`Failed to upload experience certificate: ${error.message}`, { position: "top-center" });
+          // Continue with other updates even if experience certificate upload fails
+        }
+      }
+      
+      // 4. Finally, fetch the latest profile data to ensure everything is in sync
+      try {
+        const finalProfile = await fetchProfile();
+        updatedProfile = finalProfile;
+      } catch (error) {
+        console.error("Error fetching updated profile:", error);
+        // Continue with what we have if fetch fails
+      }
       
       // The backend should now return the populated skill data
       if (updatedProfile) {
@@ -185,51 +359,60 @@ const ProfilePage = () => {
             .join(', ');
         }
         
-        // Update the form data with the new display data
-        setFormData(newDisplayData);
+        // Update the form data with the new display data but remove the file references
+        // since they've been uploaded
+        const { certificateFiles, experienceCertificateFile, ...cleanedData } = newDisplayData;
+        setFormData(cleanedData);
       }
       
+      // Reset states
+      setProfilePicFile(null);
+      setIsSubmitting(false);
       setEditMode(false); // Exit edit mode
+      
       toast.success("Profile updated successfully!", {
         position: "top-center",
       });
     } catch (error) {
       console.error("Error updating profile:", error);
+      setIsSubmitting(false);
       toast.error(`Error updating profile: ${error.message || 'Please try again.'}`, {
         position: "top-center",
       });
     }
   };
 
-  // Handle profile picture upload
-  const handleProfilePicChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      // Store the file for upload
-      setProfilePicFile(file);
-      
-      // Create a preview URL
-      const reader = new FileReader();
-      reader.onload = () => {
-        setPreviewImage(reader.result);
-      };
-      reader.readAsDataURL(file);
-      
-      // Upload the profile picture
-      updateProfilePicture(file);
-    }
-  };
-
-  // Trigger file input click
-  const handleUploadClick = () => {
-    fileInputRef.current.click();
-  };
-
   // Handle certificate uploads
   const handleCertificatesChange = (e) => {
     const files = e.target.files;
     if (files && files.length > 0) {
-      uploadCertificates(files);
+      try {
+        // Validate files
+        for (let i = 0; i < files.length; i++) {
+          const file = files[i];
+          
+          if (file.size > 5 * 1024 * 1024) {
+            toast.error(`File ${file.name} exceeds 5MB limit`, { position: "top-center" });
+            return;
+          }
+          
+          if (!file.type.startsWith('image/') && file.type !== 'application/pdf') {
+            toast.error(`File ${file.name} is not an image or PDF`, { position: "top-center" });
+            return;
+          }
+        }
+        
+        // Store the files for upload later when form is submitted
+        setFormData({
+          ...formData,
+          certificateFiles: files
+        });
+        
+        // Show toast notification
+        toast.info(`${files.length} certificate(s) selected. Click 'Save Changes' to upload.`, { position: "top-center" });
+      } catch (error) {
+        toast.error(`Error: ${error.message}`, { position: "top-center" });
+      }
     }
   };
 
@@ -237,13 +420,55 @@ const ProfilePage = () => {
   const handleExperienceCertificateChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      uploadExperienceCertificate(file);
+      try {
+        // Validate file
+        if (file.size > 5 * 1024 * 1024) {
+          toast.error("File size exceeds 5MB limit", { position: "top-center" });
+          return;
+        }
+        
+        if (!file.type.startsWith('image/') && file.type !== 'application/pdf') {
+          toast.error("Only image or PDF files are allowed", { position: "top-center" });
+          return;
+        }
+        
+        // Store the file for upload later when form is submitted
+        setFormData({
+          ...formData,
+          experienceCertificateFile: file
+        });
+        
+        // Show toast notification
+        toast.info("Experience certificate selected. Click 'Save Changes' to upload.", { position: "top-center" });
+      } catch (error) {
+        toast.error(`Error: ${error.message}`, { position: "top-center" });
+      }
     }
   };
 
   // Loading and error states
   if (isLoading) return <LoadingSpinner />;
-  if (error) return <div className="text-center text-red-500">{error}</div>;
+  if (error) return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="bg-white p-8 rounded-lg shadow-md max-w-md w-full">
+        <div className="text-center text-red-500 mb-4">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mx-auto text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+          <h2 className="text-xl font-bold mt-2">Error Loading Profile</h2>
+        </div>
+        <p className="text-gray-700 mb-4">{error}</p>
+        <div className="text-center">
+          <button 
+            onClick={() => fetchProfile()} 
+            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    </div>
+  );
   if (!profile) return null;
 
   return (
@@ -266,11 +491,20 @@ const ProfilePage = () => {
                 <div className="relative group">
                   <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-gray-100 shadow-lg mb-3">
                     {previewImage ? (
-                      <img 
-                        src={previewImage} 
-                        alt="Profile Preview" 
-                        className="w-full h-full object-cover"
-                      />
+                      <div className="relative w-full h-full">
+                        <img 
+                          src={previewImage} 
+                          alt="Profile Preview" 
+                          className="w-full h-full object-cover"
+                        />
+                        {profilePicFile && (
+                          <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center">
+                            <span className="text-white text-xs font-medium px-2 py-1 bg-blue-500 rounded-full">
+                              Pending Upload
+                            </span>
+                          </div>
+                        )}
+                      </div>
                     ) : (
                       <div className="w-full h-full bg-gray-200 flex items-center justify-center">
                         <User size={48} className="text-gray-400" />
@@ -292,7 +526,7 @@ const ProfilePage = () => {
                     className="hidden"
                   />
                 </div>
-                <p className="text-sm text-gray-500 mt-2">Click the camera icon to upload a profile picture</p>
+                <p className="text-sm text-gray-500 mt-2">Click the camera icon to select a profile picture</p>
               </div>
 
               {/* Role selection at the top */}
@@ -317,24 +551,44 @@ const ProfilePage = () => {
                     <label className="flex items-center gap-2 text-gray-600 font-medium">
                       <Upload size={18} className="text-gray-500" /> Upload Certificates
                     </label>
-                    <input
-                      type="file"
-                      name="certificates"
-                      className="w-full px-4 py-2 border bg-gray-100 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
-                      multiple
-                      onChange={handleCertificatesChange}
-                    />
+                    <div className="relative">
+                      <input
+                        type="file"
+                        name="certificates"
+                        className="w-full px-4 py-2 border bg-gray-100 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
+                        multiple
+                        onChange={handleCertificatesChange}
+                      />
+                      {formData.certificateFiles && formData.certificateFiles.length > 0 && (
+                        <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded-lg">
+                          <p className="text-sm text-blue-700 flex items-center">
+                            <Upload size={16} className="mr-2" />
+                            {formData.certificateFiles.length} file(s) selected - Will be uploaded when you save
+                          </p>
+                        </div>
+                      )}
+                    </div>
                   </div>
                   <div>
                     <label className="flex items-center gap-2 text-gray-600 font-medium">
                       <Upload size={18} className="text-gray-500" /> Upload Experience Certificate
                     </label>
-                    <input
-                      type="file"
-                      name="experienceCertificate"
-                      className="w-full px-4 py-2 border bg-gray-100 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
-                      onChange={handleExperienceCertificateChange}
-                    />
+                    <div className="relative">
+                      <input
+                        type="file"
+                        name="experienceCertificate"
+                        className="w-full px-4 py-2 border bg-gray-100 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
+                        onChange={handleExperienceCertificateChange}
+                      />
+                      {formData.experienceCertificateFile && (
+                        <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded-lg">
+                          <p className="text-sm text-blue-700 flex items-center">
+                            <Upload size={16} className="mr-2" />
+                            {formData.experienceCertificateFile.name} - Will be uploaded when you save
+                          </p>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </>
               )}
@@ -353,7 +607,7 @@ const ProfilePage = () => {
                 ></textarea>
               </div>
               {/* Skills to Learn */}
-              {formData.role === 'learner' && (
+              {(formData.role === 'learner' || formData.role === 'both') && (
                 <div>
                   <label className="flex items-center gap-2 text-gray-600 font-medium">
                     <Book size={18} className="text-gray-500" /> Skills to Learn
@@ -387,22 +641,24 @@ const ProfilePage = () => {
                 </div>
               )}
 
-              {/* Skill Level */}
-              <div>
-                <label className="flex items-center gap-2 text-gray-600 font-medium">
-                  <Star size={18} className="text-gray-500" /> Skill Level
-                </label>
-                <select
-                  name="skillLevel"
-                  value={formData.skillLevel}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-2 border bg-gray-100 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
-                >
-                  <option value="Beginner">Beginner</option>
-                  <option value="Intermediate">Intermediate</option>
-                  <option value="Advanced">Advanced</option>
-                </select>
-              </div>
+              {/* Skill Level - Only show for learner role */}
+              {formData.role === 'learner' && (
+                <div>
+                  <label className="flex items-center gap-2 text-gray-600 font-medium">
+                    <Star size={18} className="text-gray-500" /> Skill Level
+                  </label>
+                  <select
+                    name="skillLevel"
+                    value={formData.skillLevel}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-2 border bg-gray-100 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
+                  >
+                    <option value="Beginner">Beginner</option>
+                    <option value="Intermediate">Intermediate</option>
+                    <option value="Advanced">Advanced</option>
+                  </select>
+                </div>
+              )}
 
               <div>
                 <label className="flex items-center gap-2 text-gray-600 font-medium">
@@ -475,9 +731,20 @@ const ProfilePage = () => {
 
               <button
                 type="submit"
-                className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition duration-200 shadow-md"
+                disabled={isSubmitting}
+                className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition duration-200 shadow-md flex items-center justify-center"
               >
-                Save Changes
+                {isSubmitting ? (
+                  <>
+                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Saving...
+                  </>
+                ) : (
+                  'Save Changes'
+                )}
               </button>
             </form>
           ) : (
@@ -518,9 +785,12 @@ const ProfilePage = () => {
                       <span className="px-3 py-1 bg-indigo-100 text-indigo-600 rounded-full text-xs font-medium">
                         {formData.role ? formData.role.charAt(0).toUpperCase() + formData.role.slice(1) : "N/A"}
                       </span>
-                      <span className="px-3 py-1 bg-blue-100 text-blue-600 rounded-full text-xs font-medium">
-                        {formData.skillLevel || "Beginner"}
-                      </span>
+                      {/* Only show skill level for learners */}
+                      {formData.role === 'learner' && (
+                        <span className="px-3 py-1 bg-blue-100 text-blue-600 rounded-full text-xs font-medium">
+                          {formData.skillLevel || "Beginner"}
+                        </span>
+                      )}
                       <span className="px-3 py-1 bg-green-100 text-green-600 rounded-full text-xs font-medium">
                         {formData.verificationStatus || "Pending"}
                       </span>
@@ -547,7 +817,7 @@ const ProfilePage = () => {
                 <div className="space-y-8 mb-8">
                   <h3 className="text-xl font-semibold text-gray-800 border-b border-gray-200 pb-2">Skills & Expertise</h3>
                   
-                  {/* Skills to Learn Section */}
+                  {/* Skills to Learn Section - Only show for learner or both roles */}
                   {(formData.role === 'learner' || formData.role === 'both') && (
                     <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-6 shadow-sm border border-blue-100">
                       <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
@@ -594,7 +864,7 @@ const ProfilePage = () => {
                     </div>
                   )}
 
-                  {/* Skills to Teach Section */}
+                  {/* Skills to Teach Section - Only show for teacher or both roles */}
                   {(formData.role === 'teacher' || formData.role === 'both') && (
                     <div className="bg-gradient-to-br from-green-50 to-teal-50 rounded-xl p-6 shadow-sm border border-green-100">
                       <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">

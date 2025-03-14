@@ -9,6 +9,13 @@ import { processSkillsArray } from '../utils/skillUtils.js';
 export const validateSkills = async (req, res, next) => {
   try {
     console.log('Validating skills with request body:', JSON.stringify(req.body));
+    console.log('Files present:', req.files ? Object.keys(req.files) : 'No files');
+    
+    // If this is a file upload without other form data, just continue
+    if (req.files && Object.keys(req.body).length === 0) {
+      console.log('File upload detected without form data, skipping skill validation');
+      return next();
+    }
     
     const { skillsToLearn, skillsToTeach } = req.body;
     

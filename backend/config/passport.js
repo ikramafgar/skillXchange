@@ -1,6 +1,7 @@
 import passport from 'passport';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import User  from '../models/User.js';
+import Profile from '../models/Profile.js';
 
 
 // Serialize user to store in session
@@ -39,6 +40,32 @@ passport.use(
             email: profile.emails[0].value,
             isVerified: true // Google accounts are already verified
           });
+          
+          // Create a profile for the Google user
+          const userProfile = new Profile({
+            user: user._id,
+            // Default empty values for profile fields
+            skillsToLearn: [],
+            skillsToTeach: []
+          });
+          await userProfile.save();
+          
+          // Link the profile to the user
+          user.profile = userProfile._id;
+          await user.save();
+        } else {
+          // If user exists but doesn't have a profile, create one
+          if (!user.profile) {
+            const userProfile = new Profile({
+              user: user._id,
+              skillsToLearn: [],
+              skillsToTeach: []
+            });
+            await userProfile.save();
+            
+            user.profile = userProfile._id;
+            await user.save();
+          }
         }
         
         return done(null, user);

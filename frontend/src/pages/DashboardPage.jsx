@@ -30,6 +30,7 @@ function Dashboard() {
   const { logout } = useAuthStore();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
+  const [showConnectionRequests, setShowConnectionRequests] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -56,6 +57,13 @@ function Dashboard() {
   const handleLogout = () => {
     logout();
     navigate('/');
+  };
+
+  const toggleConnectionRequests = () => {
+    setShowConnectionRequests(!showConnectionRequests);
+    if (isMobile) {
+      setSidebarOpen(false);
+    }
   };
 
   if (isLoading) return <LoadingSpinner />;
@@ -167,6 +175,24 @@ function Dashboard() {
               </ul>
 
               <div className="mt-6 pt-6 border-t border-gray-100">
+                {/* Connection Requests in Sidebar */}
+                <button
+                  onClick={toggleConnectionRequests}
+                  className={`w-full px-4 py-3 rounded-lg flex items-center justify-between transition-colors ${
+                    showConnectionRequests 
+                      ? 'bg-gradient-to-r from-blue-50 to-violet-50 text-blue-600' 
+                      : 'text-gray-600 hover:bg-gray-50'
+                  }`}
+                >
+                  <div className="flex items-center">
+                    <span className={`${showConnectionRequests ? 'text-blue-600' : 'text-gray-400'}`}>
+                      <FiUsers className="w-5 h-5" />
+                    </span>
+                    <span className="ml-3 font-medium">Connection Requests</span>
+                  </div>
+                  <FiChevronRight className={`w-4 h-4 transform transition-transform ${showConnectionRequests ? 'rotate-90' : ''}`} />
+                </button>
+
                 <div className="px-4 py-3 rounded-lg flex items-center justify-between text-gray-600 hover:bg-gray-50 transition-colors relative">
                   <div className="flex items-center">
                     <span className="text-gray-400"><FiBell className="w-5 h-5" /></span>
@@ -214,6 +240,24 @@ function Dashboard() {
               </div>
             </div>
           </div>
+
+          {/* Connection Requests Section - Shown when clicked */}
+          {showConnectionRequests && (
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-8">
+              <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+                <h2 className="font-semibold text-gray-800">Connection Requests</h2>
+                <button 
+                  onClick={toggleConnectionRequests}
+                  className="text-sm text-gray-500 hover:text-gray-700"
+                >
+                  <FiX className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="p-6">
+                <ConnectionRequests inSidebar={false} />
+              </div>
+            </div>
+          )}
 
           {/* Stats Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -316,16 +360,6 @@ function Dashboard() {
                 </div>
               </div>
             )}
-          </div>
-
-          {/* Connection Requests Section */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-8">
-            <div className="px-6 py-4 border-b border-gray-100">
-              <h2 className="font-semibold text-gray-800">Connection Requests</h2>
-            </div>
-            <div className="p-6">
-              <ConnectionRequests />
-            </div>
           </div>
 
           {/* Two Column Layout */}

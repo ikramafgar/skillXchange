@@ -27,7 +27,7 @@ import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import EmailVerificationPage from "./pages/EmailVerificationPage";
 import HelpPage from "./pages/HelpPage";
-// import Notifications from "./components/Notifications";
+import AuthCallbackPage from "./pages/AuthCallbackPage"; // Import the Auth callback component
 // Protect routes that require authentication
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, user } = useAuthStore();
@@ -95,6 +95,7 @@ function App() {
         <Route path="/help" element={<HelpPage />} />
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/verify-email" element={<EmailVerificationPage />} />
+        <Route path="/auth-callback" element={<AuthCallbackPage />} /> {/* Auth callback route */}
         <Route
           path="/forgot-password"
           element={

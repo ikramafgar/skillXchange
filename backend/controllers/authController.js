@@ -1,4 +1,5 @@
 import User from "../models/User.js";
+import Profile from "../models/Profile.js";
 import {
   sendVerificationEmail,
   sendWelcomeEmail,
@@ -34,11 +35,22 @@ export const signup = async (req, res) => {
       password: hashedPassword,
       verificationToken,
       verificationTokenExpiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
-      skillsToLearn: [], // Empty array by default - will be set up during profile setup
-      skillsToTeach: []  // Empty array by default - will be set up during profile setup
     };
     
     const user = new User(userData);
+    await user.save();
+    
+    // Create a profile for the user
+    const profile = new Profile({
+      user: user._id,
+      // Default empty values for profile fields
+      skillsToLearn: [],
+      skillsToTeach: []
+    });
+    await profile.save();
+    
+    // Link the profile to the user
+    user.profile = profile._id;
     await user.save();
     
     // jwt
@@ -77,10 +89,11 @@ export const verifyEmail = async (req, res) => {
     await sendWelcomeEmail(user.email, user.name);
   } catch (error) {}
 };
+
 export const login = async (req, res) => {
   const { email, password } = req.body;
   try {
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email }).populate('profile');
     if (!user) {
       return res.status(400).json({ message: "User not found" });
     }
@@ -94,13 +107,21 @@ export const login = async (req, res) => {
     generateTokenAndSetCookie(user._id, res);
     user.lastLogin = new Date();
     await user.save();
+    
+    // Combine user and profile data
+    const userData = {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      isVerified: user.isVerified,
+      lastLogin: user.lastLogin,
+      ...(user.profile ? user.profile.toObject() : {})
+    };
+    
     res.status(200).json({
       success: true,
       message: "Login successful",
-      user: {
-        ...user._doc,
-        password: undefined,
-      },
+      user: userData
     });
   } catch (error) {
     return res.status(400).json({ message: error.message });
@@ -165,19 +186,110 @@ export const resetPassword = async (req, res) => {
 
 export const checkAuth = async (req, res) => {
   try {
-    const user = await User.findById(req.userId);
+    const user = await User.findById(req.userId).populate('profile');
     if (!user) {
       return res.status(400).json({ message: "User not found" });
     }
+    
+    // Combine user and profile data
+    const userData = {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      isVerified: user.isVerified,
+      lastLogin: user.lastLogin,
+      ...(user.profile ? user.profile.toObject() : {})
+    };
+    
     res.status(200).json({
       success: true,
       message: "User found",
-      user: {
-        ...user._doc,
-        password: undefined,
-      },
+      user: userData
     });
   } catch (error) {
     return res.status(400).json({ message: error.message });
+  }
+};
+
+export const googleLogin = async (req, res) => {
+  try {
+    const { credential } = req.body;
+    
+    if (!credential) {
+      return res.status(400).json({ message: "Google credential is required" });
+    }
+    
+    // Decode the JWT token from Google
+    const decoded = JSON.parse(Buffer.from(credential.split('.')[1], 'base64').toString());
+    
+    // Check if user exists with this email
+    let user = await User.findOne({ email: decoded.email }).populate('profile');
+    
+    if (!user) {
+      // Create a new user
+      user = new User({
+        name: decoded.name,
+        email: decoded.email,
+        googleId: decoded.sub,
+        isVerified: true // Google accounts are already verified
+      });
+      
+      // Create a profile for the user
+      const profile = new Profile({
+        user: user._id,
+        skillsToLearn: [],
+        skillsToTeach: []
+      });
+      await profile.save();
+      
+      // Link the profile to the user
+      user.profile = profile._id;
+      await user.save();
+    } else {
+      // Update the user's Google ID if not already set
+      if (!user.googleId) {
+        user.googleId = decoded.sub;
+        await user.save();
+      }
+      
+      // If user exists but doesn't have a profile, create one
+      if (!user.profile) {
+        const profile = new Profile({
+          user: user._id,
+          skillsToLearn: [],
+          skillsToTeach: []
+        });
+        await profile.save();
+        
+        user.profile = profile._id;
+        await user.save();
+      }
+    }
+    
+    // Set last login time
+    user.lastLogin = new Date();
+    await user.save();
+    
+    // Generate JWT token
+    generateTokenAndSetCookie(user._id, res);
+    
+    // Combine user and profile data
+    const userData = {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      isVerified: user.isVerified,
+      lastLogin: user.lastLogin,
+      ...(user.profile ? user.profile.toObject() : {})
+    };
+    
+    res.status(200).json({
+      success: true,
+      message: "Google login successful",
+      user: userData
+    });
+  } catch (error) {
+    console.error("Google login error:", error);
+    return res.status(400).json({ message: error.message || "Error logging in with Google" });
   }
 };
