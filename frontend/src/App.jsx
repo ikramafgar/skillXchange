@@ -118,7 +118,14 @@ function App() {
         <Route path="/profile/:userId" element={<UserProfilePage />} /> {/* New Profile Page */}
         <Route path="/contact" element={<Contact />} />
         <Route path="/help" element={<HelpPage />} />
-        <Route path="/dashboard" element={<DashboardPage />} />
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <DashboardPage />
+            </ProtectedRoute>
+          }
+        />
         <Route path="/verify-email" element={<EmailVerificationPage />} />
         <Route path="/auth-callback" element={<AuthCallbackPage />} /> {/* Auth callback route */}
         <Route

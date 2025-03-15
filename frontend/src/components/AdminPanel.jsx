@@ -16,9 +16,12 @@ import {
   ExternalLink,
   Loader2,
   AlertCircle,
-  BarChart3,
-  UserCheck
+
+  UserCheck,
+  Shield,
+  BookOpen
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const AdminPanel = () => {
   const { isAdmin } = useAuthStore();
@@ -36,7 +39,45 @@ const AdminPanel = () => {
   const [rejectionReason, setRejectionReason] = useState('');
   const [showRejectionForm, setShowRejectionForm] = useState(false);
   const [selectedTeacherId, setSelectedTeacherId] = useState(null);
-  const [activeTab, setActiveTab] = useState('verification');
+ 
+
+  const statsCards = [
+    { 
+      title: "Total Users",
+      value: stats.totalUsers,
+      icon: <Users />,
+      color: "from-blue-500 to-blue-600",
+      bgGlow: "from-blue-400/20 to-transparent"
+    },
+    { 
+      title: "Total Teachers",
+      value: stats.totalTeachers,
+      icon: <Award />,
+      color: "from-purple-500 to-purple-600",
+      bgGlow: "from-purple-400/20 to-transparent"
+    },
+    { 
+      title: "Total Learners",
+      value: stats.totalLearners,
+      icon: <BookOpen />,
+      color: "from-emerald-500 to-emerald-600",
+      bgGlow: "from-emerald-400/20 to-transparent"
+    },
+    { 
+      title: "Pending Verifications",
+      value: stats.pendingVerifications,
+      icon: <Clock />,
+      color: "from-amber-500 to-amber-600",
+      bgGlow: "from-amber-400/20 to-transparent"
+    },
+    { 
+      title: "Verified Teachers",
+      value: stats.verifiedTeachers,
+      icon: <Shield />,
+      color: "from-rose-500 to-rose-600",
+      bgGlow: "from-rose-400/20 to-transparent"
+    }
+  ];
 
   // Fetch pending teachers and stats
   useEffect(() => {
@@ -122,326 +163,282 @@ const AdminPanel = () => {
     setShowRejectionForm(true);
   };
 
-  // If not admin, don't show the panel
-  if (!isAdmin) {
-    return null;
-  }
+  if (!isAdmin) return null;
 
-  // Render loading state
   if (loading) {
     return (
-      <div className="bg-white rounded-2xl shadow-sm p-6 mb-8 border border-gray-100">
-        <div className="flex flex-col items-center justify-center h-64">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="bg-white rounded-3xl shadow-xl p-8 flex flex-col items-center"
+        >
           <Loader2 className="h-12 w-12 animate-spin text-indigo-600 mb-4" />
-          <p className="text-gray-600 font-medium">Loading admin data...</p>
-        </div>
+          <p className="text-gray-600 font-medium">Loading admin dashboard...</p>
+        </motion.div>
       </div>
     );
   }
 
-  // Render error state
   if (error) {
     return (
-      <div className="bg-white rounded-2xl shadow-sm p-6 mb-8 border border-gray-100">
-        <div className="flex flex-col items-center justify-center h-64 text-center">
-          <div className="bg-red-100 p-3 rounded-full mb-4">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white rounded-3xl shadow-xl p-8 max-w-md w-full text-center"
+        >
+          <div className="bg-red-100 p-4 rounded-full w-16 h-16 mx-auto mb-6 flex items-center justify-center">
             <AlertCircle className="h-8 w-8 text-red-600" />
           </div>
-          <h3 className="text-lg font-semibold text-gray-800 mb-2">Error Loading Data</h3>
-          <p className="text-gray-600 max-w-md">{error}</p>
+          <h3 className="text-xl font-bold text-gray-800 mb-3">Error Loading Data</h3>
+          <p className="text-gray-600 mb-6">{error}</p>
           <button 
             onClick={() => window.location.reload()} 
-            className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+            className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-indigo-700 text-white rounded-xl hover:from-indigo-700 hover:to-indigo-800 transition-all duration-300 shadow-lg hover:shadow-xl"
           >
             Retry
           </button>
-        </div>
+        </motion.div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="min-h-screen bg-gray-50 p-6 lg:p-8">
       <ToastContainer position="top-center" />
       
-      {/* Stats Cards */}
-      <div className="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
-        <div className="flex items-center mb-6">
-          <BarChart3 className="text-indigo-600 mr-3" size={20} />
-          <h2 className="text-xl font-semibold text-gray-800">Platform Statistics</h2>
-        </div>
-        
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-5 rounded-xl shadow-sm border border-blue-100 transition-transform hover:scale-105 duration-300">
-            <div className="flex flex-col">
-              <div className="bg-blue-100 p-2 rounded-lg w-fit mb-3">
-                <Users className="text-blue-600" size={20} />
-              </div>
-              <p className="text-3xl font-bold text-blue-900">{stats.totalUsers}</p>
-              <h3 className="text-sm font-medium text-blue-700 mt-1">Total Users</h3>
-            </div>
-          </div>
-          
-          <div className="bg-gradient-to-br from-green-50 to-teal-50 p-5 rounded-xl shadow-sm border border-green-100 transition-transform hover:scale-105 duration-300">
-            <div className="flex flex-col">
-              <div className="bg-green-100 p-2 rounded-lg w-fit mb-3">
-                <Award className="text-green-600" size={20} />
-              </div>
-              <p className="text-3xl font-bold text-green-900">{stats.verifiedTeachers}</p>
-              <h3 className="text-sm font-medium text-green-700 mt-1">Verified Teachers</h3>
-            </div>
-          </div>
-          
-          <div className="bg-gradient-to-br from-amber-50 to-yellow-50 p-5 rounded-xl shadow-sm border border-amber-100 transition-transform hover:scale-105 duration-300">
-            <div className="flex flex-col">
-              <div className="bg-amber-100 p-2 rounded-lg w-fit mb-3">
-                <Clock className="text-amber-600" size={20} />
-              </div>
-              <p className="text-3xl font-bold text-amber-900">{stats.pendingVerifications}</p>
-              <h3 className="text-sm font-medium text-amber-700 mt-1">Pending Verifications</h3>
-            </div>
-          </div>
-          
-          <div className="bg-gradient-to-br from-purple-50 to-fuchsia-50 p-5 rounded-xl shadow-sm border border-purple-100 transition-transform hover:scale-105 duration-300">
-            <div className="flex flex-col">
-              <div className="bg-purple-100 p-2 rounded-lg w-fit mb-3">
-                <UserCheck className="text-purple-600" size={20} />
-              </div>
-              <p className="text-3xl font-bold text-purple-900">{stats.totalTeachers || 0}</p>
-              <h3 className="text-sm font-medium text-purple-700 mt-1">Total Teachers</h3>
-            </div>
-          </div>
-          
-          <div className="bg-gradient-to-br from-rose-50 to-pink-50 p-5 rounded-xl shadow-sm border border-rose-100 transition-transform hover:scale-105 duration-300">
-            <div className="flex flex-col">
-              <div className="bg-rose-100 p-2 rounded-lg w-fit mb-3">
-                <User className="text-rose-600" size={20} />
-              </div>
-              <p className="text-3xl font-bold text-rose-900">{stats.totalLearners || 0}</p>
-              <h3 className="text-sm font-medium text-rose-700 mt-1">Total Learners</h3>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      {/* Admin Tabs */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="flex border-b border-gray-200 overflow-x-auto scrollbar-hide">
-          <button
-            onClick={() => setActiveTab('verification')}
-            className={`px-6 py-4 font-medium text-sm flex items-center whitespace-nowrap ${
-              activeTab === 'verification'
-                ? 'text-indigo-600 border-b-2 border-indigo-600'
-                : 'text-gray-500 hover:text-gray-700'
-            }`}
+      {/* Stats Grid */}
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8"
+      >
+        {statsCards.map((card, index) => (
+          <motion.div
+            key={card.title}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.1 }}
+            className="bg-white rounded-2xl shadow-lg overflow-hidden relative group hover:shadow-xl transition-all duration-300"
           >
-            <FileText size={18} className="mr-2" />
-            Teacher Verification
-            {stats.pendingVerifications > 0 && (
-              <span className="ml-2 bg-indigo-100 text-indigo-700 text-xs px-2 py-0.5 rounded-full">
-                {stats.pendingVerifications}
-              </span>
-            )}
-          </button>
-          {/* Additional tabs can be added here in the future */}
+            <div className={`absolute inset-0 bg-gradient-to-br ${card.bgGlow} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
+            <div className="p-6 relative z-10">
+              <div className={`w-12 h-12 rounded-xl bg-gradient-to-r ${card.color} flex items-center justify-center text-white mb-4 shadow-lg group-hover:scale-110 transition-transform duration-300`}>
+                {card.icon}
+              </div>
+              <h3 className="text-gray-600 font-medium mb-2">{card.title}</h3>
+              <p className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
+                {card.value}
+              </p>
+            </div>
+          </motion.div>
+        ))}
+      </motion.div>
+
+      {/* Pending Verifications Section */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-white rounded-2xl shadow-lg p-6 lg:p-8"
+      >
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-r from-violet-500 to-violet-600 flex items-center justify-center text-white">
+              <UserCheck />
+            </div>
+            <h2 className="text-xl font-bold text-gray-800">Pending Verifications</h2>
+          </div>
+          <span className="px-4 py-2 bg-violet-100 text-violet-700 rounded-xl font-medium">
+            {pendingTeachers.length} pending
+          </span>
         </div>
-        
-        <div className="p-6">
-          {activeTab === 'verification' && (
-            <div>
-              <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-                <FileText className="mr-2 text-indigo-600" size={20} />
-                Teacher Certificate Verification
-              </h3>
-              
-              {pendingTeachers.length === 0 ? (
-                <div className="bg-gray-50 p-8 rounded-xl text-center">
-                  <div className="bg-gray-100 p-3 rounded-full w-fit mx-auto mb-3">
-                    <CheckCircle className="text-gray-500" size={24} />
+
+        <div className="space-y-4">
+          {pendingTeachers.map((teacher) => (
+            <AnimatePresence key={teacher._id}>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="border border-gray-100 rounded-xl p-6 hover:shadow-lg transition-all duration-300"
+              >
+                {/* ... existing teacher verification UI with enhanced styling ... */}
+                <div key={teacher._id} className="border border-gray-200 rounded-xl overflow-hidden transition-all duration-200 hover:shadow-md">
+                  {/* Teacher Header */}
+                  <div 
+                    className={`p-4 flex justify-between items-center cursor-pointer transition-colors ${
+                      expandedTeacher === teacher._id ? 'bg-indigo-50' : 'bg-gray-50 hover:bg-gray-100'
+                    }`}
+                    onClick={() => toggleTeacherExpansion(teacher._id)}
+                  >
+                    <div className="flex items-center">
+                      <div className={`p-2 rounded-lg mr-3 ${
+                        expandedTeacher === teacher._id ? 'bg-indigo-100' : 'bg-gray-200'
+                      }`}>
+                        <User className={`${
+                          expandedTeacher === teacher._id ? 'text-indigo-600' : 'text-gray-600'
+                        }`} size={20} />
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-gray-800">
+                          {teacher.user?.name || 'Unknown Teacher'}
+                        </h4>
+                        <p className="text-sm text-gray-500">{teacher.user?.email}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center">
+                      <span className="px-3 py-1 bg-amber-100 text-amber-800 rounded-full text-xs font-medium mr-3">
+                        {teacher.role}
+                      </span>
+                      {expandedTeacher === teacher._id ? (
+                        <ChevronUp size={20} className="text-indigo-600" />
+                      ) : (
+                        <ChevronDown size={20} className="text-gray-500" />
+                      )}
+                    </div>
                   </div>
-                  <h4 className="text-lg font-medium text-gray-700 mb-1">All Caught Up!</h4>
-                  <p className="text-gray-500">No pending teacher verifications at the moment</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {pendingTeachers.map((teacher) => (
-                    <div key={teacher._id} className="border border-gray-200 rounded-xl overflow-hidden transition-all duration-200 hover:shadow-md">
-                      {/* Teacher Header */}
-                      <div 
-                        className={`p-4 flex justify-between items-center cursor-pointer transition-colors ${
-                          expandedTeacher === teacher._id ? 'bg-indigo-50' : 'bg-gray-50 hover:bg-gray-100'
-                        }`}
-                        onClick={() => toggleTeacherExpansion(teacher._id)}
-                      >
-                        <div className="flex items-center">
-                          <div className={`p-2 rounded-lg mr-3 ${
-                            expandedTeacher === teacher._id ? 'bg-indigo-100' : 'bg-gray-200'
-                          }`}>
-                            <User className={`${
-                              expandedTeacher === teacher._id ? 'text-indigo-600' : 'text-gray-600'
-                            }`} size={20} />
-                          </div>
-                          <div>
-                            <h4 className="font-medium text-gray-800">
-                              {teacher.user?.name || 'Unknown Teacher'}
-                            </h4>
-                            <p className="text-sm text-gray-500">{teacher.user?.email}</p>
-                          </div>
-                        </div>
-                        <div className="flex items-center">
-                          <span className="px-3 py-1 bg-amber-100 text-amber-800 rounded-full text-xs font-medium mr-3">
-                            {teacher.role}
-                          </span>
-                          {expandedTeacher === teacher._id ? (
-                            <ChevronUp size={20} className="text-indigo-600" />
+                  
+                  {/* Expanded Content */}
+                  {expandedTeacher === teacher._id && (
+                    <div className="p-5 border-t border-gray-200 bg-white">
+                      {/* Skills Section */}
+                      <div className="mb-6">
+                        <h5 className="font-medium text-gray-700 mb-3 flex items-center">
+                          <Award className="text-indigo-500 mr-2" size={16} />
+                          Skills to Teach:
+                        </h5>
+                        <div className="flex flex-wrap gap-2">
+                          {teacher.skillsToTeach && teacher.skillsToTeach.length > 0 ? (
+                            teacher.skillsToTeach.map((skillObj, index) => (
+                              <span 
+                                key={index} 
+                                className="bg-indigo-50 text-indigo-700 px-3 py-1.5 rounded-full text-sm font-medium"
+                              >
+                                {skillObj.skill?.name || 'Unknown Skill'}
+                              </span>
+                            ))
                           ) : (
-                            <ChevronDown size={20} className="text-gray-500" />
+                            <span className="text-gray-500 italic">No skills specified</span>
                           )}
                         </div>
                       </div>
                       
-                      {/* Expanded Content */}
-                      {expandedTeacher === teacher._id && (
-                        <div className="p-5 border-t border-gray-200 bg-white">
-                          {/* Skills Section */}
-                          <div className="mb-6">
-                            <h5 className="font-medium text-gray-700 mb-3 flex items-center">
-                              <Award className="text-indigo-500 mr-2" size={16} />
-                              Skills to Teach:
-                            </h5>
-                            <div className="flex flex-wrap gap-2">
-                              {teacher.skillsToTeach && teacher.skillsToTeach.length > 0 ? (
-                                teacher.skillsToTeach.map((skillObj, index) => (
-                                  <span 
-                                    key={index} 
-                                    className="bg-indigo-50 text-indigo-700 px-3 py-1.5 rounded-full text-sm font-medium"
-                                  >
-                                    {skillObj.skill?.name || 'Unknown Skill'}
-                                  </span>
-                                ))
-                              ) : (
-                                <span className="text-gray-500 italic">No skills specified</span>
-                              )}
-                            </div>
-                          </div>
-                          
-                          {/* Certificates Section */}
-                          <div className="mb-6">
-                            <h5 className="font-medium text-gray-700 mb-3 flex items-center">
-                              <FileText className="text-indigo-500 mr-2" size={16} />
-                              Certificates:
-                            </h5>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                              {teacher.certificates && teacher.certificates.length > 0 ? (
-                                teacher.certificates.map((cert, index) => (
-                                  <div key={index} className="border border-gray-200 rounded-xl overflow-hidden hover:shadow-md transition-shadow">
-                                    <div className="aspect-w-16 aspect-h-9 bg-gray-50">
-                                      {cert.endsWith('.pdf') ? (
-                                        <div className="flex items-center justify-center bg-gray-100 h-full">
-                                          <a 
-                                            href={cert} 
-                                            target="_blank" 
-                                            rel="noopener noreferrer"
-                                            className="flex items-center text-indigo-600 hover:text-indigo-800 transition-colors"
-                                          >
-                                            <FileText size={24} className="mr-2" />
-                                            View PDF Certificate
-                                            <ExternalLink size={14} className="ml-1" />
-                                          </a>
-                                        </div>
-                                      ) : (
-                                        <img 
-                                          src={cert} 
-                                          alt={`Certificate ${index + 1}`} 
-                                          className="object-contain w-full h-full rounded"
-                                        />
-                                      )}
-                                    </div>
-                                    <div className="p-3 flex justify-between items-center bg-gray-50">
-                                      <span className="text-sm font-medium text-gray-700">Certificate {index + 1}</span>
+                      {/* Certificates Section */}
+                      <div className="mb-6">
+                        <h5 className="font-medium text-gray-700 mb-3 flex items-center">
+                          <FileText className="text-indigo-500 mr-2" size={16} />
+                          Certificates:
+                        </h5>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                          {teacher.certificates && teacher.certificates.length > 0 ? (
+                            teacher.certificates.map((cert, index) => (
+                              <div key={index} className="border border-gray-200 rounded-xl overflow-hidden hover:shadow-md transition-shadow">
+                                <div className="aspect-w-16 aspect-h-9 bg-gray-50">
+                                  {cert.endsWith('.pdf') ? (
+                                    <div className="flex items-center justify-center bg-gray-100 h-full">
                                       <a 
                                         href={cert} 
                                         target="_blank" 
                                         rel="noopener noreferrer"
-                                        className="text-sm text-indigo-600 hover:text-indigo-800 flex items-center transition-colors"
+                                        className="flex items-center text-indigo-600 hover:text-indigo-800 transition-colors"
                                       >
-                                        View
-                                        <ExternalLink size={12} className="ml-1" />
+                                        <FileText size={24} className="mr-2" />
+                                        View PDF Certificate
+                                        <ExternalLink size={14} className="ml-1" />
                                       </a>
                                     </div>
-                                  </div>
-                                ))
-                              ) : (
-                                <div className="col-span-full text-center p-4 bg-gray-50 rounded-xl">
-                                  <span className="text-gray-500 italic">No certificates uploaded</span>
+                                  ) : (
+                                    <img 
+                                      src={cert} 
+                                      alt={`Certificate ${index + 1}`} 
+                                      className="object-contain w-full h-full rounded"
+                                    />
+                                  )}
                                 </div>
-                              )}
+                                <div className="p-3 flex justify-between items-center bg-gray-50">
+                                  <span className="text-sm font-medium text-gray-700">Certificate {index + 1}</span>
+                                  <a 
+                                    href={cert} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    className="text-sm text-indigo-600 hover:text-indigo-800 flex items-center transition-colors"
+                                  >
+                                    View
+                                    <ExternalLink size={12} className="ml-1" />
+                                  </a>
+                                </div>
+                              </div>
+                            ))
+                          ) : (
+                            <div className="col-span-full text-center p-4 bg-gray-50 rounded-xl">
+                              <span className="text-gray-500 italic">No certificates uploaded</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      
+                      {/* Action Buttons */}
+                      <div className="mt-6 border-t border-gray-100 pt-4">
+                        {showRejectionForm && selectedTeacherId === teacher._id ? (
+                          <div className="w-full">
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              Reason for rejection:
+                            </label>
+                            <textarea
+                              value={rejectionReason}
+                              onChange={(e) => setRejectionReason(e.target.value)}
+                              placeholder="Please provide a reason for rejection (optional)"
+                              className="w-full p-3 border border-gray-300 rounded-xl mb-4 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
+                              rows="3"
+                            />
+                            <div className="flex flex-wrap justify-end gap-3">
+                              <button
+                                onClick={() => {
+                                  setShowRejectionForm(false);
+                                  setRejectionReason('');
+                                  setSelectedTeacherId(null);
+                                }}
+                                className="px-5 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+                              >
+                                Cancel
+                              </button>
+                              <button
+                                onClick={() => handleVerifyTeacher(teacher._id, 'rejected')}
+                                className="px-5 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center font-medium"
+                              >
+                                <XCircle size={18} className="mr-2" />
+                                Confirm Rejection
+                              </button>
                             </div>
                           </div>
-                          
-                          {/* Action Buttons */}
-                          <div className="mt-6 border-t border-gray-100 pt-4">
-                            {showRejectionForm && selectedTeacherId === teacher._id ? (
-                              <div className="w-full">
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                  Reason for rejection:
-                                </label>
-                                <textarea
-                                  value={rejectionReason}
-                                  onChange={(e) => setRejectionReason(e.target.value)}
-                                  placeholder="Please provide a reason for rejection (optional)"
-                                  className="w-full p-3 border border-gray-300 rounded-xl mb-4 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
-                                  rows="3"
-                                />
-                                <div className="flex flex-wrap justify-end gap-3">
-                                  <button
-                                    onClick={() => {
-                                      setShowRejectionForm(false);
-                                      setRejectionReason('');
-                                      setSelectedTeacherId(null);
-                                    }}
-                                    className="px-5 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
-                                  >
-                                    Cancel
-                                  </button>
-                                  <button
-                                    onClick={() => handleVerifyTeacher(teacher._id, 'rejected')}
-                                    className="px-5 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center font-medium"
-                                  >
-                                    <XCircle size={18} className="mr-2" />
-                                    Confirm Rejection
-                                  </button>
-                                </div>
-                              </div>
-                            ) : (
-                              <div className="flex flex-wrap justify-end gap-3">
-                                <button
-                                  onClick={() => showRejectForm(teacher._id)}
-                                  className="px-5 py-2.5 bg-white border border-red-200 text-red-600 rounded-lg hover:bg-red-50 transition-colors flex items-center font-medium"
-                                >
-                                  <XCircle size={18} className="mr-2" />
-                                  Reject
-                                </button>
-                                <button
-                                  onClick={() => handleVerifyTeacher(teacher._id, 'approved')}
-                                  className="px-5 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center font-medium"
-                                >
-                                  <CheckCircle size={18} className="mr-2" />
-                                  Approve
-                                </button>
-                              </div>
-                            )}
+                        ) : (
+                          <div className="flex flex-wrap justify-end gap-3">
+                            <button
+                              onClick={() => showRejectForm(teacher._id)}
+                              className="px-5 py-2.5 bg-white border border-red-200 text-red-600 rounded-lg hover:bg-red-50 transition-colors flex items-center font-medium"
+                            >
+                              <XCircle size={18} className="mr-2" />
+                              Reject
+                            </button>
+                            <button
+                              onClick={() => handleVerifyTeacher(teacher._id, 'approved')}
+                              className="px-5 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center font-medium"
+                            >
+                              <CheckCircle size={18} className="mr-2" />
+                              Approve
+                            </button>
                           </div>
-                        </div>
-                      )}
+                        )}
+                      </div>
                     </div>
-                  ))}
+                  )}
                 </div>
-              )}
-            </div>
-          )}
+              </motion.div>
+            </AnimatePresence>
+          ))}
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 };
