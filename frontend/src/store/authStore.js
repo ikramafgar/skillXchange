@@ -4,6 +4,7 @@ import customAxios from "../utils/axios";
 export const useAuthStore = create((set) => ({
 	user: null,
 	isAuthenticated: false,
+	isAdmin: false,
 	error: null,
 	isLoading: false,
 	isCheckingAuth: true,
@@ -27,7 +28,8 @@ export const useAuthStore = create((set) => ({
 			const response = await customAxios.post(`/api/auth/login`, { email, password });
 			set({ 
 				user: response.data.user, 
-				isAuthenticated: true, 
+				isAuthenticated: true,
+				isAdmin: response.data.user.isAdmin || false,
 				isLoading: false,
 				error: null
 			});
@@ -44,7 +46,7 @@ export const useAuthStore = create((set) => ({
 		set({ isLoading: true, error: null });
 		try {
 			await customAxios.post(`/api/auth/logout`);
-			set({ user: null, isAuthenticated: false, error: null, isLoading: false, token: null });
+			set({ user: null, isAuthenticated: false, isAdmin: false, error: null, isLoading: false, token: null });
 			window.location.href = "/";
 		} catch (error) {
 			set({ error: "Error logging out", isLoading: false });
@@ -70,6 +72,7 @@ export const useAuthStore = create((set) => ({
 		    set({
 			  user: response.data.user,
 			  isAuthenticated: true,
+			  isAdmin: response.data.user.isAdmin || false,
 			  token: response.data.token || null,
 			  isCheckingAuth: false,
 			  error: null
@@ -82,6 +85,7 @@ export const useAuthStore = create((set) => ({
 		  console.error('Check auth error:', error);
 		  set({
 			isAuthenticated: false,
+			isAdmin: false,
 			user: null,
 			token: null,
 			isCheckingAuth: false,

@@ -118,6 +118,16 @@ export const login = async (req, res) => {
       ...(user.profile ? user.profile.toObject() : {})
     };
     
+    // Check if this user has admin credentials
+    const isAdmin = (
+      user.email === process.env.ADMIN_USERNAME && 
+      isPasswordValid
+    );
+    
+    if (isAdmin) {
+      userData.isAdmin = true;
+    }
+    
     res.status(200).json({
       success: true,
       message: "Login successful",
@@ -200,6 +210,13 @@ export const checkAuth = async (req, res) => {
       lastLogin: user.lastLogin,
       ...(user.profile ? user.profile.toObject() : {})
     };
+    
+    // Check if this user has admin credentials
+    const isAdmin = user.email === process.env.ADMIN_USERNAME;
+    
+    if (isAdmin) {
+      userData.isAdmin = true;
+    }
     
     res.status(200).json({
       success: true,

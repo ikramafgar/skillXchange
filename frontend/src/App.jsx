@@ -28,6 +28,8 @@ import ResetPasswordPage from "./pages/ResetPasswordPage";
 import EmailVerificationPage from "./pages/EmailVerificationPage";
 import HelpPage from "./pages/HelpPage";
 import AuthCallbackPage from "./pages/AuthCallbackPage"; // Import the Auth callback component
+import AdminPage from "./pages/AdminPage"; // Import the Admin page component
+
 // Protect routes that require authentication
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, user } = useAuthStore();
@@ -44,6 +46,29 @@ const ProtectedRoute = ({ children }) => {
 };
 
 ProtectedRoute.propTypes = {
+  children: PropTypes.node.isRequired,
+};
+
+// Admin route protection
+const AdminRoute = ({ children }) => {
+  const { isAuthenticated, isAdmin, user } = useAuthStore();
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (user && !user.isVerified) {
+    return <Navigate to="/verify-email" replace />;
+  }
+
+  if (!isAdmin) {
+    return <Navigate to="/profile" replace />;
+  }
+
+  return children;
+};
+
+AdminRoute.propTypes = {
   children: PropTypes.node.isRequired,
 };
 
@@ -96,6 +121,14 @@ function App() {
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/verify-email" element={<EmailVerificationPage />} />
         <Route path="/auth-callback" element={<AuthCallbackPage />} /> {/* Auth callback route */}
+        <Route
+          path="/admin"
+          element={
+            <AdminRoute>
+              <AdminPage />
+            </AdminRoute>
+          }
+        />
         <Route
           path="/forgot-password"
           element={

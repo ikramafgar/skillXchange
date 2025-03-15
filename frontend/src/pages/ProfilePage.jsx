@@ -20,6 +20,9 @@ import {
   Users,
   Upload,
   User,
+  CheckCircle,
+  XCircle,
+  Clock,
 } from "lucide-react";
 
 const ProfilePage = () => {
@@ -761,7 +764,19 @@ const ProfilePage = () => {
                         e.target.src = "/default-profile-pic.jpg";
                       }}
                     />
+                    {/* Online status indicator */}
                     <div className="absolute bottom-0 right-0 bg-green-500 w-5 h-5 rounded-full border-2 border-white"></div>
+                    
+                    {/* Verification badge for verified teachers */}
+                    {(formData.role === 'teacher' || formData.role === 'both') && 
+                     formData.verificationStatus === 'approved' && (
+                      <div 
+                        className="absolute top-0 right-0 bg-blue-500 text-white p-1 rounded-full border-2 border-white"
+                        title="Verified Teacher"
+                      >
+                        <CheckCircle size={14} />
+                      </div>
+                    )}
                   </div>
                 </div>
                 <div className="absolute top-4 right-4">
@@ -791,8 +806,27 @@ const ProfilePage = () => {
                           {formData.skillLevel || "Beginner"}
                         </span>
                       )}
-                      <span className="px-3 py-1 bg-green-100 text-green-600 rounded-full text-xs font-medium">
-                        {formData.verificationStatus || "Pending"}
+                      <span 
+                        className={`px-3 py-1 rounded-full text-xs font-medium flex items-center ${
+                          formData.verificationStatus === 'approved' 
+                            ? "bg-green-100 text-green-600" 
+                            : formData.verificationStatus === 'rejected'
+                              ? "bg-red-100 text-red-600"
+                              : "bg-yellow-100 text-yellow-600"
+                        }`}
+                        title={
+                          formData.verificationStatus === 'approved' 
+                            ? "This teacher's credentials have been verified by our team" 
+                            : formData.verificationStatus === 'rejected'
+                              ? formData.verificationRejectionReason || "Verification was rejected"
+                              : "Verification is pending review by our team"
+                        }
+                      >
+                        {formData.verificationStatus === 'approved' 
+                          ? <><CheckCircle size={12} className="mr-1" /> Verified Teacher</> 
+                          : formData.verificationStatus === 'rejected'
+                            ? <><XCircle size={12} className="mr-1" /> Verification Rejected</>
+                            : <><Clock size={12} className="mr-1" /> Pending Verification</>}
                       </span>
                     </div>
                     <p className="text-gray-500 flex items-center gap-1 mt-3">
@@ -870,6 +904,11 @@ const ProfilePage = () => {
                       <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
                         <Lightbulb size={18} className="text-green-500" />
                         Skills I Can Teach
+                        {formData.verificationStatus === 'approved' && (
+                          <span className="ml-2 bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full text-xs flex items-center">
+                            <CheckCircle size={10} className="mr-1" /> Verified
+                          </span>
+                        )}
                       </h3>
                       <div className="flex flex-wrap gap-2">
                         {Array.isArray(formData.skillsToTeach) && formData.skillsToTeach.length > 0 ? (

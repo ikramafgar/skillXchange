@@ -10,6 +10,7 @@ import profileRoutes from './routes/profileRoutes.js'; // Add this import
 import userRoutes from './routes/userRoutes.js'; // Add this import
 import connectionRoutes from './routes/connectionRoutes.js';
 import matchRoutes from './routes/matchRoutes.js'; // Import match routes
+import adminRoutes from './routes/adminRoutes.js'; // Import admin routes
 import { Server } from 'socket.io';
 import { createServer } from 'http';
 
@@ -63,6 +64,7 @@ app.use('/api/profile', profileRoutes);
 app.use(userRoutes); // Use user routes with paths defined in the route file
 app.use('/api/connections', connectionRoutes);
 app.use('/api/matches', matchRoutes); // Use match routes
+app.use('/api/admin', adminRoutes); // Use admin routes
 
 // Error handling middleware
 app.use((err, req, res, next) => {

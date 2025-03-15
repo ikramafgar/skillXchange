@@ -9,6 +9,9 @@ import {
   Send,
   KeyRound,
   LayoutDashboard,
+  Shield,
+  User,
+  LogOut,
 } from "lucide-react";
 import { useAuthStore } from "../store/authStore";
 import { useNavigate, useLocation, Link } from "react-router-dom";
@@ -17,7 +20,7 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const { scrollY } = useScroll();
-  const { isAuthenticated, logout, checkAuth } = useAuthStore((state) => state);
+  const { isAuthenticated, isAdmin, logout, checkAuth } = useAuthStore((state) => state);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -37,6 +40,15 @@ const Navbar = () => {
     }
   };
 
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate('/');
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
+
   const navItemsBeforeLogin = [
     { name: "Home", href: "/", icon: <Home className="w-4 h-4" /> },
     { name: "About", href: "/about", icon: <Info className="w-4 h-4" /> },
@@ -47,7 +59,18 @@ const Navbar = () => {
   const navItemsAfterLogin = [
     { name: "Dashboard", href: "/dashboard", icon: <LayoutDashboard className="w-4 h-4" /> },
     { name: "Skills", href: "/skills", icon: <Layers className="w-4 h-4" /> },
+    { name: "Profile", href: "/profile", icon: <User className="w-4 h-4" /> },
+    { name: "Logout", onClick: handleLogout, icon: <LogOut className="w-4 h-4" /> },
   ];
+
+  // Add admin link for admin users
+  if (isAuthenticated && isAdmin) {
+    navItemsAfterLogin.splice(2, 0, {
+      name: "Admin",
+      href: "/admin",
+      icon: <Shield className="w-4 h-4" />,
+    });
+  }
 
   // Use the last known authentication state during loading
   const navigationItems = isAuthenticated ? navItemsAfterLogin : navItemsBeforeLogin;
