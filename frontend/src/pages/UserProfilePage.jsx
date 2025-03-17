@@ -126,9 +126,9 @@ function UserProfileModal({ userId, isOpen, onClose }) {
                     <div className="bg-blue-50 rounded-xl p-4">
                       <h2 className="text-xl font-semibold text-gray-800 mb-3">Skills to Teach</h2>
                       <div className="flex flex-wrap gap-2">
-                        {Array.isArray(user.skillsToTeach) && user.skillsToTeach.map((skill, index) => (
+                        {Array.isArray(user.skillsToTeach) && user.skillsToTeach.map((skillObj, index) => (
                           <span key={index} className="px-3 py-1 bg-white text-blue-600 rounded-full text-sm">
-                            {skill}
+                            {skillObj.skill?.name || 'Unknown Skill'} ({skillObj.level})
                           </span>
                         ))}
                       </div>
@@ -139,9 +139,9 @@ function UserProfileModal({ userId, isOpen, onClose }) {
                     <div className="bg-green-50 rounded-xl p-4">
                       <h2 className="text-xl font-semibold text-gray-800 mb-3">Skills to Learn</h2>
                       <div className="flex flex-wrap gap-2">
-                        {Array.isArray(user.skillsToLearn) && user.skillsToLearn.map((skill, index) => (
+                        {Array.isArray(user.skillsToLearn) && user.skillsToLearn.map((skillObj, index) => (
                           <span key={index} className="px-3 py-1 bg-white text-green-600 rounded-full text-sm">
-                            {skill}
+                            {skillObj.skill?.name || 'Unknown Skill'} ({skillObj.level})
                           </span>
                         ))}
                       </div>

@@ -14,11 +14,30 @@ router.get('/api/users', async (req, res) => {
 
 router.get('/api/users/:userId', async (req, res) => {
   try {
-    const user = await User.findById(req.params.userId);
+    const user = await User.findById(req.params.userId)
+      .populate({
+        path: 'profile',
+        populate: [
+          { path: 'skillsToLearn.skill' },
+          { path: 'skillsToTeach.skill' }
+        ]
+      });
+
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
-    res.json(user);
+
+    // Combine user and profile data
+    const userData = {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      isVerified: user.isVerified,
+      lastLogin: user.lastLogin,
+      ...(user.profile ? user.profile.toObject() : {})
+    };
+
+    res.json(userData);
   } catch (error) {
     res.status(500).json({ message: 'Error fetching user profile' });
   }

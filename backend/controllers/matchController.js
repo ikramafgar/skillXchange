@@ -156,159 +156,278 @@ const calculateMatchScore = (user, potentialMatch, matchDetails) => {
 
 /**
  * Find direct one-to-one matches
- * @param {Object} user - User to find matches for
+ * @param {Object} userProfile - User profile to find matches for
  * @returns {Array} - Array of match objects
  */
-const findDirectMatches = async (user) => {
+const findDirectMatches = async (userProfile) => {
   const matches = [];
   
   // Skip if user has no skills to learn or teach
-  if (!user.skillsToLearn?.length || !user.skillsToTeach?.length) {
+  if (!userProfile.skillsToLearn?.length || !userProfile.skillsToTeach?.length) {
+    console.log('User has no skills to learn or teach, skipping direct matches');
     return matches;
   }
   
-  // Get all users who have skills to teach that match user's skills to learn
-  // and have skills to learn that match user's skills to teach
-  const potentialMatches = await User.find({
-    _id: { $ne: user._id },
-    $or: [
-      // For learner role
-      {
-        role: { $in: ['teacher', 'both'] },
-        'skillsToTeach.skill': { $in: user.skillsToLearn.map(s => s.skill) }
-      },
-      // For teacher role
-      {
-        role: { $in: ['learner', 'both'] },
-        'skillsToLearn.skill': { $in: user.skillsToTeach.map(s => s.skill) }
-      }
-    ]
-  }).populate('skillsToLearn.skill skillsToTeach.skill');
-  
-  // For each potential match, calculate match score
-  for (const potentialMatch of potentialMatches) {
-    // Find matching skills
-    const userWantsToLearn = user.skillsToLearn.map(s => s.skill.toString());
-    const userCanTeach = user.skillsToTeach.map(s => s.skill.toString());
-    const matchCanTeach = potentialMatch.skillsToTeach.map(s => s.skill.toString());
-    const matchWantsToLearn = potentialMatch.skillsToLearn.map(s => s.skill.toString());
+  try {
+    console.log(`Finding direct matches for user profile ${userProfile._id}`);
     
-    // Check for direct match (user learns what match teaches AND user teaches what match learns)
-    const skillsUserCanLearn = userWantsToLearn.filter(skill => matchCanTeach.includes(skill));
-    const skillsUserCanTeach = userCanTeach.filter(skill => matchWantsToLearn.includes(skill));
+    // Safely extract skill IDs
+    const skillsToLearnIds = userProfile.skillsToLearn
+      .filter(s => s.skill && mongoose.Types.ObjectId.isValid(s.skill._id))
+      .map(s => s.skill._id);
     
-    if (skillsUserCanLearn.length > 0 && skillsUserCanTeach.length > 0) {
-      // For each pair of matching skills, create a match
-      for (const learnSkill of skillsUserCanLearn) {
-        for (const teachSkill of skillsUserCanTeach) {
-          const matchDetails = {
-            matchType: 'direct',
-            skillToLearn: learnSkill,
-            skillToTeach: teachSkill
-          };
-          
-          const { score, scoreComponents } = calculateMatchScore(user, potentialMatch, matchDetails);
-          
-          matches.push({
-            user: user._id,
-            matchedUser: potentialMatch._id,
-            matchType: 'direct',
-            skillToLearn: learnSkill,
-            skillToTeach: teachSkill,
-            score,
-            scoreComponents
-          });
+    const skillsToTeachIds = userProfile.skillsToTeach
+      .filter(s => s.skill && mongoose.Types.ObjectId.isValid(s.skill._id))
+      .map(s => s.skill._id);
+    
+    if (skillsToLearnIds.length === 0 || skillsToTeachIds.length === 0) {
+      console.log('No valid skill IDs found for matching');
+      return matches;
+    }
+    
+    // Get all users with profiles who have skills to teach that match user's skills to learn
+    // and have skills to learn that match user's skills to teach
+    const potentialMatches = await User.find({
+      _id: { $ne: userProfile.user },
+      profile: { $exists: true }
+    }).populate({
+      path: 'profile',
+      populate: [
+        { path: 'skillsToLearn.skill' },
+        { path: 'skillsToTeach.skill' }
+      ]
+    });
+    
+    console.log(`Found ${potentialMatches.length} potential users for direct matches`);
+    
+    // Filter users whose profiles have matching skills
+    const filteredMatches = potentialMatches.filter(user => {
+      if (!user.profile) return false;
+      
+      const profile = user.profile;
+      
+      // Check if this profile has any skills that match our user's skills
+      const hasMatchingTeachSkills = profile.skillsToTeach?.some(s => 
+        s.skill && skillsToLearnIds.some(id => id.equals(s.skill._id))
+      );
+      
+      const hasMatchingLearnSkills = profile.skillsToLearn?.some(s => 
+        s.skill && skillsToTeachIds.some(id => id.equals(s.skill._id))
+      );
+      
+      return hasMatchingTeachSkills || hasMatchingLearnSkills;
+    });
+    
+    console.log(`Filtered to ${filteredMatches.length} potential direct matches with matching skills`);
+    
+    // For each potential match, calculate match score
+    for (const matchedUser of filteredMatches) {
+      try {
+        const matchProfile = matchedUser.profile;
+        
+        // Find matching skills
+        const userWantsToLearn = userProfile.skillsToLearn
+          .filter(s => s.skill && s.skill._id)
+          .map(s => s.skill._id.toString());
+        
+        const userCanTeach = userProfile.skillsToTeach
+          .filter(s => s.skill && s.skill._id)
+          .map(s => s.skill._id.toString());
+        
+        const matchCanTeach = matchProfile.skillsToTeach
+          ?.filter(s => s.skill && s.skill._id)
+          .map(s => s.skill._id.toString()) || [];
+        
+        const matchWantsToLearn = matchProfile.skillsToLearn
+          ?.filter(s => s.skill && s.skill._id)
+          .map(s => s.skill._id.toString()) || [];
+        
+        // Check for direct match (user learns what match teaches AND user teaches what match learns)
+        const skillsUserCanLearn = userWantsToLearn.filter(skill => matchCanTeach.includes(skill));
+        const skillsUserCanTeach = userCanTeach.filter(skill => matchWantsToLearn.includes(skill));
+        
+        if (skillsUserCanLearn.length > 0 && skillsUserCanTeach.length > 0) {
+          // For each pair of matching skills, create a match
+          for (const learnSkill of skillsUserCanLearn) {
+            for (const teachSkill of skillsUserCanTeach) {
+              const matchDetails = {
+                matchType: 'direct',
+                skillToLearn: learnSkill,
+                skillToTeach: teachSkill
+              };
+              
+              const { score, scoreComponents } = calculateMatchScore(userProfile, matchProfile, matchDetails);
+              
+              matches.push({
+                user: userProfile.user,
+                matchedUser: matchedUser._id,
+                matchType: 'direct',
+                skillToLearn: learnSkill,
+                skillToTeach: teachSkill,
+                score,
+                scoreComponents
+              });
+            }
+          }
         }
+      } catch (error) {
+        console.error(`Error processing potential match ${matchedUser._id}:`, error);
+        // Continue with next potential match
       }
     }
+    
+    console.log(`Created ${matches.length} direct matches`);
+    return matches;
+  } catch (error) {
+    console.error('Error in findDirectMatches:', error);
+    return matches;
   }
-  
-  return matches;
 };
 
 /**
  * Find alternative single-direction matches
- * @param {Object} user - User to find matches for
+ * @param {Object} userProfile - User profile to find matches for
  * @returns {Array} - Array of match objects
  */
-const findAlternativeMatches = async (user) => {
+const findAlternativeMatches = async (userProfile) => {
   const matches = [];
   
-  // For users who want to learn
-  if (user.role === 'learner' || user.role === 'both') {
-    // Find teachers who can teach skills user wants to learn
-    const teacherMatches = await User.find({
-      _id: { $ne: user._id },
-      role: { $in: ['teacher', 'both'] },
-      'skillsToTeach.skill': { $in: user.skillsToLearn.map(s => s.skill) }
-    }).populate('skillsToTeach.skill');
+  try {
+    console.log(`Finding alternative matches for user profile ${userProfile._id}`);
     
-    for (const teacher of teacherMatches) {
-      const userWantsToLearn = user.skillsToLearn.map(s => s.skill.toString());
-      const teacherCanTeach = teacher.skillsToTeach.map(s => s.skill.toString());
-      
-      const matchingSkills = userWantsToLearn.filter(skill => teacherCanTeach.includes(skill));
-      
-      for (const skill of matchingSkills) {
-        const matchDetails = {
-          matchType: 'alternative',
-          skillToLearn: skill,
-          skillToTeach: null
-        };
+    // For users who want to learn
+    // Safely extract skill IDs for learning
+    const skillsToLearnIds = userProfile.skillsToLearn
+      ?.filter(s => s.skill && mongoose.Types.ObjectId.isValid(s.skill._id))
+      .map(s => s.skill._id) || [];
+    
+    // Safely extract skill IDs for teaching
+    const skillsToTeachIds = userProfile.skillsToTeach
+      ?.filter(s => s.skill && mongoose.Types.ObjectId.isValid(s.skill._id))
+      .map(s => s.skill._id) || [];
+    
+    // Get all users with profiles
+    const potentialMatches = await User.find({
+      _id: { $ne: userProfile.user },
+      profile: { $exists: true }
+    }).populate({
+      path: 'profile',
+      populate: [
+        { path: 'skillsToLearn.skill' },
+        { path: 'skillsToTeach.skill' }
+      ]
+    });
+    
+    console.log(`Found ${potentialMatches.length} potential users for alternative matches`);
+    
+    // Process matches for learning (user wants to learn, others can teach)
+    if (skillsToLearnIds.length > 0) {
+      // Filter users whose profiles have skills that match our user's learning needs
+      const teacherMatches = potentialMatches.filter(user => {
+        if (!user.profile || !user.profile.skillsToTeach?.length) return false;
         
-        const { score, scoreComponents } = calculateMatchScore(user, teacher, matchDetails);
-        
-        matches.push({
-          user: user._id,
-          matchedUser: teacher._id,
-          matchType: 'alternative',
-          skillToLearn: skill,
-          skillToTeach: null,
-          score,
-          scoreComponents
-        });
+        return user.profile.skillsToTeach.some(s => 
+          s.skill && skillsToLearnIds.some(id => id.equals(s.skill._id))
+        );
+      });
+      
+      console.log(`Found ${teacherMatches.length} teacher matches for alternative matching`);
+      
+      for (const teacher of teacherMatches) {
+        try {
+          const teacherProfile = teacher.profile;
+          
+          const userWantsToLearn = userProfile.skillsToLearn
+            .filter(s => s.skill && s.skill._id)
+            .map(s => s.skill._id.toString());
+          
+          const teacherCanTeach = teacherProfile.skillsToTeach
+            ?.filter(s => s.skill && s.skill._id)
+            .map(s => s.skill._id.toString()) || [];
+          
+          // Find skills that match
+          const matchingSkills = userWantsToLearn.filter(skill => teacherCanTeach.includes(skill));
+          
+          for (const skill of matchingSkills) {
+            const matchDetails = {
+              matchType: 'alternative',
+              skillToLearn: skill
+            };
+            
+            const { score, scoreComponents } = calculateMatchScore(userProfile, teacherProfile, matchDetails);
+            
+            matches.push({
+              user: userProfile.user,
+              matchedUser: teacher._id,
+              matchType: 'alternative',
+              skillToLearn: skill,
+              score,
+              scoreComponents
+            });
+          }
+        } catch (error) {
+          console.error(`Error processing teacher match ${teacher._id}:`, error);
+        }
       }
     }
-  }
-  
-  // For users who want to teach
-  if (user.role === 'teacher' || user.role === 'both') {
-    // Find learners who want to learn skills user can teach
-    const learnerMatches = await User.find({
-      _id: { $ne: user._id },
-      role: { $in: ['learner', 'both'] },
-      'skillsToLearn.skill': { $in: user.skillsToTeach.map(s => s.skill) }
-    }).populate('skillsToLearn.skill');
     
-    for (const learner of learnerMatches) {
-      const userCanTeach = user.skillsToTeach.map(s => s.skill.toString());
-      const learnerWantsToLearn = learner.skillsToLearn.map(s => s.skill.toString());
-      
-      const matchingSkills = userCanTeach.filter(skill => learnerWantsToLearn.includes(skill));
-      
-      for (const skill of matchingSkills) {
-        const matchDetails = {
-          matchType: 'alternative',
-          skillToLearn: null,
-          skillToTeach: skill
-        };
+    // Process matches for teaching (user wants to teach, others want to learn)
+    if (skillsToTeachIds.length > 0) {
+      // Filter users whose profiles have learning needs that match our user's teaching skills
+      const learnerMatches = potentialMatches.filter(user => {
+        if (!user.profile || !user.profile.skillsToLearn?.length) return false;
         
-        const { score, scoreComponents } = calculateMatchScore(user, learner, matchDetails);
-        
-        matches.push({
-          user: user._id,
-          matchedUser: learner._id,
-          matchType: 'alternative',
-          skillToLearn: null,
-          skillToTeach: skill,
-          score,
-          scoreComponents
-        });
+        return user.profile.skillsToLearn.some(s => 
+          s.skill && skillsToTeachIds.some(id => id.equals(s.skill._id))
+        );
+      });
+      
+      console.log(`Found ${learnerMatches.length} learner matches for alternative matching`);
+      
+      for (const learner of learnerMatches) {
+        try {
+          const learnerProfile = learner.profile;
+          
+          const userCanTeach = userProfile.skillsToTeach
+            .filter(s => s.skill && s.skill._id)
+            .map(s => s.skill._id.toString());
+          
+          const learnerWantsToLearn = learnerProfile.skillsToLearn
+            ?.filter(s => s.skill && s.skill._id)
+            .map(s => s.skill._id.toString()) || [];
+          
+          // Find skills that match
+          const matchingSkills = userCanTeach.filter(skill => learnerWantsToLearn.includes(skill));
+          
+          for (const skill of matchingSkills) {
+            const matchDetails = {
+              matchType: 'alternative',
+              skillToTeach: skill
+            };
+            
+            const { score, scoreComponents } = calculateMatchScore(userProfile, learnerProfile, matchDetails);
+            
+            matches.push({
+              user: userProfile.user,
+              matchedUser: learner._id,
+              matchType: 'alternative',
+              skillToTeach: skill,
+              score,
+              scoreComponents
+            });
+          }
+        } catch (error) {
+          console.error(`Error processing learner match ${learner._id}:`, error);
+        }
       }
     }
+    
+    console.log(`Created ${matches.length} alternative matches`);
+    return matches;
+  } catch (error) {
+    console.error('Error in findAlternativeMatches:', error);
+    return matches;
   }
-  
-  return matches;
 };
 
 /**
@@ -540,19 +659,50 @@ const findGroupMatches = async (user) => {
  */
 export const generateMatches = async (req, res) => {
   try {
-    const { userId } = req.params;
+    // Get userId from params or from the authenticated user
+    let { userId } = req.params;
+    
+    // If userId is not provided in params, use the authenticated user's ID
+    if (!userId && req.userId) {
+      userId = req.userId;
+      console.log(`Using authenticated user ID: ${userId}`);
+    }
     
     // Validate user ID
     if (!mongoose.Types.ObjectId.isValid(userId)) {
       return res.status(400).json({ message: 'Invalid user ID' });
     }
     
-    // Get user
+    console.log(`Generating matches for user: ${userId}`);
+    
+    // Get user with profile populated
     const user = await User.findById(userId)
-      .populate('skillsToLearn.skill skillsToTeach.skill');
+      .populate({
+        path: 'profile',
+        populate: [
+          { path: 'skillsToLearn.skill' },
+          { path: 'skillsToTeach.skill' }
+        ]
+      });
     
     if (!user) {
+      console.error(`User not found with ID: ${userId}`);
       return res.status(404).json({ message: 'User not found' });
+    }
+    
+    // Check if user has a profile
+    if (!user.profile) {
+      return res.status(400).json({ message: 'User profile not found. Please complete your profile before generating matches.' });
+    }
+    
+    console.log(`User found: ${user.name}, Profile ID: ${user.profile._id}`);
+    console.log(`Skills to learn: ${user.profile.skillsToLearn?.length}, Skills to teach: ${user.profile.skillsToTeach?.length}`);
+    
+    // Check if user has skills to learn or teach
+    if (!user.profile.skillsToLearn?.length && !user.profile.skillsToTeach?.length) {
+      return res.status(400).json({ 
+        message: 'User has no skills to learn or teach. Please update your profile with skills before generating matches.' 
+      });
     }
     
     // Delete existing matches for this user
@@ -561,113 +711,205 @@ export const generateMatches = async (req, res) => {
     // Generate different types of matches
     let matches = [];
     
-    // 1. Try AI-based recommendations first (if user has successful matches)
-    const aiMatches = await aiRecommendations.getAIRecommendations(userId);
+    // Use the profile for matching instead of the user directly
+    const userProfile = user.profile;
     
-    if (aiMatches.length > 0) {
-      // Convert AI matches to match objects
-      for (const aiMatch of aiMatches) {
-        const matchedUser = aiMatch.user;
-        
-        // Find matching skills
-        const userWantsToLearn = user.skillsToLearn.map(s => s.skill._id.toString());
-        const userCanTeach = user.skillsToTeach.map(s => s.skill._id.toString());
-        const matchCanTeach = matchedUser.skillsToTeach.map(s => s.skill._id.toString());
-        const matchWantsToLearn = matchedUser.skillsToLearn.map(s => s.skill._id.toString());
-        
-        // Check for direct match
-        const skillsUserCanLearn = userWantsToLearn.filter(skill => matchCanTeach.includes(skill));
-        const skillsUserCanTeach = userCanTeach.filter(skill => matchWantsToLearn.includes(skill));
-        
-        if (skillsUserCanLearn.length > 0 && skillsUserCanTeach.length > 0) {
-          // For each pair of matching skills, create a match
-          for (const learnSkill of skillsUserCanLearn) {
-            for (const teachSkill of skillsUserCanTeach) {
-              const matchDetails = {
-                matchType: 'direct',
-                skillToLearn: learnSkill,
-                skillToTeach: teachSkill
-              };
-              
-              const { score, scoreComponents } = calculateMatchScore(user, matchedUser, matchDetails);
-              
-              // Boost score with AI similarity
-              const boostedScore = score * (1 + (aiMatch.similarityScore / 200));
-              
-              matches.push({
-                user: user._id,
-                matchedUser: matchedUser._id,
-                matchType: 'direct',
-                skillToLearn: learnSkill,
-                skillToTeach: teachSkill,
-                score: boostedScore,
-                scoreComponents: {
-                  ...scoreComponents,
-                  aiRecommendation: aiMatch.similarityScore / 2 // Add AI component to score
-                }
-              });
+    try {
+      // 1. Try AI-based recommendations first (if user has successful matches)
+      const aiMatches = await aiRecommendations.getAIRecommendations(userId);
+      console.log(`AI matches found: ${aiMatches.length}`);
+      
+      if (aiMatches.length > 0) {
+        // Convert AI matches to match objects
+        for (const aiMatch of aiMatches) {
+          const matchedUser = aiMatch.user;
+          
+          // Make sure the matched user has a profile
+          if (!matchedUser.profile) continue;
+          
+          // Find matching skills
+          const userWantsToLearn = userProfile.skillsToLearn
+            .filter(s => s.skill && s.skill._id)
+            .map(s => s.skill._id.toString());
+          
+          const userCanTeach = userProfile.skillsToTeach
+            .filter(s => s.skill && s.skill._id)
+            .map(s => s.skill._id.toString());
+          
+          const matchCanTeach = matchedUser.profile.skillsToTeach
+            ?.filter(s => s.skill && s.skill._id)
+            .map(s => s.skill._id.toString()) || [];
+          
+          const matchWantsToLearn = matchedUser.profile.skillsToLearn
+            ?.filter(s => s.skill && s.skill._id)
+            .map(s => s.skill._id.toString()) || [];
+          
+          // Check for direct match
+          const skillsUserCanLearn = userWantsToLearn.filter(skill => matchCanTeach.includes(skill));
+          const skillsUserCanTeach = userCanTeach.filter(skill => matchWantsToLearn.includes(skill));
+          
+          if (skillsUserCanLearn.length > 0 && skillsUserCanTeach.length > 0) {
+            // For each pair of matching skills, create a match
+            for (const learnSkill of skillsUserCanLearn) {
+              for (const teachSkill of skillsUserCanTeach) {
+                const matchDetails = {
+                  matchType: 'direct',
+                  skillToLearn: learnSkill,
+                  skillToTeach: teachSkill
+                };
+                
+                const { score, scoreComponents } = calculateMatchScore(userProfile, matchedUser.profile, matchDetails);
+                
+                // Boost score with AI similarity
+                const boostedScore = score * (1 + (aiMatch.similarityScore / 200));
+                
+                matches.push({
+                  user: user._id,
+                  matchedUser: matchedUser._id,
+                  matchType: 'direct',
+                  skillToLearn: learnSkill,
+                  skillToTeach: teachSkill,
+                  score: boostedScore,
+                  scoreComponents: {
+                    ...scoreComponents,
+                    aiRecommendation: aiMatch.similarityScore / 2 // Add AI component to score
+                  }
+                });
+              }
             }
           }
         }
       }
+    } catch (error) {
+      console.error('Error getting AI recommendations:', error);
+      // Continue with other matching methods
     }
     
     // 2. Find direct matches
-    const directMatches = await findDirectMatches(user);
-    matches = [...matches, ...directMatches];
+    try {
+      const directMatches = await findDirectMatches(userProfile);
+      console.log(`Direct matches found: ${directMatches.length}`);
+      matches = [...matches, ...directMatches];
+    } catch (error) {
+      console.error('Error finding direct matches:', error);
+    }
     
     // 3. Find alternative matches
-    const alternativeMatches = await findAlternativeMatches(user);
-    matches = [...matches, ...alternativeMatches];
+    try {
+      const alternativeMatches = await findAlternativeMatches(userProfile);
+      console.log(`Alternative matches found: ${alternativeMatches.length}`);
+      matches = [...matches, ...alternativeMatches];
+    } catch (error) {
+      console.error('Error finding alternative matches:', error);
+    }
     
     // 4. Find similar skill matches
-    const similarMatches = await findSimilarSkillMatches(user);
-    matches = [...matches, ...similarMatches];
+    try {
+      const similarMatches = await findSimilarSkillMatches(userProfile);
+      console.log(`Similar matches found: ${similarMatches.length}`);
+      matches = [...matches, ...similarMatches];
+    } catch (error) {
+      console.error('Error finding similar matches:', error);
+    }
     
     // 5. Find group matches
-    const groupMatches = await findGroupMatches(user);
-    matches = [...matches, ...groupMatches];
+    try {
+      const groupMatches = await findGroupMatches(userProfile);
+      console.log(`Group matches found: ${groupMatches.length}`);
+      matches = [...matches, ...groupMatches];
+    } catch (error) {
+      console.error('Error finding group matches:', error);
+    }
+    
+    console.log(`Total matches before filtering: ${matches.length}`);
     
     // 6. Apply location-based filtering based on user preference
-    if (user.matchingMode === 'local' && user.coordinates?.coordinates) {
-      matches = matches.filter(match => {
-        // Get matched user
-        const matchedUser = match.matchedUser;
+    // Temporarily disable location filtering if it's causing issues
+    let locationFilteredMatches = matches;
+    if (userProfile.matchingMode === 'local' && userProfile.coordinates?.coordinates) {
+      try {
+        locationFilteredMatches = matches.filter(match => {
+          // Get matched user
+          const matchedUser = match.matchedUser;
+          
+          // Skip if matched user has no coordinates
+          if (!matchedUser.profile?.coordinates?.coordinates) return false;
+          
+          // Calculate distance
+          const distance = calculateDistance(
+            userProfile.coordinates.coordinates,
+            matchedUser.profile.coordinates.coordinates
+          );
+          
+          // Check if within max distance
+          return distance <= (userProfile.maxDistance || 50);
+        });
         
-        // Skip if matched user has no coordinates
-        if (!matchedUser.coordinates?.coordinates) return false;
+        console.log(`Matches after location filtering: ${locationFilteredMatches.length}`);
         
-        // Calculate distance
-        const distance = calculateDistance(
-          user.coordinates.coordinates,
-          matchedUser.coordinates.coordinates
-        );
-        
-        // Check if within max distance
-        return distance <= (user.maxDistance || 50);
-      });
+        // If location filtering removed all matches, use the original matches
+        if (locationFilteredMatches.length === 0 && matches.length > 0) {
+          console.log('Location filtering removed all matches, using original matches');
+          locationFilteredMatches = matches;
+        }
+      } catch (error) {
+        console.error('Error applying location filtering:', error);
+        locationFilteredMatches = matches; // Use original matches if filtering fails
+      }
     }
     
     // Remove duplicates (same user, different skills)
     const uniqueMatches = [];
     const matchedUserIds = new Set();
     
-    for (const match of matches) {
+    for (const match of locationFilteredMatches) {
       if (!matchedUserIds.has(match.matchedUser.toString())) {
         uniqueMatches.push(match);
         matchedUserIds.add(match.matchedUser.toString());
       }
     }
     
+    console.log(`Unique matches: ${uniqueMatches.length}`);
+    
     // Save matches to database
     if (uniqueMatches.length > 0) {
-      await Match.insertMany(uniqueMatches);
+      try {
+        await Match.insertMany(uniqueMatches);
+        console.log(`Saved ${uniqueMatches.length} matches to database`);
+      } catch (error) {
+        console.error('Error saving matches to database:', error);
+        // If there's an error with bulk insert, try inserting one by one
+        for (const match of uniqueMatches) {
+          try {
+            await Match.create(match);
+          } catch (innerError) {
+            console.error(`Error saving match: ${innerError.message}`);
+          }
+        }
+      }
     }
     
     // Get saved matches with populated fields
     const savedMatches = await Match.find({ user: userId })
-      .populate('matchedUser skillToLearn skillToTeach')
-      .sort({ score: -1 });
+      .populate({
+        path: 'matchedUser',
+        select: 'name email',
+        populate: {
+          path: 'profile',
+          select: 'profilePic title location work preferredMode rating'
+        }
+      })
+      .populate('skillToLearn skillToTeach')
+      .populate({
+        path: 'groupChain',
+        select: 'name',
+        populate: {
+          path: 'profile',
+          select: 'profilePic'
+        }
+      });
+    
+    console.log(`Retrieved ${savedMatches.length} saved matches`);
     
     // Return matches
     return res.status(200).json({
@@ -676,7 +918,7 @@ export const generateMatches = async (req, res) => {
     });
   } catch (error) {
     console.error('Error generating matches:', error);
-    return res.status(500).json({ message: 'Error generating matches' });
+    return res.status(500).json({ message: 'Error generating matches', error: error.message });
   }
 };
 
@@ -687,7 +929,16 @@ export const generateMatches = async (req, res) => {
  */
 export const getMatches = async (req, res) => {
   try {
-    const { userId } = req.params;
+    // Get userId from params or from the authenticated user
+    let { userId } = req.params;
+    
+    // If userId is not provided in params, use the authenticated user's ID
+    if (!userId && req.userId) {
+      userId = req.userId;
+      console.log(`Using authenticated user ID: ${userId}`);
+    }
+    
+    console.log(`Getting matches for user: ${userId}`);
     
     // Validate user ID
     if (!mongoose.Types.ObjectId.isValid(userId)) {
@@ -697,17 +948,36 @@ export const getMatches = async (req, res) => {
     // Get matches for user, sorted by score
     const matches = await Match.find({ user: userId })
       .sort({ score: -1 })
-      .populate('matchedUser', 'name profilePic title location work preferredMode rating')
+      .populate({
+        path: 'matchedUser',
+        select: 'name email',
+        populate: {
+          path: 'profile',
+          select: 'profilePic title location work preferredMode rating role'
+        }
+      })
       .populate('skillToLearn skillToTeach')
       .populate({
         path: 'groupChain',
-        select: 'name profilePic'
+        select: 'name',
+        populate: {
+          path: 'profile',
+          select: 'profilePic'
+        }
       });
+    
+    console.log(`Found ${matches.length} matches for user ${userId}`);
+    
+    // If no matches found, try to generate matches
+    if (matches.length === 0) {
+      console.log(`No matches found for user ${userId}, suggesting to generate matches`);
+      return res.status(200).json([]);
+    }
     
     return res.status(200).json(matches);
   } catch (error) {
     console.error('Error getting matches:', error);
-    return res.status(500).json({ message: 'Error getting matches' });
+    return res.status(500).json({ message: 'Error getting matches', error: error.message });
   }
 };
 

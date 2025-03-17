@@ -17,8 +17,14 @@ const router = express.Router();
 // Generate matches for a user
 router.post('/generate/:userId', verifyToken, generateMatches);
 
+// Generate matches for the authenticated user
+router.post('/generate', verifyToken, generateMatches);
+
 // Get matches for a user
 router.get('/user/:userId', verifyToken, getMatches);
+
+// Get matches for the authenticated user
+router.get('/user', verifyToken, getMatches);
 
 // Update match status
 router.put('/status/:matchId', verifyToken, updateMatchStatus);

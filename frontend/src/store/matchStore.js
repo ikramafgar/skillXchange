@@ -12,7 +12,10 @@ export const useMatchStore = create((set, get) => ({
     try {
       set({ isLoading: true, error: null });
       
-      const response = await axios.get(`/api/matches/user/${userId}`);
+      // If userId is provided, use it in the URL, otherwise use the authenticated user endpoint
+      const url = userId ? `/api/matches/user/${userId}` : '/api/matches/user';
+      
+      const response = await axios.get(url);
       
       set({ 
         matches: response.data,
@@ -42,36 +45,42 @@ export const useMatchStore = create((set, get) => ({
     try {
       set({ isLoading: true, error: null });
       
-      const toastId = toast.loading('Generating matches...', { position: 'top-center' });
+      // If userId is provided, use it in the URL, otherwise use the authenticated user endpoint
+      const url = userId ? `/api/matches/generate/${userId}` : '/api/matches/generate';
       
-      const response = await axios.post(`/api/matches/generate/${userId}`);
+      // Make the API call
+      const response = await axios.post(url);
       
-      toast.dismiss(toastId);
-      toast.success('Matches generated successfully!', {
-        position: 'top-center',
-        duration: 3000
-      });
-      
-      set({ 
-        matches: response.data.matches,
-        isLoading: false 
-      });
-      
-      return response.data.matches;
+      // Check if matches were returned
+      if (response.data && response.data.matches) {
+        set({ 
+          matches: response.data.matches,
+          isLoading: false 
+        });
+        
+        return response.data.matches;
+      } else {
+        // If no matches property in response
+        set({ 
+          matches: [],
+          isLoading: false,
+          error: 'No matches found'
+        });
+        
+        return [];
+      }
     } catch (error) {
       console.error('Error generating matches:', error);
       
+      // Set error state
       set({ 
         error: error.response?.data?.message || 'Failed to generate matches',
-        isLoading: false 
+        isLoading: false,
+        matches: []
       });
       
-      toast.error(error.response?.data?.message || 'Failed to generate matches', {
-        position: 'top-center',
-        duration: 3000
-      });
-      
-      return [];
+      // Rethrow the error so the component can handle it
+      throw error;
     }
   },
   

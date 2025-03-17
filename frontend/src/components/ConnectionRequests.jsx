@@ -9,7 +9,7 @@ import { UserPlus, Check, X, Loader2 } from 'lucide-react';
 // Create a custom event for connection updates
 export const CONNECTION_UPDATED_EVENT = 'connection-updated';
 
-export default function ConnectionRequests() {
+export default function ConnectionRequests({ inSidebar = false }) {
   const [pendingRequests, setPendingRequests] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [processingIds, setProcessingIds] = useState([]);
@@ -153,51 +153,51 @@ export default function ConnectionRequests() {
   if (isLoading) {
     return (
       <div className="flex justify-center items-center p-8">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+        <Loader2 className={`w-${inSidebar ? '5' : '8'} h-${inSidebar ? '5' : '8'} animate-spin text-blue-500`} />
       </div>
     );
   }
 
   if (pendingRequests.length === 0) {
     return (
-      <div className="bg-white p-6 rounded-xl shadow-sm">
-        <div className="flex items-center mb-4">
-          <UserPlus className="w-5 h-5 text-blue-500 mr-2" />
-          <h3 className="text-lg font-semibold">Connection Requests</h3>
+      <div className={`${inSidebar ? '' : 'bg-white p-6 rounded-xl shadow-sm'}`}>
+        <div className={`flex items-center ${inSidebar ? 'mb-2' : 'mb-4'}`}>
+          <UserPlus className={`${inSidebar ? 'w-4 h-4' : 'w-5 h-5'} text-blue-500 mr-2`} />
+          <h3 className={`${inSidebar ? 'text-sm' : 'text-lg'} font-semibold`}>Connection Requests</h3>
         </div>
-        <p className="text-gray-500 text-center py-4">No pending connection requests</p>
+        <p className={`text-gray-500 text-center ${inSidebar ? 'text-xs py-2' : 'py-4'}`}>No pending connection requests</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-white p-6 rounded-xl shadow-sm">
-      <div className="flex items-center mb-4">
-        <UserPlus className="w-5 h-5 text-blue-500 mr-2" />
-        <h3 className="text-lg font-semibold">Connection Requests</h3>
+    <div className={`${inSidebar ? '' : 'bg-white p-6 rounded-xl shadow-sm'}`}>
+      <div className={`flex items-center ${inSidebar ? 'mb-2' : 'mb-4'}`}>
+        <UserPlus className={`${inSidebar ? 'w-4 h-4' : 'w-5 h-5'} text-blue-500 mr-2`} />
+        <h3 className={`${inSidebar ? 'text-sm' : 'text-lg'} font-semibold`}>Connection Requests</h3>
       </div>
       
-      <div className="space-y-4">
+      <div className={`${inSidebar ? 'space-y-2' : 'space-y-4'}`}>
         {pendingRequests.map((request) => (
           <motion.div 
             key={request._id}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
+            className={`flex items-center justify-between ${inSidebar ? 'p-2 text-sm' : 'p-4'} bg-gray-50 rounded-lg`}
           >
             <div className="flex items-center">
               <img 
                 src={request.sender.profilePic || '/default-avatar.png'} 
                 alt={request.sender.name}
-                className="w-10 h-10 rounded-full mr-3 object-cover"
+                className={`${inSidebar ? 'w-8 h-8' : 'w-10 h-10'} rounded-full mr-3 object-cover`}
                 onError={(e) => {
                   e.target.src = '/default-avatar.png';
                 }}
               />
               <div>
-                <p className="font-medium text-gray-800">{request.sender.name}</p>
-                <p className="text-sm text-gray-500">Wants to connect with you</p>
+                <p className={`font-medium text-gray-800 ${inSidebar ? 'text-xs' : ''}`}>{request.sender.name}</p>
+                <p className={`${inSidebar ? 'text-xs' : 'text-sm'} text-gray-500`}>Wants to connect with you</p>
               </div>
             </div>
             
@@ -205,24 +205,24 @@ export default function ConnectionRequests() {
               <button
                 onClick={() => handleResponse(request._id, 'accepted', request.sender)}
                 disabled={processingIds.includes(request._id)}
-                className="p-2 bg-green-100 text-green-600 rounded-full hover:bg-green-200 transition-colors disabled:opacity-50"
+                className={`${inSidebar ? 'p-1.5' : 'p-2'} bg-green-100 text-green-600 rounded-full hover:bg-green-200 transition-colors disabled:opacity-50`}
               >
                 {processingIds.includes(request._id) ? (
-                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <Loader2 className={`${inSidebar ? 'w-4 h-4' : 'w-5 h-5'} animate-spin`} />
                 ) : (
-                  <Check className="w-5 h-5" />
+                  <Check className={`${inSidebar ? 'w-4 h-4' : 'w-5 h-5'}`} />
                 )}
               </button>
               
               <button
-                onClick={() => handleResponse(request._id, 'rejected')}
+                onClick={() => handleResponse(request._id, 'rejected', request.sender)}
                 disabled={processingIds.includes(request._id)}
-                className="p-2 bg-red-100 text-red-600 rounded-full hover:bg-red-200 transition-colors disabled:opacity-50"
+                className={`${inSidebar ? 'p-1.5' : 'p-2'} bg-red-100 text-red-600 rounded-full hover:bg-red-200 transition-colors disabled:opacity-50`}
               >
                 {processingIds.includes(request._id) ? (
-                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <Loader2 className={`${inSidebar ? 'w-4 h-4' : 'w-5 h-5'} animate-spin`} />
                 ) : (
-                  <X className="w-5 h-5" />
+                  <X className={`${inSidebar ? 'w-4 h-4' : 'w-5 h-5'}`} />
                 )}
               </button>
             </div>

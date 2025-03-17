@@ -39,8 +39,17 @@ function Skills() {
         setIsLoading(true);
         
         // If user is logged in, fetch matches
-        if (loggedInUser?._id) {
-          await matchStore.getMatches(loggedInUser._id);
+        if (loggedInUser) {
+          try {
+            // Try to fetch matches for the authenticated user
+            await matchStore.getMatches();
+          } catch (error) {
+            console.error('Error fetching matches:', error);
+            // If there's an error, try with explicit user ID
+            if (loggedInUser._id) {
+              await matchStore.getMatches(loggedInUser._id);
+            }
+          }
         }
         
         // Also fetch all users as fallback
@@ -221,15 +230,23 @@ function Skills() {
       return (
         <>
           <MatchFilterSection />
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 lg:gap-6 auto-rows-fr">
-            {searchFilteredMatches.map(match => (
-              <MatchCard 
-                key={match._id} 
-                match={match} 
-                onViewProfile={visitProfile} 
-              />
+          <div className="flex justify-center items-start">
+            {searchFilteredMatches.map((match, index) => (
+              <div key={match._id} className={index === 0 ? "block w-full max-w-[280px] mx-auto" : "hidden"}>
+                <MatchCard 
+                  match={match} 
+                  onViewProfile={visitProfile} 
+                />
+              </div>
             ))}
           </div>
+          {searchFilteredMatches.length > 1 && (
+            <div className="mt-6 flex justify-center">
+              <p className="text-sm text-gray-600">
+                Showing 1 of {searchFilteredMatches.length} matches
+              </p>
+            </div>
+          )}
         </>
       );
     }
@@ -244,89 +261,90 @@ function Skills() {
     }
 
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 lg:gap-6 auto-rows-fr">
-        {filteredUsers.map(user => (
-          <motion.div
-            key={user._id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100 hover:shadow-xl transition-shadow duration-300 h-full flex flex-col"
-          >
-            <div className="p-4 lg:p-5 flex-1 flex flex-col">
-              <div className="flex flex-col items-center flex-1">
-                {/* Profile Picture */}
-                <div className="mb-3">
-                  <img
-                    src={user.profilePic || 'https://via.placeholder.com/80'}
-                    alt={user.name}
-                    className="w-16 h-16 md:w-20 md:h-20 rounded-full object-cover shadow-md border-2 border-gray-100"
-                    onError={(e) => {
-                      e.target.src = 'https://via.placeholder.com/80';
-                    }}
-                  />
-                </div>
-
-                {/* User Info */}
-                <div className="text-center w-full flex-1 flex flex-col">
-                  <h3 className="font-bold text-base lg:text-lg text-gray-800 mb-1 truncate">{user.name}</h3>
-                  <p className="text-gray-600 text-xs lg:text-sm mb-2 truncate">{user.title || 'Skill Enthusiast'}</p>
-                  
-                  {/* Location and Work */}
-                  <div className="flex flex-col sm:flex-row items-center justify-center gap-2 mb-3 text-xs">
-                    {user.location && (
-                      <div className="flex items-center text-gray-600">
-                        <MapPin className="w-3 h-3 mr-1" />
-                        <span className="truncate max-w-[100px]">{user.location}</span>
-                      </div>
-                    )}
-                    {user.work && (
-                      <div className="flex items-center text-gray-600">
-                        <Briefcase className="w-3 h-3 mr-1" />
-                        <span className="truncate max-w-[100px]">{user.work}</span>
-                      </div>
-                    )}
+      <div className="flex justify-center items-start">
+        {filteredUsers.map((user, index) => (
+          <div key={user._id} className={index === 0 ? "block w-full max-w-[280px] mx-auto" : "hidden"}>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100 hover:shadow-xl transition-shadow duration-300 h-full flex flex-col"
+            >
+              <div className="p-4 lg:p-5 flex-1 flex flex-col">
+                <div className="flex flex-col items-center flex-1">
+                  {/* Profile Picture */}
+                  <div className="mb-3">
+                    <img
+                      src={user.profilePic || 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 80 80"%3E%3Crect width="80" height="80" fill="%23e2e8f0"/%3E%3Ctext x="50%25" y="50%25" font-family="Arial" font-size="20" fill="%2394a3b8" text-anchor="middle" dominant-baseline="middle"%3E%3F%3C/text%3E%3C/svg%3E'}
+                      alt={user.name}
+                      className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-md"
+                      onError={(e) => {
+                        e.target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 80 80"%3E%3Crect width="80" height="80" fill="%23e2e8f0"/%3E%3Ctext x="50%25" y="50%25" font-family="Arial" font-size="20" fill="%2394a3b8" text-anchor="middle" dominant-baseline="middle"%3E%3F%3C/text%3E%3C/svg%3E';
+                      }}
+                    />
                   </div>
 
-                  {/* Skills */}
-                  <div className="mb-4 flex-1">
-                    <div className="flex flex-wrap gap-1 justify-center">
-                      {user.skills?.slice(0, 3).map((skill, index) => (
-                        <span 
-                          key={index} 
-                          className="px-2 py-0.5 bg-blue-50 text-blue-600 rounded-full text-xs font-medium truncate max-w-[90px]"
-                        >
-                          {skill}
-                        </span>
-                      ))}
-                      {user.skills?.length > 3 && (
-                        <span className="px-2 py-0.5 bg-gray-50 text-gray-600 rounded-full text-xs font-medium">
-                          +{user.skills.length - 3} more
-                        </span>
+                  {/* User Info */}
+                  <div className="text-center w-full flex-1 flex flex-col">
+                    <h3 className="font-bold text-base lg:text-lg text-gray-800 mb-1 truncate">{user.name}</h3>
+                    <p className="text-gray-600 text-xs lg:text-sm mb-2 truncate">{user.title || 'Skill Enthusiast'}</p>
+                    
+                    {/* Location and Work */}
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-2 mb-3 text-xs">
+                      {user.location && (
+                        <div className="flex items-center text-gray-600">
+                          <MapPin className="w-3 h-3 mr-1" />
+                          <span className="truncate max-w-[100px]">{user.location}</span>
+                        </div>
+                      )}
+                      {user.work && (
+                        <div className="flex items-center text-gray-600">
+                          <Briefcase className="w-3 h-3 mr-1" />
+                          <span className="truncate max-w-[100px]">{user.work}</span>
+                        </div>
                       )}
                     </div>
-                  </div>
 
-                  {/* Action Buttons */}
-                  <div className="grid grid-cols-2 gap-2 w-full mt-auto">
-                    <button
-                      onClick={() => visitProfile(user._id)}
-                      className="flex items-center justify-center gap-1 px-2 py-1.5 md:px-3 md:py-2 bg-white border border-blue-500 text-blue-500 rounded-lg hover:bg-blue-50 transition-colors duration-300 text-xs md:text-sm font-medium w-full whitespace-nowrap"
-                    >
-                      <Eye className="w-3 h-3 md:w-4 md:h-4 flex-shrink-0" />
-                      <span>View Profile</span>
-                    </button>
-                    <button
-                      onClick={() => handleConnect(user._id, user.name)}
-                      className="flex items-center justify-center gap-1 px-2 py-1.5 md:px-3 md:py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-300 text-xs md:text-sm font-medium w-full whitespace-nowrap"
-                    >
-                      <Users className="w-3 h-3 md:w-4 md:h-4 flex-shrink-0" />
-                      <span>Connect</span>
-                    </button>
+                    {/* Skills */}
+                    <div className="mb-4 flex-1">
+                      <div className="flex flex-wrap gap-1 justify-center">
+                        {user.skills?.slice(0, 3).map((skill, index) => (
+                          <span 
+                            key={index} 
+                            className="px-2 py-0.5 bg-blue-50 text-blue-600 rounded-full text-xs font-medium truncate max-w-[90px]"
+                          >
+                            {skill}
+                          </span>
+                        ))}
+                        {user.skills?.length > 3 && (
+                          <span className="px-2 py-0.5 bg-gray-50 text-gray-600 rounded-full text-xs font-medium">
+                            +{user.skills.length - 3} more
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="grid grid-cols-2 gap-2 w-full mt-auto">
+                      <button
+                        onClick={() => visitProfile(user._id)}
+                        className="flex items-center justify-center gap-1 px-2 py-1.5 md:px-3 md:py-2 bg-white border border-blue-500 text-blue-500 rounded-lg hover:bg-blue-50 transition-colors duration-300 text-xs md:text-sm font-medium w-full whitespace-nowrap"
+                      >
+                        <Eye className="w-3 h-3 md:w-4 md:h-4 flex-shrink-0" />
+                        <span>View Profile</span>
+                      </button>
+                      <button
+                        onClick={() => handleConnect(user._id, user.name)}
+                        className="flex items-center justify-center gap-1 px-2 py-1.5 md:px-3 md:py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-300 text-xs md:text-sm font-medium w-full whitespace-nowrap"
+                      >
+                        <Users className="w-3 h-3 md:w-4 md:h-4 flex-shrink-0" />
+                        <span>Connect</span>
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          </motion.div>
+            </motion.div>
+          </div>
         ))}
       </div>
     );
@@ -396,7 +414,7 @@ function Skills() {
   };
 
   const handleGenerateMatches = async () => {
-    if (!loggedInUser?._id) {
+    if (!loggedInUser) {
       toast.error('You must be logged in to generate matches', {
         position: 'top-center',
         duration: 3000
@@ -404,7 +422,58 @@ function Skills() {
       return;
     }
     
-    await matchStore.generateMatches(loggedInUser._id);
+    // Show loading toast
+    const toastId = toast.loading('Generating matches...', { position: 'top-center' });
+    
+    try {
+      // Check if user has skills
+      if ((!loggedInUser.skillsToLearn || loggedInUser.skillsToLearn.length === 0) && 
+          (!loggedInUser.skillsToTeach || loggedInUser.skillsToTeach.length === 0)) {
+        toast.dismiss(toastId);
+        toast.error('Please add skills to your profile before generating matches', {
+          position: 'top-center',
+          duration: 4000
+        });
+        return;
+      }
+      
+      // Generate matches using the authenticated user endpoint
+      const matches = await matchStore.generateMatches();
+      
+      toast.dismiss(toastId);
+      
+      if (!matches || matches.length === 0) {
+        toast.error('No matches found. Try adding more skills to your profile.', {
+          position: 'top-center',
+          duration: 4000
+        });
+      } else {
+        toast.success(`Found ${matches.length} matches!`, {
+          position: 'top-center',
+          duration: 3000
+        });
+      }
+    } catch (error) {
+      toast.dismiss(toastId);
+      console.error('Error generating matches:', error);
+      
+      if (error.response?.status === 404) {
+        toast.error('User not found. Please try logging in again.', {
+          position: 'top-center',
+          duration: 4000
+        });
+      } else if (error.response?.data?.message) {
+        toast.error(error.response.data.message, {
+          position: 'top-center',
+          duration: 4000
+        });
+      } else {
+        toast.error('Failed to generate matches. Please try again later.', {
+          position: 'top-center',
+          duration: 4000
+        });
+      }
+    }
   };
 
   const filteredUsers = users.filter(user =>

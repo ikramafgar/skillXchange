@@ -256,6 +256,11 @@ function Dashboard() {
                     <span className="ml-3">Connections</span>
                     <span className="ml-auto bg-blue-100 text-blue-600 text-xs font-medium px-2 py-0.5 rounded-full">3</span>
                   </button>
+                  {showConnectionRequests && (
+                    <div className="mt-2 pl-10 pr-3">
+                      <ConnectionRequests inSidebar={true} />
+                    </div>
+                  )}
                 </li>
                 <li>
                   <div className="flex items-center px-3 py-2.5 rounded-lg text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 relative">
