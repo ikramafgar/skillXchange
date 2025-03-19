@@ -22,7 +22,7 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import UserProfileModal from './UserProfilePage';
 import MatchCard from '../components/MatchCard';
 
-function Skills() {
+function XFeed() {
   const [users, setUsers] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(true);
@@ -574,4 +574,4 @@ function Skills() {
   );
 }
 
-export default Skills;
+export default XFeed;

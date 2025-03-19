@@ -19,7 +19,7 @@ import HomePage from "./pages/HomePage";
 import AboutPage from "./pages/AboutPage";
 import LoginPage from "./pages/LoginPage";
 import SignUpPage from "./pages/SignUpPage";
-import SkillsPage from "./pages/SkillsPage";
+// import Xconnect from "./pages/SkillsPage";
 import ProfilePage from "./pages/ProfilePage";
 import UserProfilePage from "./pages/UserProfilePage"; // New Profile Page
 import DashboardPage from "./pages/DashboardPage";
@@ -29,6 +29,7 @@ import EmailVerificationPage from "./pages/EmailVerificationPage";
 import HelpPage from "./pages/HelpPage";
 import AuthCallbackPage from "./pages/AuthCallbackPage"; // Import the Auth callback component
 import AdminPage from "./pages/AdminPage"; // Import the Admin page component
+import XFeed from "./pages/XFeedPage";
 
 // Protect routes that require authentication
 const ProtectedRoute = ({ children }) => {
@@ -113,7 +114,7 @@ function App() {
         <Route path="/about" element={<AboutPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignUpPage />} />
-        <Route path="/skills" element={<SkillsPage />} />
+        <Route path="/xfeed" element={<XFeed />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/profile/:userId" element={<UserProfilePage />} /> {/* New Profile Page */}
         <Route path="/contact" element={<Contact />} />
