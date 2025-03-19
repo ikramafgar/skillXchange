@@ -15,7 +15,6 @@ import {
   FiX,
   FiHome,
   FiSettings,
-  FiBell,
   FiChevronRight,
   FiTrendingUp,
   FiCalendar,
@@ -23,7 +22,6 @@ import {
 } from 'react-icons/fi';
 import { format } from 'date-fns';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import Notifications from '../components/Notifications';
 
 function Dashboard() {
   const { profile, role, isLoading, fetchProfile } = useProfileStore();
@@ -160,8 +158,6 @@ function Dashboard() {
               <FiX className="w-4 h-4" />
             </button>
             
-         
-
             {/* User Profile */}
             <div className="p-5 border-b border-gray-100">
               <div className="flex items-center space-x-4">
@@ -240,7 +236,7 @@ function Dashboard() {
                 <h3 className="text-xs uppercase font-semibold text-gray-500 tracking-wider">Social</h3>
               </div>
               <ul className="mt-2 space-y-1.5">
-                {/* Connection Requests and Notifications */}
+                {/* Connection Requests */}
                 <li>
                   <button
                     onClick={toggleConnectionRequests}
@@ -261,15 +257,6 @@ function Dashboard() {
                       <ConnectionRequests inSidebar={true} />
                     </div>
                   )}
-                </li>
-                <li>
-                  <div className="flex items-center px-3 py-2.5 rounded-lg text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 relative">
-                    <span className="text-gray-400"><FiBell className="w-5 h-5" /></span>
-                    <span className="ml-3">Notifications</span>
-                    <div className="notifications-container ml-auto">
-                      <Notifications inSidebar={true} />
-                    </div>
-                  </div>
                 </li>
               </ul>
               

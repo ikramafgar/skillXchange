@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, useScroll } from "framer-motion";
 import {
   Menu,
@@ -12,17 +12,23 @@ import {
   Shield,
   User,
   LogOut,
+  Bell,
 } from "lucide-react";
 import { useAuthStore } from "../store/authStore";
 import { useNavigate, useLocation, Link } from "react-router-dom";
+import Notifications from "../components/Notifications";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [showDesktopNotifications, setShowDesktopNotifications] = useState(false);
+  const [showMobileNotifications, setShowMobileNotifications] = useState(false);
   const { scrollY } = useScroll();
   const { isAuthenticated, isAdmin, logout, checkAuth } = useAuthStore((state) => state);
   const navigate = useNavigate();
   const location = useLocation();
+  const desktopNotificationsRef = useRef(null);
+  const mobileNotificationsRef = useRef(null);
 
   useEffect(() => {
     return scrollY.on("change", () => setIsScrolled(scrollY.get() > 20));
@@ -31,6 +37,24 @@ const Navbar = () => {
   useEffect(() => {
     checkAuth();
   }, [checkAuth]);
+
+  // Close notifications panel when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (desktopNotificationsRef.current && !desktopNotificationsRef.current.contains(event.target)) {
+        setShowDesktopNotifications(false);
+      }
+      if (mobileNotificationsRef.current && !mobileNotificationsRef.current.contains(event.target) &&
+          !event.target.closest('.mobile-notifications-trigger')) {
+        setShowMobileNotifications(false);
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [desktopNotificationsRef, mobileNotificationsRef]);
 
   const handleLogoClick = () => {
     if (isAuthenticated) {
@@ -47,6 +71,20 @@ const Navbar = () => {
     } catch (error) {
       console.error('Logout error:', error);
     }
+  };
+
+  const toggleDesktopNotifications = () => {
+    setShowDesktopNotifications(!showDesktopNotifications);
+  };
+
+  const toggleMobileNotifications = (e) => {
+    e.stopPropagation();
+    setShowMobileNotifications(!showMobileNotifications);
+    // Keep the menu open when showing notifications
+  };
+
+  const closeMobileNotifications = () => {
+    setShowMobileNotifications(false);
   };
 
   const navItemsBeforeLogin = [
@@ -117,10 +155,32 @@ const Navbar = () => {
                 />
               </Link>
             ))}
+            
+            {/* Add Notifications component after all navigation items on desktop */}
+            {isAuthenticated && (
+              <div className="relative" ref={desktopNotificationsRef}>
+                <button
+                  onClick={toggleDesktopNotifications}
+                  className="relative p-1.5 rounded-full text-gray-700 hover:text-violet-400 transition-colors focus:outline-none"
+                  aria-label="Notifications"
+                >
+                  <Bell className="w-6 h-6" />
+                  <div className="absolute -top-1 -right-1">
+                    <Notifications inMobileMenu={true} />
+                  </div>
+                </button>
+                
+                {showDesktopNotifications && (
+                  <div className="absolute right-0 top-12 w-72 sm:w-80 md:w-96 bg-white rounded-xl shadow-xl border border-gray-200 max-h-[80vh] overflow-hidden z-50">
+                    <Notifications isOpen={true} />
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
-          {/* Mobile menu button */}
-          <div className="md:hidden">
+          {/* Mobile menu button - WITHOUT notifications */}
+          <div className="md:hidden flex items-center">
             <motion.button
               whileTap={{ scale: 0.95 }}
               onClick={() => setIsOpen(!isOpen)}
@@ -163,10 +223,60 @@ const Navbar = () => {
               </motion.div>
             </Link>
           ))}
+          
+          {/* Add Notifications item to mobile menu */}
+          {isAuthenticated && (
+            <div 
+              onClick={toggleMobileNotifications}
+              className={`mobile-notifications-trigger flex items-center justify-between w-full px-3 py-2 rounded-md text-gray-700 hover:text-violet-400 hover:bg-gray-50 cursor-pointer ${
+                showMobileNotifications ? 'bg-violet-400/20 text-violet-600' : ''
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <Bell className="w-4 h-4" />
+                <span>Notifications</span>
+              </div>
+              <div className="relative">
+                <Notifications inMobileMenu={true} />
+              </div>
+            </div>
+          )}
         </div>
       </motion.div>
+      
+      {/* Mobile Notifications Panel - Fixed Overlay */}
+      {showMobileNotifications && (
+        <div 
+          className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 flex justify-center items-center p-4"
+          onClick={closeMobileNotifications}
+        >
+          <div 
+            ref={mobileNotificationsRef}
+            className="bg-white rounded-xl shadow-xl w-full max-w-md max-h-[90vh] overflow-hidden"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex justify-between items-center p-4 border-b border-gray-100">
+              <h3 className="font-semibold text-gray-800">Notifications</h3>
+              <button 
+                onClick={closeMobileNotifications}
+                className="p-1.5 rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="overflow-y-auto" style={{ maxHeight: 'calc(90vh - 4rem)' }}>
+              <Notifications isOpen={true} />
+            </div>
+          </div>
+        </div>
+      )}
     </motion.nav>
   );
 };
+
+// Helper function to detect mobile view
+function isMobileView() {
+  return window.innerWidth < 768; // md breakpoint in Tailwind
+}
 
 export default Navbar;

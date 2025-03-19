@@ -8,14 +8,19 @@ import { Link } from 'react-router-dom';
 import { CONNECTION_UPDATED_EVENT } from './ConnectionRequests';
 import { motion, AnimatePresence } from 'framer-motion';
 
-export default function Notifications({ inSidebar = false }) {
+export default function Notifications({ inSidebar = false, inMobileMenu = false, isOpen = false }) {
   const [notifications, setNotifications] = useState([]);
   const [viewedNotifications, setViewedNotifications] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
+  const [showPanel, setShowPanel] = useState(isOpen);
   const notificationRef = useRef(null);
   const { user } = useAuthStore();
   const { respondToConnection, fetchConnections } = useConnectionStore();
+
+  // Update showPanel when isOpen prop changes
+  useEffect(() => {
+    setShowPanel(isOpen);
+  }, [isOpen]);
 
   // Initialize socket connection and fetch pending connections
   useEffect(() => {
@@ -309,7 +314,7 @@ export default function Notifications({ inSidebar = false }) {
   useEffect(() => {
     function handleClickOutside(event) {
       if (notificationRef.current && !notificationRef.current.contains(event.target)) {
-        setIsOpen(false);
+        setShowPanel(false);
       }
     }
 
@@ -321,7 +326,7 @@ export default function Notifications({ inSidebar = false }) {
 
   // Mark notifications as viewed when panel is opened
   useEffect(() => {
-    if (isOpen && notifications.length > 0) {
+    if (showPanel && notifications.length > 0) {
       const unreadNotifications = notifications.filter(n => !n.read);
       if (unreadNotifications.length > 0) {
         // Mark all as read
@@ -336,7 +341,7 @@ export default function Notifications({ inSidebar = false }) {
         ]);
       }
     }
-  }, [isOpen, notifications]);
+  }, [showPanel, notifications]);
 
   // Handle response to connection request
   const handleResponse = async (connectionId, status) => {
@@ -386,18 +391,124 @@ export default function Notifications({ inSidebar = false }) {
   // Get unread count
   const unreadCount = notifications.filter(n => !n.read).length;
 
+  // Don't render the bell if in mobile menu, just show the counter
+  if (inMobileMenu) {
+    return (
+      <div className="relative inline-block">
+        {unreadCount > 0 && (
+          <span className="flex items-center justify-center h-5 min-w-5 px-1 bg-red-500 text-white text-xs font-bold rounded-full">
+            {unreadCount}
+          </span>
+        )}
+      </div>
+    );
+  }
+
+  // If isOpen is true, only render the content panel
+  if (isOpen) {
+    return (
+      <>
+        <div className="flex items-center justify-between p-4 border-b border-gray-100">
+          <h3 className="font-semibold text-gray-800">Notifications</h3>
+        </div>
+        
+        <div className="overflow-y-auto max-h-[calc(80vh-8rem)] md:max-h-[400px]">
+          {isLoading ? (
+            <div className="flex justify-center items-center p-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+            </div>
+          ) : notifications.length > 0 ? (
+            <div>
+              {notifications.map(notification => (
+                <div 
+                  key={notification.id} 
+                  className={`p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors ${notification.read ? 'bg-white' : 'bg-blue-50'}`}
+                >
+                  {notification.type === 'request' && (
+                    <div className="flex items-start">
+                      <div className="flex-shrink-0">
+                        <img 
+                          className="h-10 w-10 rounded-full object-cover border border-gray-200" 
+                          src={notification.sender.profilePic || 'images/default-avatar.png'} 
+                          alt={notification.sender.name}
+                          onError={(e) => {
+                            e.target.src = 'images/default-avatar.png';
+                          }}
+                        />
+                      </div>
+                      <div className="ml-3 flex-1">
+                        <div className="flex justify-between">
+                          <p className="text-sm font-medium text-gray-900">
+                            {notification.sender.name}
+                          </p>
+                          <span className="text-xs text-gray-500 flex items-center">
+                            <Clock className="w-3 h-3 mr-1" />
+                            {formatRelativeTime(notification.timestamp)}
+                          </span>
+                        </div>
+                        <p className="text-sm text-gray-600 mt-1">
+                          Sent you a connection request
+                        </p>
+                        <div className="mt-3 flex space-x-2">
+                          <button
+                            onClick={() => handleResponse(notification.id, 'accepted')}
+                            className="flex-1 inline-flex justify-center items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-lg shadow-sm text-white bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 focus:outline-none"
+                          >
+                            <Check className="w-3 h-3 mr-1" />
+                            Accept
+                          </button>
+                          <button
+                            onClick={() => handleResponse(notification.id, 'rejected')}
+                            className="flex-1 inline-flex justify-center items-center px-3 py-1.5 border border-gray-300 text-xs font-medium rounded-lg shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none"
+                          >
+                            <X className="w-3 h-3 mr-1" />
+                            Decline
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="p-8 text-center">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
+                <Bell className="w-8 h-8 text-gray-400" />
+              </div>
+              <p className="text-gray-600 font-medium">No new notifications</p>
+              <p className="text-sm text-gray-500 mt-1">We'll notify you when something arrives</p>
+            </div>
+          )}
+        </div>
+        
+        {viewedNotifications.length > 0 && (
+          <div className="p-3 border-t border-gray-100 bg-gray-50">
+            <button
+              onClick={() => setViewedNotifications([])}
+              className="w-full text-xs text-blue-600 hover:text-blue-800 font-medium focus:outline-none"
+            >
+              Clear all viewed notifications
+            </button>
+          </div>
+        )}
+      </>
+    );
+  }
+
+  // Default bell button rendering
   return (
     <div className="relative inline-block notifications-container" ref={notificationRef}>
       <button
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => setShowPanel(!showPanel)}
         className={`relative p-1.5 rounded-full ${
           inSidebar 
             ? 'hover:bg-gray-100' 
-            : 'bg-gray-100 hover:bg-gray-200'
-        } transition-colors focus:outline-none`}
+            : 'text-gray-700 hover:text-violet-400 transition-colors'
+        } focus:outline-none`}
         aria-label="Notifications"
       >
-        <Bell className={`${inSidebar ? 'w-5 h-5' : 'w-6 h-6'} ${unreadCount > 0 ? 'text-blue-500' : 'text-gray-500'}`} />
+        <Bell className={`${inSidebar ? 'w-5 h-5' : 'w-6 h-6'} ${unreadCount > 0 ? 'text-blue-500' : ''}`} />
         {unreadCount > 0 && (
           <span className="absolute -top-1 -right-1 flex items-center justify-center w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full animate-pulse">
             {unreadCount}
@@ -406,30 +517,29 @@ export default function Notifications({ inSidebar = false }) {
       </button>
 
       <AnimatePresence>
-        {isOpen && (
+        {showPanel && (
           <motion.div 
             initial={{ opacity: 0, y: -10, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className={`fixed notification-dropdown ${
+            className={`absolute notification-dropdown ${
               inSidebar 
                 ? 'right-4 top-20 w-72 sm:w-80' 
-                : 'right-4 top-20 w-80 sm:w-96'
-            } bg-white rounded-xl shadow-xl border border-gray-200 max-h-[80vh] overflow-hidden`}
-            style={{ transform: 'translateX(0)' }}
+                : 'right-0 top-12 w-72 sm:w-80 md:w-96'
+            } bg-white rounded-xl shadow-xl border border-gray-200 max-h-[80vh] overflow-hidden z-50`}
           >
             <div className="flex items-center justify-between p-4 border-b border-gray-100">
               <h3 className="font-semibold text-gray-800">Notifications</h3>
               <button 
-                onClick={() => setIsOpen(false)}
+                onClick={() => setShowPanel(false)}
                 className="text-gray-400 hover:text-gray-600 focus:outline-none"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
             
-            <div className="overflow-y-auto max-h-[calc(80vh-8rem)]">
+            <div className="overflow-y-auto max-h-[calc(80vh-8rem)] md:max-h-[400px]">
               {isLoading ? (
                 <div className="flex justify-center items-center p-8">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
