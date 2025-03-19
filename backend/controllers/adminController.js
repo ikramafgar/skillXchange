@@ -1,5 +1,6 @@
 import Profile from '../models/Profile.js';
 import User from '../models/User.js';
+import ContactMessage from '../models/ContactMessage.js';
 
 // Get all teachers with pending verification
 export const getPendingTeachers = async (req, res) => {
@@ -112,13 +113,19 @@ export const getAdminStats = async (req, res) => {
         { role: 'both', verificationStatus: 'approved' }
       ]
     });
+    
+    // Add contact message counts
+    const totalContactMessages = await ContactMessage.countDocuments();
+    const unreadContactMessages = await ContactMessage.countDocuments({ status: 'unread' });
 
     res.json({
       totalUsers,
       totalTeachers,
       totalLearners,
       pendingVerifications,
-      verifiedTeachers
+      verifiedTeachers,
+      totalContactMessages,
+      unreadContactMessages
     });
   } catch (error) {
     console.error('Error fetching admin stats:', error);

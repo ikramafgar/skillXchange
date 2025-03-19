@@ -66,7 +66,7 @@ const Navbar = () => {
 
   const handleLogoClick = () => {
     if (isAuthenticated) {
-      navigate("/skills");
+      navigate("/xfeed");
     } else {
       navigate("/");
     }
@@ -307,10 +307,5 @@ const Navbar = () => {
     </motion.nav>
   );
 };
-
-// Helper function to detect mobile view
-function isMobileView() {
-  return window.innerWidth < 768; // md breakpoint in Tailwind
-}
 
 export default Navbar;

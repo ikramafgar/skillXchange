@@ -16,12 +16,12 @@ import {
   ExternalLink,
   Loader2,
   AlertCircle,
-
   UserCheck,
-  Shield,
-  BookOpen
+  BookOpen,
+  Mail
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import ContactMessages from './ContactMessages';
 
 const AdminPanel = () => {
   const { isAdmin } = useAuthStore();
@@ -31,7 +31,9 @@ const AdminPanel = () => {
     totalTeachers: 0,
     totalLearners: 0,
     pendingVerifications: 0,
-    verifiedTeachers: 0
+    verifiedTeachers: 0,
+    totalContactMessages: 0,
+    unreadContactMessages: 0
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -39,6 +41,7 @@ const AdminPanel = () => {
   const [rejectionReason, setRejectionReason] = useState('');
   const [showRejectionForm, setShowRejectionForm] = useState(false);
   const [selectedTeacherId, setSelectedTeacherId] = useState(null);
+  const [activeTab, setActiveTab] = useState('teachers'); // 'teachers' or 'messages'
  
 
   const statsCards = [
@@ -71,11 +74,12 @@ const AdminPanel = () => {
       bgGlow: "from-amber-400/20 to-transparent"
     },
     { 
-      title: "Verified Teachers",
-      value: stats.verifiedTeachers,
-      icon: <Shield />,
-      color: "from-rose-500 to-rose-600",
-      bgGlow: "from-rose-400/20 to-transparent"
+      title: "Unread Messages",
+      value: stats.unreadContactMessages,
+      icon: <Mail />,
+      color: "from-pink-500 to-pink-600",
+      bgGlow: "from-pink-400/20 to-transparent",
+      onClick: () => setActiveTab('messages')
     }
   ];
 
@@ -220,7 +224,8 @@ const AdminPanel = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1 }}
-            className="bg-white rounded-2xl shadow-lg overflow-hidden relative group hover:shadow-xl transition-all duration-300"
+            className={`bg-white rounded-2xl shadow-lg overflow-hidden relative group hover:shadow-xl transition-all duration-300 ${card.onClick ? 'cursor-pointer' : ''}`}
+            onClick={card.onClick}
           >
             <div className={`absolute inset-0 bg-gradient-to-br ${card.bgGlow} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
             <div className="p-6 relative z-10">
@@ -236,209 +241,267 @@ const AdminPanel = () => {
         ))}
       </motion.div>
 
-      {/* Pending Verifications Section */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="bg-white rounded-2xl shadow-lg p-6 lg:p-8"
-      >
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-r from-violet-500 to-violet-600 flex items-center justify-center text-white">
-              <UserCheck />
-            </div>
-            <h2 className="text-xl font-bold text-gray-800">Pending Verifications</h2>
-          </div>
-          <span className="px-4 py-2 bg-violet-100 text-violet-700 rounded-xl font-medium">
-            {pendingTeachers.length} pending
-          </span>
+      {/* Tabs */}
+      <div className="bg-white rounded-xl shadow-sm p-2 mb-8">
+        <div className="flex">
+          <button
+            className={`flex-1 py-3 px-4 rounded-lg font-medium text-sm transition-all ${
+              activeTab === 'teachers'
+                ? 'bg-blue-50 text-blue-700'
+                : 'text-gray-600 hover:bg-gray-50'
+            }`}
+            onClick={() => setActiveTab('teachers')}
+          >
+            Pending Teacher Verifications
+          </button>
+          <button
+            className={`flex-1 py-3 px-4 rounded-lg font-medium text-sm transition-all ${
+              activeTab === 'messages'
+                ? 'bg-purple-50 text-purple-700'
+                : 'text-gray-600 hover:bg-gray-50'
+            }`}
+            onClick={() => setActiveTab('messages')}
+          >
+            Contact Messages
+            {stats.unreadContactMessages > 0 && (
+              <span className="ml-2 px-2 py-0.5 bg-purple-100 text-purple-700 rounded-full text-xs">
+                {stats.unreadContactMessages}
+              </span>
+            )}
+          </button>
         </div>
+      </div>
 
-        <div className="space-y-4">
-          {pendingTeachers.map((teacher) => (
-            <AnimatePresence key={teacher._id}>
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                className="border border-gray-100 rounded-xl p-6 hover:shadow-lg transition-all duration-300"
-              >
-                {/* ... existing teacher verification UI with enhanced styling ... */}
-                <div key={teacher._id} className="border border-gray-200 rounded-xl overflow-hidden transition-all duration-200 hover:shadow-md">
-                  {/* Teacher Header */}
-                  <div 
-                    className={`p-4 flex justify-between items-center cursor-pointer transition-colors ${
-                      expandedTeacher === teacher._id ? 'bg-indigo-50' : 'bg-gray-50 hover:bg-gray-100'
-                    }`}
-                    onClick={() => toggleTeacherExpansion(teacher._id)}
-                  >
-                    <div className="flex items-center">
-                      <div className={`p-2 rounded-lg mr-3 ${
-                        expandedTeacher === teacher._id ? 'bg-indigo-100' : 'bg-gray-200'
-                      }`}>
-                        <User className={`${
-                          expandedTeacher === teacher._id ? 'text-indigo-600' : 'text-gray-600'
-                        }`} size={20} />
-                      </div>
-                      <div>
-                        <h4 className="font-medium text-gray-800">
-                          {teacher.user?.name || 'Unknown Teacher'}
-                        </h4>
-                        <p className="text-sm text-gray-500">{teacher.user?.email}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center">
-                      <span className="px-3 py-1 bg-amber-100 text-amber-800 rounded-full text-xs font-medium mr-3">
-                        {teacher.role}
-                      </span>
-                      {expandedTeacher === teacher._id ? (
-                        <ChevronUp size={20} className="text-indigo-600" />
-                      ) : (
-                        <ChevronDown size={20} className="text-gray-500" />
-                      )}
-                    </div>
+      {/* Active Tab Content */}
+      <AnimatePresence mode="wait">
+        {activeTab === 'teachers' ? (
+          <motion.div
+            key="teachers"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+          >
+            {/* Pending Verifications Section */}
+            <div className="bg-white rounded-2xl shadow-lg p-6 lg:p-8">
+              <div className="flex items-center justify-between mb-8">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-r from-violet-500 to-violet-600 flex items-center justify-center text-white">
+                    <UserCheck />
                   </div>
-                  
-                  {/* Expanded Content */}
-                  {expandedTeacher === teacher._id && (
-                    <div className="p-5 border-t border-gray-200 bg-white">
-                      {/* Skills Section */}
-                      <div className="mb-6">
-                        <h5 className="font-medium text-gray-700 mb-3 flex items-center">
-                          <Award className="text-indigo-500 mr-2" size={16} />
-                          Skills to Teach:
-                        </h5>
-                        <div className="flex flex-wrap gap-2">
-                          {teacher.skillsToTeach && teacher.skillsToTeach.length > 0 ? (
-                            teacher.skillsToTeach.map((skillObj, index) => (
-                              <span 
-                                key={index} 
-                                className="bg-indigo-50 text-indigo-700 px-3 py-1.5 rounded-full text-sm font-medium"
-                              >
-                                {skillObj.skill?.name || 'Unknown Skill'}
+                  <h2 className="text-xl font-bold text-gray-800">Pending Verifications</h2>
+                </div>
+                <span className="px-4 py-2 bg-violet-100 text-violet-700 rounded-xl font-medium">
+                  {pendingTeachers.length} pending
+                </span>
+              </div>
+
+              <div className="space-y-4">
+                {pendingTeachers.length === 0 ? (
+                  <div className="text-center py-10 border-2 border-dashed border-gray-200 rounded-xl">
+                    <div className="w-16 h-16 mx-auto bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                      <UserCheck className="h-8 w-8 text-gray-400" />
+                    </div>
+                    <h3 className="text-lg font-medium text-gray-600 mb-1">No pending verifications</h3>
+                    <p className="text-gray-500">All teacher verifications are complete</p>
+                  </div>
+                ) : (
+                  pendingTeachers.map((teacher) => (
+                    <AnimatePresence key={teacher._id}>
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        className="border border-gray-100 rounded-xl p-6 hover:shadow-lg transition-all duration-300"
+                      >
+                        {/* ... existing teacher verification UI with enhanced styling ... */}
+                        <div key={teacher._id} className="border border-gray-200 rounded-xl overflow-hidden transition-all duration-200 hover:shadow-md">
+                          {/* Teacher Header */}
+                          <div 
+                            className={`p-4 flex justify-between items-center cursor-pointer transition-colors ${
+                              expandedTeacher === teacher._id ? 'bg-indigo-50' : 'bg-gray-50 hover:bg-gray-100'
+                            }`}
+                            onClick={() => toggleTeacherExpansion(teacher._id)}
+                          >
+                            <div className="flex items-center">
+                              <div className={`p-2 rounded-lg mr-3 ${
+                                expandedTeacher === teacher._id ? 'bg-indigo-100' : 'bg-gray-200'
+                              }`}>
+                                <User className={`${
+                                  expandedTeacher === teacher._id ? 'text-indigo-600' : 'text-gray-600'
+                                }`} size={20} />
+                              </div>
+                              <div>
+                                <h4 className="font-medium text-gray-800">
+                                  {teacher.user?.name || 'Unknown Teacher'}
+                                </h4>
+                                <p className="text-sm text-gray-500">{teacher.user?.email}</p>
+                              </div>
+                            </div>
+                            <div className="flex items-center">
+                              <span className="px-3 py-1 bg-amber-100 text-amber-800 rounded-full text-xs font-medium mr-3">
+                                {teacher.role}
                               </span>
-                            ))
-                          ) : (
-                            <span className="text-gray-500 italic">No skills specified</span>
-                          )}
-                        </div>
-                      </div>
-                      
-                      {/* Certificates Section */}
-                      <div className="mb-6">
-                        <h5 className="font-medium text-gray-700 mb-3 flex items-center">
-                          <FileText className="text-indigo-500 mr-2" size={16} />
-                          Certificates:
-                        </h5>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                          {teacher.certificates && teacher.certificates.length > 0 ? (
-                            teacher.certificates.map((cert, index) => (
-                              <div key={index} className="border border-gray-200 rounded-xl overflow-hidden hover:shadow-md transition-shadow">
-                                <div className="aspect-w-16 aspect-h-9 bg-gray-50">
-                                  {cert.endsWith('.pdf') ? (
-                                    <div className="flex items-center justify-center bg-gray-100 h-full">
-                                      <a 
-                                        href={cert} 
-                                        target="_blank" 
-                                        rel="noopener noreferrer"
-                                        className="flex items-center text-indigo-600 hover:text-indigo-800 transition-colors"
+                              {expandedTeacher === teacher._id ? (
+                                <ChevronUp size={20} className="text-indigo-600" />
+                              ) : (
+                                <ChevronDown size={20} className="text-gray-500" />
+                              )}
+                            </div>
+                          </div>
+                          
+                          {/* Expanded Content */}
+                          {expandedTeacher === teacher._id && (
+                            <div className="p-5 border-t border-gray-200 bg-white">
+                              {/* Skills Section */}
+                              <div className="mb-6">
+                                <h5 className="font-medium text-gray-700 mb-3 flex items-center">
+                                  <Award className="text-indigo-500 mr-2" size={16} />
+                                  Skills to Teach:
+                                </h5>
+                                <div className="flex flex-wrap gap-2">
+                                  {teacher.skillsToTeach && teacher.skillsToTeach.length > 0 ? (
+                                    teacher.skillsToTeach.map((skillObj, index) => (
+                                      <span 
+                                        key={index} 
+                                        className="bg-indigo-50 text-indigo-700 px-3 py-1.5 rounded-full text-sm font-medium"
                                       >
-                                        <FileText size={24} className="mr-2" />
-                                        View PDF Certificate
-                                        <ExternalLink size={14} className="ml-1" />
-                                      </a>
-                                    </div>
+                                        {skillObj.skill?.name || 'Unknown Skill'}
+                                      </span>
+                                    ))
                                   ) : (
-                                    <img 
-                                      src={cert} 
-                                      alt={`Certificate ${index + 1}`} 
-                                      className="object-contain w-full h-full rounded"
-                                    />
+                                    <span className="text-gray-500 italic">No skills specified</span>
                                   )}
                                 </div>
-                                <div className="p-3 flex justify-between items-center bg-gray-50">
-                                  <span className="text-sm font-medium text-gray-700">Certificate {index + 1}</span>
-                                  <a 
-                                    href={cert} 
-                                    target="_blank" 
-                                    rel="noopener noreferrer"
-                                    className="text-sm text-indigo-600 hover:text-indigo-800 flex items-center transition-colors"
-                                  >
-                                    View
-                                    <ExternalLink size={12} className="ml-1" />
-                                  </a>
+                              </div>
+                              
+                              {/* Certificates Section */}
+                              <div className="mb-6">
+                                <h5 className="font-medium text-gray-700 mb-3 flex items-center">
+                                  <FileText className="text-indigo-500 mr-2" size={16} />
+                                  Certificates:
+                                </h5>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                  {teacher.certificates && teacher.certificates.length > 0 ? (
+                                    teacher.certificates.map((cert, index) => (
+                                      <div key={index} className="border border-gray-200 rounded-xl overflow-hidden hover:shadow-md transition-shadow">
+                                        <div className="aspect-w-16 aspect-h-9 bg-gray-50">
+                                          {cert.endsWith('.pdf') ? (
+                                            <div className="flex items-center justify-center bg-gray-100 h-full">
+                                              <a 
+                                                href={cert} 
+                                                target="_blank" 
+                                                rel="noopener noreferrer"
+                                                className="flex items-center text-indigo-600 hover:text-indigo-800 transition-colors"
+                                              >
+                                                <FileText size={24} className="mr-2" />
+                                                View PDF Certificate
+                                                <ExternalLink size={14} className="ml-1" />
+                                              </a>
+                                            </div>
+                                          ) : (
+                                            <img 
+                                              src={cert} 
+                                              alt={`Certificate ${index + 1}`} 
+                                              className="object-contain w-full h-full rounded"
+                                            />
+                                          )}
+                                        </div>
+                                        <div className="p-3 flex justify-between items-center bg-gray-50">
+                                          <span className="text-sm font-medium text-gray-700">Certificate {index + 1}</span>
+                                          <a 
+                                            href={cert} 
+                                            target="_blank" 
+                                            rel="noopener noreferrer"
+                                            className="text-sm text-indigo-600 hover:text-indigo-800 flex items-center transition-colors"
+                                          >
+                                            View
+                                            <ExternalLink size={12} className="ml-1" />
+                                          </a>
+                                        </div>
+                                      </div>
+                                    ))
+                                  ) : (
+                                    <div className="col-span-full text-center p-4 bg-gray-50 rounded-xl">
+                                      <span className="text-gray-500 italic">No certificates uploaded</span>
+                                    </div>
+                                  )}
                                 </div>
                               </div>
-                            ))
-                          ) : (
-                            <div className="col-span-full text-center p-4 bg-gray-50 rounded-xl">
-                              <span className="text-gray-500 italic">No certificates uploaded</span>
+                              
+                              {/* Action Buttons */}
+                              <div className="mt-6 border-t border-gray-100 pt-4">
+                                {showRejectionForm && selectedTeacherId === teacher._id ? (
+                                  <div className="w-full">
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                      Reason for rejection:
+                                    </label>
+                                    <textarea
+                                      value={rejectionReason}
+                                      onChange={(e) => setRejectionReason(e.target.value)}
+                                      placeholder="Please provide a reason for rejection (optional)"
+                                      className="w-full p-3 border border-gray-300 rounded-xl mb-4 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
+                                      rows="3"
+                                    />
+                                    <div className="flex flex-wrap justify-end gap-3">
+                                      <button
+                                        onClick={() => {
+                                          setShowRejectionForm(false);
+                                          setRejectionReason('');
+                                          setSelectedTeacherId(null);
+                                        }}
+                                        className="px-5 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+                                      >
+                                        Cancel
+                                      </button>
+                                      <button
+                                        onClick={() => handleVerifyTeacher(teacher._id, 'rejected')}
+                                        className="px-5 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center font-medium"
+                                      >
+                                        <XCircle size={18} className="mr-2" />
+                                        Confirm Rejection
+                                      </button>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <div className="flex flex-wrap justify-end gap-3">
+                                    <button
+                                      onClick={() => showRejectForm(teacher._id)}
+                                      className="px-5 py-2.5 bg-white border border-red-200 text-red-600 rounded-lg hover:bg-red-50 transition-colors flex items-center font-medium"
+                                    >
+                                      <XCircle size={18} className="mr-2" />
+                                      Reject
+                                    </button>
+                                    <button
+                                      onClick={() => handleVerifyTeacher(teacher._id, 'approved')}
+                                      className="px-5 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center font-medium"
+                                    >
+                                      <CheckCircle size={18} className="mr-2" />
+                                      Approve
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
                             </div>
                           )}
                         </div>
-                      </div>
-                      
-                      {/* Action Buttons */}
-                      <div className="mt-6 border-t border-gray-100 pt-4">
-                        {showRejectionForm && selectedTeacherId === teacher._id ? (
-                          <div className="w-full">
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                              Reason for rejection:
-                            </label>
-                            <textarea
-                              value={rejectionReason}
-                              onChange={(e) => setRejectionReason(e.target.value)}
-                              placeholder="Please provide a reason for rejection (optional)"
-                              className="w-full p-3 border border-gray-300 rounded-xl mb-4 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
-                              rows="3"
-                            />
-                            <div className="flex flex-wrap justify-end gap-3">
-                              <button
-                                onClick={() => {
-                                  setShowRejectionForm(false);
-                                  setRejectionReason('');
-                                  setSelectedTeacherId(null);
-                                }}
-                                className="px-5 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
-                              >
-                                Cancel
-                              </button>
-                              <button
-                                onClick={() => handleVerifyTeacher(teacher._id, 'rejected')}
-                                className="px-5 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center font-medium"
-                              >
-                                <XCircle size={18} className="mr-2" />
-                                Confirm Rejection
-                              </button>
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="flex flex-wrap justify-end gap-3">
-                            <button
-                              onClick={() => showRejectForm(teacher._id)}
-                              className="px-5 py-2.5 bg-white border border-red-200 text-red-600 rounded-lg hover:bg-red-50 transition-colors flex items-center font-medium"
-                            >
-                              <XCircle size={18} className="mr-2" />
-                              Reject
-                            </button>
-                            <button
-                              onClick={() => handleVerifyTeacher(teacher._id, 'approved')}
-                              className="px-5 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center font-medium"
-                            >
-                              <CheckCircle size={18} className="mr-2" />
-                              Approve
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </motion.div>
-            </AnimatePresence>
-          ))}
-        </div>
-      </motion.div>
+                      </motion.div>
+                    </AnimatePresence>
+                  ))
+                )}
+              </div>
+            </div>
+          </motion.div>
+        ) : (
+          <motion.div
+            key="messages"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+          >
+            <ContactMessages />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
