@@ -3,7 +3,8 @@ import {
   sendConnectionRequest, 
   respondToConnection, 
   getConnections,
-  removeConnection
+  removeConnection,
+  getPendingConnectionsCount
 } from '../controllers/connectionController.js';
 import {verifyToken} from '../middleware/verifyToken.js';
 
@@ -13,5 +14,6 @@ router.post('/request', verifyToken, sendConnectionRequest);
 router.post('/respond', verifyToken, respondToConnection);
 router.post('/remove', verifyToken, removeConnection);
 router.get('/', verifyToken, getConnections);
+router.get('/pending/count', verifyToken, getPendingConnectionsCount);
 
 export default router;

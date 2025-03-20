@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ConnectionRequests from '../components/ConnectionRequests';
 import { motion, AnimatePresence } from 'framer-motion';
+import { socket, authenticateSocket } from '../socket';
 import { 
   FiBook, 
   FiAward, 
@@ -22,13 +23,15 @@ import {
 } from 'react-icons/fi';
 import { format } from 'date-fns';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { toast } from 'react-hot-toast';
 
 function Dashboard() {
   const { profile, role, isLoading, fetchProfile } = useProfileStore();
-  const { logout } = useAuthStore();
+  const { logout, user } = useAuthStore();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
   const [showConnectionRequests, setShowConnectionRequests] = useState(false);
+  const [pendingRequestsCount, setPendingRequestsCount] = useState(0);
   const sidebarRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
@@ -36,6 +39,72 @@ function Dashboard() {
   useEffect(() => {
     fetchProfile();
   }, [fetchProfile]);
+  
+  // Initialize socket connection
+  useEffect(() => {
+    if (user?._id) {
+      console.log('Dashboard: Initializing socket connection for user:', user._id);
+      authenticateSocket(user._id);
+      
+      // Listen for new connection requests
+      socket.on('connectionRequest', (data) => {
+        console.log('Dashboard: Received new connection request', data);
+        // Increment counter or refresh requests
+        setPendingRequestsCount(prev => prev + 1);
+        
+        // Also trigger a custom event to notify the ConnectionRequests component
+        window.dispatchEvent(new CustomEvent('connection-updated', {
+          detail: data
+        }));
+        
+        // Show toast notification for the new connection request
+        if (data && data.sender) {
+          toast.custom((t) => (
+            <div className={`${t.visible ? 'animate-enter' : 'animate-leave'} max-w-md w-full bg-white shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-blue-500 ring-opacity-20`}>
+              <div className="flex-1 w-0 p-4">
+                <div className="flex items-start">
+                  <div className="flex-shrink-0 pt-0.5">
+                    <img 
+                      className="h-10 w-10 rounded-full" 
+                      src={data.sender.profilePic || '/images/default-avatar.png'} 
+                      alt={data.sender.name} 
+                      onError={(e) => {
+                        e.target.src = '/images/default-avatar.png';
+                      }}
+                    />
+                  </div>
+                  <div className="ml-3 flex-1">
+                    <p className="text-sm font-medium text-gray-900">
+                      New Connection Request
+                    </p>
+                    <p className="mt-1 text-sm text-gray-500">
+                      {data.sender.name} wants to connect with you
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div className="flex border-l border-gray-200">
+                <button
+                  onClick={() => {
+                    toast.dismiss(t.id);
+                    // Open connection requests panel when clicked
+                    setShowConnectionRequests(true);
+                  }}
+                  className="w-full border border-transparent rounded-none rounded-r-lg p-4 flex items-center justify-center text-sm font-medium text-blue-600 hover:text-blue-500 focus:outline-none"
+                >
+                  View
+                </button>
+              </div>
+            </div>
+          ), { duration: 5000 });
+        }
+      });
+      
+      return () => {
+        socket.off('connectionRequest');
+      };
+    }
+  }, [user]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -70,10 +139,63 @@ function Dashboard() {
 
   const toggleConnectionRequests = () => {
     setShowConnectionRequests(!showConnectionRequests);
+    // Reset counter when opening connection requests
+    if (!showConnectionRequests) {
+      setPendingRequestsCount(0);
+    }
     if (isMobile) {
       setSidebarOpen(false);
     }
   };
+
+  // Effect to fetch pending requests count on mount and socket events
+  useEffect(() => {
+    const fetchPendingRequestsCount = async () => {
+      try {
+        console.log('Fetching pending requests count for user:', user?._id);
+        const response = await fetch('/api/connections/pending/count', {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+        const data = await response.json();
+        console.log('Pending requests data from API:', data);
+        
+        // Use the count of pending requests where the user is the receiver
+        const incomingCount = data.count;
+        setPendingRequestsCount(incomingCount);
+        
+        // Use debug data to set the title of the button
+        if (data.debug) {
+          const { totalPendingConnections, asReceiver } = data.debug;
+          const outgoingCount = totalPendingConnections - asReceiver;
+          
+          console.log(`Pending requests: ${asReceiver} incoming, ${outgoingCount} outgoing`);
+          
+          // You can use this information to display both types of requests
+          // For now, we'll just show incoming requests as that's what the component displays
+        }
+      } catch (error) {
+        console.error('Error fetching pending requests count:', error);
+      }
+    };
+    
+    if (user?._id) {
+      fetchPendingRequestsCount();
+    }
+    
+    // Listen for connection updates
+    const handleConnectionUpdate = (event) => {
+      console.log('Dashboard: Connection updated event received', event.detail);
+      fetchPendingRequestsCount();
+    };
+    
+    window.addEventListener('connection-updated', handleConnectionUpdate);
+    
+    return () => {
+      window.removeEventListener('connection-updated', handleConnectionUpdate);
+    };
+  }, [user]);
 
   if (isLoading) return <LoadingSpinner />;
   if (!profile) return <div className="text-center text-red-500">Profile not found</div>;
@@ -250,7 +372,7 @@ function Dashboard() {
                       <FiUsers className="w-5 h-5" />
                     </span>
                     <span className="ml-3">Connections</span>
-                    <span className="ml-auto bg-blue-100 text-blue-600 text-xs font-medium px-2 py-0.5 rounded-full">3</span>
+                    <span className="ml-auto bg-blue-100 text-blue-600 text-xs font-medium px-2 py-0.5 rounded-full">{pendingRequestsCount}</span>
                   </button>
                   {showConnectionRequests && (
                     <div className="mt-2 pl-10 pr-3">

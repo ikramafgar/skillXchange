@@ -3,6 +3,18 @@ import axios from '../utils/axios';
 import { useAuthStore } from './authStore';
 import { toast } from 'react-hot-toast';
 
+// Helper function to ensure we have a valid object
+const ensureObject = (value) => {
+  if (!value || typeof value !== 'object') {
+    return { _id: 'unknown', name: 'Unknown User', profilePic: '/default-avatar.png' };
+  }
+  return {
+    _id: value._id || 'unknown',
+    name: value.name || 'Unknown User',
+    profilePic: value.profilePic || '/default-avatar.png',
+    ...value
+  };
+};
 
 export const useConnectionStore = create((set) => ({
   connections: [],
@@ -247,17 +259,43 @@ export const useConnectionStore = create((set) => ({
       const url = status 
         ? `/api/connections?status=${status}`
         : '/api/connections';
-        
+      
+      console.log('Fetching connections from URL:', url);  
       const response = await axios.get(url);
+      console.log('API response for connections:', response.data);
+      
+      // Log the structure of the first item if available
+      if (response.data && response.data.length > 0) {
+        console.log('First connection item structure:', JSON.stringify(response.data[0], null, 2));
+      }
+      
+      // Validate and sanitize the data
+      let connections = [];
+      if (Array.isArray(response.data)) {
+        connections = response.data.map(conn => {
+          // Ensure proper structure for each connection
+          return {
+            ...conn,
+            _id: conn._id || null,
+            sender: ensureObject(conn.sender),
+            receiver: ensureObject(conn.receiver),
+            status: conn.status || 'unknown'
+          };
+        });
+        console.log('Sanitized connections:', connections.length);
+      } else {
+        console.error('Expected array of connections but got:', typeof response.data);
+      }
       
       set({ 
-        connections: response.data, 
+        connections: connections, 
         isLoading: false,
         error: null
       });
 
-      return response.data;
+      return connections;
     } catch (error) {
+      console.error('Error in fetchConnections:', error);
       const errorMessage = error.response?.data?.message || error.message || 'Failed to fetch connections';
       set({ 
         error: errorMessage,

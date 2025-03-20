@@ -69,11 +69,21 @@ export const sendConnectionRequest = async (req, res) => {
         const receiverSocketId = connectedUsers.get(userId.toString());
         console.log('Receiver socket ID:', receiverSocketId);
         
+        // Make sure connection is properly structured for the client
+        const connectionData = {
+          _id: connection._id.toString(),
+          sender: senderId.toString(),
+          receiver: userId.toString(),
+          status: 'pending',
+          createdAt: connection.createdAt,
+          updatedAt: connection.updatedAt
+        };
+        
         // Emit directly to the socket ID instead of using rooms
         io.to(receiverSocketId).emit('connectionRequest', {
-          connection,
+          connection: connectionData,
           sender: {
-            _id: sender._id,
+            _id: sender._id.toString(),
             name: sender.name,
             profilePic: sender.profilePic
           }
@@ -241,6 +251,21 @@ export const getConnections = async (req, res) => {
     const userId = req.userId; // Use userId from verifyToken middleware
     const { status } = req.query;
 
+    console.log('getConnections called with userId:', userId, 'status filter:', status || 'none');
+    console.log('userId type:', typeof userId);
+    
+    // Find the current user to verify their ID
+    const currentUser = await User.findById(userId);
+    if (!currentUser) {
+      console.log('Warning: Current user not found in database!');
+    } else {
+      console.log('Current user found:', {
+        id: currentUser._id,
+        idString: currentUser._id.toString(),
+        name: currentUser.name
+      });
+    }
+    
     // Build query based on optional status filter
     const query = {
       $or: [{ sender: userId }, { receiver: userId }]
@@ -248,14 +273,46 @@ export const getConnections = async (req, res) => {
 
     if (status) {
       query.status = status;
+      console.log('Filtering connections by status:', status);
     }
+
+    console.log('MongoDB query:', JSON.stringify(query));
 
     const connections = await Connection.find(query)
       .populate('sender', 'name profilePic')
       .populate('receiver', 'name profilePic')
       .sort({ createdAt: -1 });
 
-    res.json(connections);
+    console.log('Found connections count:', connections.length);
+    
+    // Log all connections for debugging
+    connections.forEach((conn, index) => {
+      console.log(`Connection ${index}:`, {
+        id: conn._id.toString(),
+        sender: conn.sender._id.toString(),
+        senderName: conn.sender.name,
+        receiver: conn.receiver._id.toString(),
+        receiverName: conn.receiver.name,
+        status: conn.status,
+        createdAt: conn.createdAt,
+        // Check if this user is the receiver
+        isReceiverCurrentUser: conn.receiver._id.toString() === userId.toString(),
+        // Check if this user is the sender
+        isSenderCurrentUser: conn.sender._id.toString() === userId.toString()
+      });
+    });
+
+    // Add extra information to help frontend debugging
+    const enhancedConnections = connections.map(conn => {
+      return {
+        ...conn.toObject(),
+        _currentUserId: userId.toString(),
+        _isCurrentUserReceiver: conn.receiver._id.toString() === userId.toString(),
+        _isCurrentUserSender: conn.sender._id.toString() === userId.toString()
+      };
+    });
+
+    res.json(enhancedConnections);
   } catch (error) {
     console.error('Error in getConnections:', error);
     res.status(500).json({ 
@@ -353,6 +410,60 @@ export const removeConnection = async (req, res) => {
     console.error('Error in removeConnection:', error);
     res.status(500).json({ 
       message: 'Error removing connection',
+      error: error.message
+    });
+  }
+};
+
+// Add a new function to get the count of pending connection requests
+export const getPendingConnectionsCount = async (req, res) => {
+  try {
+    const userId = req.userId; // Use userId from verifyToken middleware
+    console.log('getPendingConnectionsCount: User ID from token:', userId);
+
+    // Count pending connection requests where the user is the receiver
+    const count = await Connection.countDocuments({
+      receiver: userId,
+      status: 'pending'
+    });
+
+    console.log('getPendingConnectionsCount: Found', count, 'pending requests for user', userId);
+
+    // For debugging, let's find all pending connections that involve this user
+    const allPendingConnections = await Connection.find({
+      $or: [{ sender: userId }, { receiver: userId }],
+      status: 'pending'
+    })
+    .populate('sender', 'name')
+    .populate('receiver', 'name');
+
+    if (allPendingConnections.length > 0) {
+      console.log('All pending connections involving this user:');
+      allPendingConnections.forEach((conn, index) => {
+        console.log(`Connection ${index}:`, {
+          id: conn._id.toString(),
+          sender: conn.sender._id.toString(),
+          senderName: conn.sender.name,
+          receiver: conn.receiver._id.toString(),
+          receiverName: conn.receiver.name,
+          userIsSender: conn.sender._id.toString() === userId.toString(),
+          userIsReceiver: conn.receiver._id.toString() === userId.toString(),
+        });
+      });
+    }
+
+    res.json({ 
+      count, 
+      debug: {
+        userId: userId.toString(),
+        totalPendingConnections: allPendingConnections.length,
+        asReceiver: count
+      }
+    });
+  } catch (error) {
+    console.error('Error in getPendingConnectionsCount:', error);
+    res.status(500).json({ 
+      message: 'Error fetching pending connections count',
       error: error.message
     });
   }
