@@ -15,10 +15,10 @@ export const sendConnectionRequest = async (req, res) => {
       return res.status(400).json({ message: 'Cannot send connection request to yourself' });
     }
 
-    // Verify both users exist
+    // Verify both users exist with their profiles
     const [sender, receiver] = await Promise.all([
-      User.findById(senderId),
-      User.findById(userId)
+      User.findById(senderId).populate('profile', 'profilePic'),
+      User.findById(userId).populate('profile', 'profilePic')
     ]);
 
     if (!sender || !receiver) {
@@ -85,7 +85,7 @@ export const sendConnectionRequest = async (req, res) => {
           sender: {
             _id: sender._id.toString(),
             name: sender.name,
-            profilePic: sender.profilePic
+            profilePic: sender.profile?.profilePic || '/default-avatar.png'
           }
         });
         console.log('Successfully emitted connectionRequest event');
@@ -136,9 +136,9 @@ export const respondToConnection = async (req, res) => {
       return res.status(404).json({ message: 'Connection request not found or already processed' });
     }
 
-    // Get the sender's details
-    const sender = await User.findById(connection.sender);
-    const responder = await User.findById(userId);
+    // Get the sender's and responder's details with their profiles
+    const sender = await User.findById(connection.sender).populate('profile', 'profilePic');
+    const responder = await User.findById(userId).populate('profile', 'profilePic');
 
     // If connection is accepted, increment connection count for both users and save the connection
     if (status === 'accepted') {
@@ -193,7 +193,7 @@ export const respondToConnection = async (req, res) => {
           responder: {
             _id: responder._id,
             name: responder.name,
-            profilePic: responder.profilePic
+            profilePic: responder.profile?.profilePic || '/default-avatar.png'
           }
         });
         console.log('Successfully emitted connectionResponse event');
@@ -221,7 +221,7 @@ export const respondToConnection = async (req, res) => {
           sender: {
             _id: sender._id,
             name: sender.name,
-            profilePic: sender.profilePic
+            profilePic: sender.profile?.profilePic || '/default-avatar.png'
           }
         });
         console.log('Successfully emitted connectionAccepted event');
@@ -279,8 +279,22 @@ export const getConnections = async (req, res) => {
     console.log('MongoDB query:', JSON.stringify(query));
 
     const connections = await Connection.find(query)
-      .populate('sender', 'name profilePic')
-      .populate('receiver', 'name profilePic')
+      .populate({
+        path: 'sender',
+        select: 'name profile',
+        populate: {
+          path: 'profile',
+          select: 'profilePic'
+        }
+      })
+      .populate({
+        path: 'receiver',
+        select: 'name profile',
+        populate: {
+          path: 'profile',
+          select: 'profilePic'
+        }
+      })
       .sort({ createdAt: -1 });
 
     console.log('Found connections count:', connections.length);
@@ -302,13 +316,31 @@ export const getConnections = async (req, res) => {
       });
     });
 
-    // Add extra information to help frontend debugging
+    // Process connections to include profilePic from the profile document
     const enhancedConnections = connections.map(conn => {
+      const connObj = conn.toObject();
+      
+      // Update sender profilePic from the profile if available
+      if (connObj.sender && connObj.sender.profile && connObj.sender.profile.profilePic) {
+        connObj.sender.profilePic = connObj.sender.profile.profilePic;
+        delete connObj.sender.profile; // Remove the profile object to clean up
+      } else {
+        connObj.sender.profilePic = connObj.sender.profilePic || '/default-avatar.png';
+      }
+      
+      // Update receiver profilePic from the profile if available
+      if (connObj.receiver && connObj.receiver.profile && connObj.receiver.profile.profilePic) {
+        connObj.receiver.profilePic = connObj.receiver.profile.profilePic;
+        delete connObj.receiver.profile; // Remove the profile object to clean up
+      } else {
+        connObj.receiver.profilePic = connObj.receiver.profilePic || '/default-avatar.png';
+      }
+      
       return {
-        ...conn.toObject(),
+        ...connObj,
         _currentUserId: userId.toString(),
-        _isCurrentUserReceiver: conn.receiver._id.toString() === userId.toString(),
-        _isCurrentUserSender: conn.sender._id.toString() === userId.toString()
+        _isCurrentUserReceiver: connObj.receiver._id.toString() === userId.toString(),
+        _isCurrentUserSender: connObj.sender._id.toString() === userId.toString()
       };
     });
 
@@ -344,10 +376,10 @@ export const removeConnection = async (req, res) => {
       return res.status(404).json({ message: 'Connection not found or not accepted' });
     }
 
-    // Get both users
+    // Get both users with their profiles
     const [user1, user2] = await Promise.all([
-      User.findById(connection.sender),
-      User.findById(connection.receiver)
+      User.findById(connection.sender).populate('profile', 'profilePic'),
+      User.findById(connection.receiver).populate('profile', 'profilePic')
     ]);
 
     // Decrement connection count for both users
@@ -386,7 +418,7 @@ export const removeConnection = async (req, res) => {
           user: {
             _id: currentUser._id,
             name: currentUser.name,
-            profilePic: currentUser.profilePic
+            profilePic: currentUser.profile?.profilePic || '/default-avatar.png'
           }
         });
         console.log('Successfully emitted connectionRemoved event');
@@ -434,8 +466,22 @@ export const getPendingConnectionsCount = async (req, res) => {
       $or: [{ sender: userId }, { receiver: userId }],
       status: 'pending'
     })
-    .populate('sender', 'name')
-    .populate('receiver', 'name');
+    .populate({
+      path: 'sender',
+      select: 'name profile',
+      populate: {
+        path: 'profile',
+        select: 'profilePic'
+      }
+    })
+    .populate({
+      path: 'receiver',
+      select: 'name profile',
+      populate: {
+        path: 'profile',
+        select: 'profilePic'
+      }
+    });
 
     if (allPendingConnections.length > 0) {
       console.log('All pending connections involving this user:');

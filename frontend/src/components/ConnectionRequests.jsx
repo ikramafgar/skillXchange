@@ -191,9 +191,6 @@ export default function ConnectionRequests({ inSidebar = false }) {
               src={senderInfo.profilePic || '/default-avatar.png'} 
               alt={senderInfo.name}
               className="w-8 h-8 rounded-full mr-2 object-cover"
-              onError={(e) => {
-                e.target.src = '/default-avatar.png';
-              }}
             />
             <div>
               <p className="font-medium">Connection Accepted</p>
@@ -218,9 +215,6 @@ export default function ConnectionRequests({ inSidebar = false }) {
               src={senderInfo.profilePic || '/default-avatar.png'} 
               alt={senderInfo.name}
               className="w-8 h-8 rounded-full mr-2 object-cover grayscale opacity-70"
-              onError={(e) => {
-                e.target.src = '/default-avatar.png';
-              }}
             />
             <div>
               <p className="font-medium">Connection Declined</p>
@@ -294,9 +288,6 @@ export default function ConnectionRequests({ inSidebar = false }) {
                 src={senderPic} 
                 alt={senderName}
                 className={`${inSidebar ? 'w-8 h-8' : 'w-10 h-10'} rounded-full mr-3 object-cover`}
-                onError={(e) => {
-                  e.target.src = '/default-avatar.png';
-                }}
               />
               <div>
                 <p className={`font-medium text-gray-800 ${inSidebar ? 'text-xs' : ''}`}>{senderName}</p>
@@ -334,4 +325,4 @@ export default function ConnectionRequests({ inSidebar = false }) {
       </div>
     </div>
   );
-} 
+}

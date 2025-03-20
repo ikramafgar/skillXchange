@@ -1,10 +1,9 @@
 import { useEffect, useState, useRef } from 'react';
-import { Bell, X, Check, User, UserCheck, Clock } from 'lucide-react';
+import { Bell, X, Check, Clock } from 'lucide-react';
 import { socket, authenticateSocket } from '../socket';
 import { useAuthStore } from '../store/authStore';
 import { useConnectionStore } from '../store/connectionStore';
 import { toast } from 'react-hot-toast';
-import { Link } from 'react-router-dom';
 import { CONNECTION_UPDATED_EVENT } from './ConnectionRequests';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -89,10 +88,7 @@ export default function Notifications({ inSidebar = false, inMobileMenu = false,
                 <img 
                   className="h-10 w-10 rounded-full" 
                   src={sender.profilePic || 'images/default-avatar.png'} 
-                  alt={sender.name} 
-                  onError={(e) => {
-                    e.target.src = 'images/default-avatar.png';
-                  }}
+                  alt={sender.name}
                 />
               </div>
               <div className="ml-3 flex-1">
@@ -160,9 +156,6 @@ export default function Notifications({ inSidebar = false, inMobileMenu = false,
                   className={`h-10 w-10 rounded-full ${connection.status === 'rejected' ? 'grayscale opacity-70' : ''}`}
                   src={responder.profilePic || '/default-avatar.png'} 
                   alt={responder.name}
-                  onError={(e) => {
-                    e.target.src = '/default-avatar.png';
-                  }}
                 />
               </div>
               <div className="ml-3 flex-1">
@@ -220,9 +213,6 @@ export default function Notifications({ inSidebar = false, inMobileMenu = false,
                   className="h-10 w-10 rounded-full grayscale opacity-70"
                   src={user.profilePic || '/default-avatar.png'} 
                   alt={user.name}
-                  onError={(e) => {
-                    e.target.src = '/default-avatar.png';
-                  }}
                 />
               </div>
               <div className="ml-3 flex-1">
@@ -264,14 +254,11 @@ export default function Notifications({ inSidebar = false, inMobileMenu = false,
                   className="h-10 w-10 rounded-full"
                   src={sender.profilePic || '/default-avatar.png'} 
                   alt={sender.name}
-                  onError={(e) => {
-                    e.target.src = '/default-avatar.png';
-                  }}
                 />
               </div>
               <div className="ml-3 flex-1">
                 <p className="text-sm font-medium text-gray-900">
-                  You accepted {sender.name}'s connection request
+                  You accepted {sender.name}&apos;s connection request
                 </p>
                 <p className="mt-1 text-sm text-green-600">
                   You can now message and interact with {sender.name}
@@ -431,9 +418,6 @@ export default function Notifications({ inSidebar = false, inMobileMenu = false,
                           className="h-10 w-10 rounded-full object-cover border border-gray-200" 
                           src={notification.sender.profilePic || 'images/default-avatar.png'} 
                           alt={notification.sender.name}
-                          onError={(e) => {
-                            e.target.src = 'images/default-avatar.png';
-                          }}
                         />
                       </div>
                       <div className="ml-3 flex-1">
@@ -477,7 +461,7 @@ export default function Notifications({ inSidebar = false, inMobileMenu = false,
                 <Bell className="w-8 h-8 text-gray-400" />
               </div>
               <p className="text-gray-600 font-medium">No new notifications</p>
-              <p className="text-sm text-gray-500 mt-1">We'll notify you when something arrives</p>
+              <p className="text-sm text-gray-500 mt-1">We&apos;ll notify you when something arrives</p>
             </div>
           )}
         </div>
@@ -558,9 +542,6 @@ export default function Notifications({ inSidebar = false, inMobileMenu = false,
                               className="h-10 w-10 rounded-full object-cover border border-gray-200" 
                               src={notification.sender.profilePic || 'images/default-avatar.png'} 
                               alt={notification.sender.name}
-                              onError={(e) => {
-                                e.target.src = 'images/default-avatar.png';
-                              }}
                             />
                           </div>
                           <div className="ml-3 flex-1">
@@ -604,7 +585,7 @@ export default function Notifications({ inSidebar = false, inMobileMenu = false,
                     <Bell className="w-8 h-8 text-gray-400" />
                   </div>
                   <p className="text-gray-600 font-medium">No new notifications</p>
-                  <p className="text-sm text-gray-500 mt-1">We'll notify you when something arrives</p>
+                  <p className="text-sm text-gray-500 mt-1">We&apos;ll notify you when something arrives</p>
                 </div>
               )}
             </div>

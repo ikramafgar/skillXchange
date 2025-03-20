@@ -184,9 +184,6 @@ export default function AcceptedConnections() {
                     src={connection.otherUser.profilePic || '/default-avatar.png'}
                     alt={connection.otherUser.name}
                     className="w-16 h-16 rounded-full object-cover mb-2"
-                    onError={(e) => {
-                      e.target.src = '/default-avatar.png';
-                    }}
                   />
                   <h4 className="font-medium text-gray-800 text-center">{connection.otherUser.name}</h4>
                   <p className="text-xs text-gray-500 mt-1">
@@ -223,9 +220,6 @@ export default function AcceptedConnections() {
                 src={connectionToRemove.otherUser.profilePic || '/default-avatar.png'}
                 alt={connectionToRemove.otherUser.name}
                 className="w-12 h-12 rounded-full mr-3"
-                onError={(e) => {
-                  e.target.src = '/default-avatar.png';
-                }}
               />
               <div>
                 <p className="font-medium">{connectionToRemove.otherUser.name}</p>
