@@ -1,143 +1,203 @@
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 
 const About = () => {
- 
-  const sectionVariants = {
-    hidden: { opacity: 0, scale: 0.98 },
-    visible: {
-      opacity: 1,
-      scale: 1,
-      transition: {
-        type: "spring",
-        stiffness: 60,
-        damping: 15,
-        staggerChildren: 0.15,
-        delayChildren: 0.2,
-      },
-    },
-  };
-
-  const elementVariants = {
-    hidden: { y: 50, opacity: 0 },
-    visible: {
-      y: 0,
-      opacity: 1,
-      transition: {
-        type: "spring",
-        stiffness: 80,
-        damping: 14,
-      },
-    },
-  };
-
-  const imageVariants = {
-    hidden: { scale: 1.2, opacity: 0 },
-    visible: {
-      scale: 1,
-      opacity: 1,
-      transition: { duration: 1.5, ease: "easeOut" },
-    },
-  };
 
   return (
-    <div className="relative min-h-screen bg-gradient-to-b from-white via-gray-50 to-gray-100 text-gray-900 overflow-hidden px-2 sm:px-4 md:px-6 lg:px-12 xl:px-20 py-4 sm:py-6 md:py-8 lg:py-10">
-      {/* Background Effects  */}
-      <div className="absolute inset-0 pointer-events-none">
-        <motion.div
-          initial={{ scale: 0, opacity: 0 }}
-          animate={{ scale: 1.5, opacity: 0.15 }}
-          transition={{ duration: 2.5, ease: "easeOut" }}
-          className="absolute top-0 left-1/4 w-48 h-48 sm:w-64 sm:h-64 md:w-80 md:h-80 lg:w-96 lg:h-96 bg-gradient-to-tr from-purple-300 to-cyan-300 blur-3xl rounded-full"
-        />
-        <motion.div
-          initial={{ scale: 0, opacity: 0 }}
-          animate={{ scale: 1.3, opacity: 0.1 }}
-          transition={{ duration: 2.5, ease: "easeOut", delay: 0.3 }}
-          className="absolute bottom-0 right-1/4 w-48 h-48 sm:w-64 sm:h-64 md:w-72 md:h-72 lg:w-80 lg:h-80 bg-gradient-to-bl from-pink-300 to-blue-300 blur-3xl rounded-full"
-        />
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg%20viewBox=%220%200%20200%20200%22%20xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter%20id=%22noiseFilter%22%3E%3CfeTurbulence%20type=%22fractalNoise%22%20baseFrequency=%220.65%22%20numOctaves=%223%22%20stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect%20width=%22100%25%22%20height=%22100%25%22%20filter=%22url(%23noiseFilter)%22%20opacity=%220.03%22/%3E%3C/svg%3E')]" />
-      </div>
-
-      {/* Main Section */}
+    <div className="min-h-screen bg-gray-50 pt-16 sm:pt-20">
+      {/* Hero Section */}
       <motion.section
-        variants={sectionVariants}
-        initial="hidden"
-        animate="visible"
-        className="relative z-10 max-w-6xl mx-auto pt-12 sm:pt-16 md:pt-20 lg:pt-24 pb-8 sm:pb-12 md:pb-16 lg:pb-20 grid grid-cols-1 md:grid-cols-5 gap-6 sm:gap-8 md:gap-10 lg:gap-12"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="relative min-h-[85vh] flex items-center justify-center overflow-hidden px-4 sm:px-6 lg:px-8 bg-gray-50"
       >
-        {/* Right Column - Image + Card (moved above for small screens) */}
-        <div className="md:col-span-2 relative flex justify-center mt-6 sm:mt-8 md:mt-0 order-1 md:order-2">
-          <motion.div
-            variants={imageVariants}
-            className="relative w-full max-w-[250px] xs:max-w-[280px] sm:max-w-[320px] md:max-w-[360px] lg:max-w-[400px] rounded-2xl overflow-hidden shadow-xl ring-1 ring-gray-300/50"
-          >
-            <motion.img
-              src="images/herooooo.png"
-              alt="Skill Exchange"
-              className="w-full h-48 xs:h-56 sm:h-64 md:h-72 lg:h-80 object-cover"
-              whileHover={{ scale: 1.03 }}
-              transition={{ duration: 0.5 }}
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-blue-400/20 to-transparent" />
-          </motion.div>
-
-          <motion.div
-            variants={elementVariants}
-            className="absolute -bottom-4 sm:-bottom-6 md:-bottom-8 left-0 sm:left-2 md:left-4 lg:left-8 bg-white/90 backdrop-blur-md border border-gray-200/50 rounded-xl p-3 sm:p-4 md:p-5 w-56 sm:w-64 md:w-72 lg:w-80 shadow-lg"
-            whileHover={{ y: -5, boxShadow: "0 10px 20px rgba(0,0,0,0.1)" }}
-          >
-            <p className="text-gray-700 text-xs sm:text-sm md:text-base font-medium">
-              &ldquo;SkillXchange blends cutting-edge tech with human connection, creating a space where skills evolve and communities thrive.&quot;
-            </p>
-            <p className="text-gray-500 text-xs mt-2 italic">— The Vision</p>
-          </motion.div>
+        {/* Background Elements */}
+        <div className="absolute inset-0 -z-10">
+          <div className="absolute top-0 left-1/4 w-72 h-72 bg-gray-200/30 rounded-full mix-blend-multiply filter blur-3xl animate-blob"></div>
+          <div className="absolute bottom-0 right-1/4 w-72 h-72 bg-gray-300/30 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-2000"></div>
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 bg-blue-100/30 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-4000"></div>
         </div>
 
-        {/* Left Column - Text */}
-        <div className="md:col-span-3 flex flex-col justify-center space-y-4 sm:space-y-6 md:space-y-8 order-2 md:order-1">
-          <motion.h1
-            variants={elementVariants}
-            className="text-3xl xs:text-4xl sm:text-5xl md:text-5xl lg:text-6xl font-extrabold tracking-tight leading-tight"
-          >
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-purple-600 animate-text-shimmer">
-              SkillXChange
-            </span>
-            <br />
-            <span className="text-gray-700">Unleashed</span>
-          </motion.h1>
-          
-          <motion.h2
-            variants={elementVariants}
-            className="text-xl xs:text-2xl sm:text-3xl md:text-3xl lg:text-4xl font-bold tracking-tight leading-tight text-gray-600"
-          >
-            Join Our Community
-          </motion.h2>
-
-          <motion.p
-            variants={elementVariants}
-            className="text-sm xs:text-base sm:text-lg md:text-lg lg:text-xl text-gray-600 font-medium leading-relaxed"
-          >
-            At SkillXchange, we believe that learning is a shared journey. Our platform brings together passionate individuals from diverse backgrounds, creating a vibrant community where knowledge flows freely. Whether you&apos;re a seasoned expert or just starting out, SkillXchange provides the tools and connections to help you grow, collaborate, and achieve your goals.
-          </motion.p>
-          <motion.div variants={elementVariants}>
-            <motion.a
-              href="/signup"
-              className="inline-block w-full sm:w-auto bg-blue-400 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 text-base sm:text-lg font-semibold text-center"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+        <div className="container mx-auto max-w-7xl">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            {/* Text Content */}
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.2 }}
+              className="space-y-6 text-center lg:text-left"
             >
-              <span className="relative z-10">Join the Future</span>
-              <motion.span
-                className="absolute inset-0 bg-gradient-to-r from-cyan-500 to-blue-500 opacity-0 group-hover:opacity-100"
-                initial={{ scale: 0 }}
-                transition={{ duration: 0.3 }}
-              />
-            </motion.a>
-          </motion.div>
+              <div className="inline-block px-4 py-1.5 rounded-full bg-gradient-to-r  from-blue-500/10 to-purple-500/10 text-blue-600 text-sm font-medium">
+                About SkillXchange
+              </div>
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-gray-900">
+                Where Skills Meet 
+                <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-blue-600 ml-2">
+                  Opportunity
+                </span>
+              </h1>
+              <p className="text-lg sm:text-xl text-gray-600 max-w-2xl mx-auto lg:mx-0">
+                Join our vibrant community where passionate individuals connect, share knowledge, and grow together in a supportive environment.
+              </p>
+              <div className="flex flex-wrap gap-4 justify-center lg:justify-start">
+                <Link to="/signup">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="px-8 py-3 bg-blue-400 text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
+                  >
+                    Get Started
+                  </motion.button>
+                </Link>
+              </div>
+            </motion.div>
+
+            {/* Image/Stats Section */}
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.4 }}
+              className="relative"
+            >
+              <div className="relative rounded-2xl overflow-hidden shadow-2xl">
+                <img
+                  src="/images/herooooo.png"
+                  alt="SkillXchange Community"
+                  className="w-full object-cover rounded-2xl"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-blue-400/40 to-transparent"></div>
+              </div>
+              
+              {/* Stats Cards */}
+              <div className="absolute -bottom-6 left-4 right-4 grid grid-cols-3 gap-4">
+                {[
+                  { label: "Active Users", value: "10K+" },
+                  { label: "Skills Shared", value: "5K+" },
+                  { label: "Success Rate", value: "95%" }
+                ].map((stat, index) => (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.6 + (index * 0.1) }}
+                    className="bg-white/90 backdrop-blur-md p-4 rounded-xl shadow-lg"
+                  >
+                    <div className="text-2xl font-bold text-gray-900">{stat.value}</div>
+                    <div className="text-sm text-gray-600">{stat.label}</div>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </motion.section>
+
+      {/* Features Grid */}
+      <motion.section
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="py-20 px-4 sm:px-6 lg:px-8 relative bg-gray-50"
+      >
+        <div className="absolute inset-0 bg-[url('/patterns/grid.svg')] opacity-5"></div>
+        <div className="container mx-auto max-w-7xl relative">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+              Why Choose SkillXchange?
+            </h2>
+            <p className="text-gray-600 max-w-2xl mx-auto text-lg">
+              Experience a platform designed to make skill sharing seamless and rewarding
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {features.map((feature, index) => (
+              <motion.div
+                key={index}
+                whileHover={{ 
+                  y: -8,
+                  backgroundColor: "rgba(255, 255, 255, 0.9)",
+                  transition: { duration: 0.2 }
+                }}
+                className="p-8 backdrop-blur-sm rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 bg-gradient-to-br from-white/80 to-white/40 border border-white/20"
+              >
+                <div className="w-14 h-14 mb-6 rounded-xl bg-gradient-to-br from-gray-700 to-gray-800 flex items-center justify-center text-2xl text-white shadow-lg">
+                  {feature.icon}
+                </div>
+                <h3 className="text-xl font-semibold mb-3 text-gray-800">{feature.title}</h3>
+                <p className="text-gray-600 leading-relaxed">{feature.description}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </motion.section>
+
+      {/* CTA Section */}
+      <motion.section
+        className="relative bg-gradient-to-br from-[#F6F8FC] via-white to-[#F8F9FF] py-20 px-8 md:px-16 lg:px-24 text-gray-700"
+        whileInView={{ opacity: 1, y: 0 }}
+        initial={{ opacity: 0, y: 50 }}
+        transition={{ duration: 0.7 }}
+      >
+        {/* Update overlay */}
+        <div className="absolute inset-0 bg-gradient-to-r from-white/80 via-blue-50/30 to-white/80"></div>
+
+        <div className="relative z-10 max-w-4xl mx-auto text-center">
+          <h2 className="text-4xl md:text-5xl font-extrabold leading-tight">
+            Transform Your Skills Today
+          </h2>
+          <p className="mt-6 text-lg md:text-xl font-medium text-gray-700 max-w-3xl mx-auto">
+            Join the SkillXchange platform and take the first step towards
+            learning and growing with a vibrant community of learners and
+            professionals.
+          </p>
+          <div className="mt-8 flex justify-center lg:justify-center gap-6">
+            <Link to="/login">
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                className="bg-gradient-to-r from-indigo-500 to-violet-500 text-white px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition duration-300"
+              >
+                Get Started
+              </motion.button>
+            </Link>
+          </div>
         </div>
       </motion.section>
     </div>
   );
 };
+
+const features = [
+  {
+    icon: "🎯",
+    title: "Smart Matching",
+    description: "Our AI-powered system connects you with the perfect learning partners"
+  },
+  {
+    icon: "🔄",
+    title: "Skill Exchange",
+    description: "Trade your expertise for skills you want to learn"
+  },
+  {
+    icon: "📈",
+    title: "Track Progress",
+    description: "Monitor your learning journey with detailed analytics"
+  },
+  {
+    icon: "🤝",
+    title: "Community",
+    description: "Join a supportive network of lifelong learners"
+  },
+  {
+    icon: "🔒",
+    title: "Secure Platform",
+    description: "Your data and interactions are protected"
+  },
+  {
+    icon: "⭐",
+    title: "Quality Assurance",
+    description: "Verified reviews and ratings system"
+  }
+];
 
 export default About;
