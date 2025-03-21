@@ -24,8 +24,11 @@ router.get('/google',
 
 // Google OAuth callback route
 router.get('/google/callback',
-  passport.authenticate('google', { failureRedirect: '/login' }),
-  async (req, res) => {
+  passport.authenticate('google', { 
+    failureRedirect: '/login',
+    failWithError: true 
+  }),
+  async (req, res, next) => {
     try {
       // Set JWT token in cookie after successful authentication
       if (req.user) {
@@ -46,8 +49,36 @@ router.get('/google/callback',
       }
     } catch (error) {
       console.error("Google callback error:", error);
-      res.redirect(`${process.env.FRONTEND_URL}/login?error=server_error`);
+      next(error); // Pass error to the error handler
     }
+  },
+  // Error handler for existing account
+  (err, req, res, next) => {
+    console.log("Google auth error handler:", err);
+    
+    // Check for existingAccount error from the passport strategy
+    if (err && err.name === 'AuthenticationError') {
+      const info = err.message || {};
+      
+      if (typeof info === 'object' && info.existingAccount) {
+        // Redirect to error page with message
+        const message = encodeURIComponent(
+          info.message || 'Email already exists. Please login with email & password.'
+        );
+        return res.redirect(`${process.env.FRONTEND_URL}/error?message=${message}`);
+      }
+    }
+    
+    // If it's the info object directly
+    if (err && err.existingAccount) {
+      const message = encodeURIComponent(
+        err.message || 'Email already exists. Please login with email & password.'
+      );
+      return res.redirect(`${process.env.FRONTEND_URL}/error?message=${message}`);
+    }
+    
+    // Default error case
+    res.redirect(`${process.env.FRONTEND_URL}/login?error=authentication_failed`);
   }
 );
 

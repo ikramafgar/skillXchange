@@ -1,9 +1,9 @@
-
 import { useState } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/authStore";
+import { Loader } from "lucide-react";
 
 const SignUpPage = () => {
   const [name, setName] = useState("");
@@ -11,7 +11,7 @@ const SignUpPage = () => {
   const [password, setPassword] = useState("");
 
   const navigate = useNavigate();
-  const { signup} = useAuthStore();
+  const { signup,isLoading} = useAuthStore();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -30,9 +30,6 @@ const SignUpPage = () => {
     }
     // Handle signup logic
     toast.success("Signup Successful!", { position: "top-center" });
-    // console.log("Name:", name);
-    // console.log("Email:", email);
-    // console.log("Password:", password);
   };
 
   return (
@@ -117,7 +114,12 @@ const SignUpPage = () => {
             type="submit"
             className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition duration-200 shadow-md"
           >
-            Sign Up
+            {isLoading ? (
+                <Loader className="size-6 animate-spin mx-auto" />
+              ) 
+            : (
+              "Sign Up"
+            )}
           </button>
         </form>
 

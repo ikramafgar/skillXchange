@@ -21,10 +21,17 @@ function LoginPage() {
           await googleLogin(credential);
           toast.success("Login Successful!", { position: "top-center" });
           navigate("/profile");
-        } catch {
-          toast.error("Google login failed. Please try again.", {
-            position: "top-center",
-          });
+        } catch (error) {
+          console.error("Google login error:", error);
+          // Check if this is an existing account error
+          if (error.response?.data?.existingAccount) {
+            // Redirect to error page with the message
+            navigate(`/error?message=${encodeURIComponent(error.response.data.message)}`);
+          } else {
+            toast.error("Google login failed. Please try again.", {
+              position: "top-center",
+            });
+          }
         }
       }
     };
@@ -158,7 +165,7 @@ function LoginPage() {
 
         {/* Footer */}
         <p className="mt-6 text-center text-sm text-gray-600">
-          Don’t have an account?{" "}
+          Don&apos;t have an account?{" "}
           <a href="/signup" className="text-blue-500 hover:underline">
             Sign up
           </a>

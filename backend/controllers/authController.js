@@ -263,6 +263,15 @@ export const googleLogin = async (req, res) => {
       user.profile = profile._id;
       await user.save();
     } else {
+      // Check if user exists but was created via email/password (no googleId)
+      if (!user.googleId && user.password) {
+        // User exists with email/password authentication
+        return res.status(400).json({ 
+          message: "Email already exists. Please login with email & password.",
+          existingAccount: true
+        });
+      }
+      
       // Update the user's Google ID if not already set
       if (!user.googleId) {
         user.googleId = decoded.sub;

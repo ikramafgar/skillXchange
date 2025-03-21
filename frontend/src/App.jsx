@@ -30,6 +30,7 @@ import HelpPage from "./pages/HelpPage";
 import AuthCallbackPage from "./pages/AuthCallbackPage"; // Import the Auth callback component
 import AdminPage from "./pages/AdminPage"; // Import the Admin page component
 import XFeed from "./pages/XFeedPage";
+import ErrorPage from "./pages/ErrorPage"; // Import the Error page component
 
 // Protect routes that require authentication
 const ProtectedRoute = ({ children }) => {
@@ -119,6 +120,7 @@ function App() {
         <Route path="/profile/:userId" element={<UserProfilePage />} /> {/* New Profile Page */}
         <Route path="/contact" element={<Contact />} />
         <Route path="/help" element={<HelpPage />} />
+        <Route path="/error" element={<ErrorPage />} /> {/* New Error Page */}
         <Route
           path="/dashboard"
           element={

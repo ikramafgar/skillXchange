@@ -29,15 +29,29 @@ passport.use(
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
-        // Check if user already exists
-        let user = await User.findOne({ googleId: profile.id });
+        // First check if user already exists with this email address
+        const email = profile.emails[0].value;
+        let user = await User.findOne({ email: email });
+        
+        // If user exists but has a password and no googleId, then it was created through email/password
+        if (user && user.password && !user.googleId) {
+          // This is an existing email/password account
+          const error = new Error('Email already exists. Please login with email & password.');
+          error.existingAccount = true;
+          return done(error);
+        }
+        
+        // Otherwise, check if user exists with Google ID
+        if (!user) {
+          user = await User.findOne({ googleId: profile.id });
+        }
         
         if (!user) {
           // Create new user if doesn't exist
           user = await User.create({
             googleId: profile.id,
             name: profile.displayName,
-            email: profile.emails[0].value,
+            email: email,
             isVerified: true // Google accounts are already verified
           });
           
@@ -53,19 +67,23 @@ passport.use(
           // Link the profile to the user
           user.profile = userProfile._id;
           await user.save();
-        } else {
-          // If user exists but doesn't have a profile, create one
-          if (!user.profile) {
-            const userProfile = new Profile({
-              user: user._id,
-              skillsToLearn: [],
-              skillsToTeach: []
-            });
-            await userProfile.save();
-            
-            user.profile = userProfile._id;
-            await user.save();
-          }
+        } else if (!user.googleId) {
+          // User exists with email but doesn't have googleId, update it
+          user.googleId = profile.id;
+          await user.save();
+        }
+        
+        // If user exists but doesn't have a profile, create one
+        if (!user.profile) {
+          const userProfile = new Profile({
+            user: user._id,
+            skillsToLearn: [],
+            skillsToTeach: []
+          });
+          await userProfile.save();
+          
+          user.profile = userProfile._id;
+          await user.save();
         }
         
         return done(null, user);

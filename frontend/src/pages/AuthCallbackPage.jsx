@@ -12,6 +12,14 @@ function AuthCallbackPage() {
   useEffect(() => {
     const handleCallback = async () => {
       try {
+        // First check if we're being redirected with an error message
+        const message = searchParams.get('message');
+        if (message) {
+          toast.error('Authentication failed: ' + message);
+          navigate(`/error?message=${encodeURIComponent(message)}`);
+          return;
+        }
+        
         const token = searchParams.get('token');
         const error = searchParams.get('error');
         
@@ -33,8 +41,7 @@ function AuthCallbackPage() {
         
         toast.success('Login successful!');
         navigate('/profile');
-      } catch (error) {
-        console.error('Auth callback error:', error);
+      } catch {
         toast.error('Authentication failed. Please try again.');
         navigate('/login');
       } finally {
