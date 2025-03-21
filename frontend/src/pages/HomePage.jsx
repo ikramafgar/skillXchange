@@ -70,12 +70,39 @@ function HomePage() {
     visible: { transition: { staggerChildren: 0.2 } },
   };
 
-  const staggerItem = {
-    hidden: { opacity: 0, y: 50 },
+  const cardVariants = {
+    hidden: {
+      opacity: 0,
+      y: 20,
+      scale: 0.95,
+    },
     visible: {
       opacity: 1,
       y: 0,
-      transition: { duration: 0.8, ease: "easeOut" },
+      scale: 1,
+      transition: {
+        duration: 0.5,
+        ease: "easeOut",
+      },
+    },
+    hover: {
+      scale: 1.05,
+      y: -10,
+      boxShadow:
+        "0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)",
+      transition: {
+        type: "spring",
+        stiffness: 300,
+        damping: 20,
+      },
+    },
+    tap: {
+      scale: 0.98,
+      transition: {
+        type: "spring",
+        stiffness: 500,
+        damping: 20,
+      },
     },
   };
 
@@ -132,7 +159,7 @@ function HomePage() {
     <div>
       {/* Hero Section */}
       <motion.section
-        className="bg-gradient-to-r from-gray-50 via-blue-50 to-gray-50 min-h-screen flex items-start justify-center px-4 sm:px-6 lg:px-8 relative overflow-hidden pt-24 "
+        className="bg-[#FAFAFA] min-h-screen flex items-start justify-center px-4 sm:px-6 lg:px-8 relative overflow-hidden pt-24"
         variants={containerVariants}
         initial="hidden"
         animate="visible"
@@ -159,21 +186,21 @@ function HomePage() {
         >
           {/* Circle 1 - Left Side */}
           <motion.div
-            className="absolute w-[300px] h-[300px] bg-blue-400 opacity-60 blur-3xl rounded-full -left-20 top-1/3"
+            className="absolute w-[300px] h-[300px] bg-purple-400 opacity-40 blur-3xl rounded-full -left-20 top-1/3"
             animate={{ scale: [1, 1.2, 1] }}
             transition={{ duration: 6, repeat: Infinity }}
           ></motion.div>
 
           {/* Circle 2 - Center */}
           <motion.div
-            className="absolute w-[400px] h-[400px] bg-blue-200 opacity-30 blur-3xl rounded-full"
+            className="absolute w-[400px] h-[400px] bg-indigo-300 opacity-30 blur-3xl rounded-full"
             animate={{ scale: [1, 1.3, 1] }}
             transition={{ duration: 7, repeat: Infinity }}
           ></motion.div>
 
           {/* Circle 3 - Right Side */}
           <motion.div
-            className="absolute w-[250px] h-[250px] bg-blue-500 opacity-50 blur-3xl rounded-full -right-20 bottom-1/4"
+            className="absolute w-[250px] h-[250px] bg-violet-400 opacity-40 blur-3xl rounded-full -right-20 bottom-1/4"
             animate={{ scale: [1, 1.1, 1] }}
             transition={{ duration: 8, repeat: Infinity }}
           ></motion.div>
@@ -252,95 +279,269 @@ function HomePage() {
         </motion.div>
       </motion.section>
 
+      {/* Key Features Section */}
+      <motion.section
+        className="py-24 bg-gradient-to-b from-[#F6F8FC] to-white relative overflow-hidden"
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        exit="exit"
+      >
+        {/* Background Elements */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-0 left-0 w-72 h-72 bg-purple-200/30 rounded-full filter blur-3xl"></div>
+          <div className="absolute bottom-0 right-0 w-96 h-96 bg-blue-200/30 rounded-full filter blur-3xl"></div>
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <motion.div className="text-center mb-20" variants={textVariants}>
+            <span className="inline-block px-4 py-1.5 mb-4 rounded-full bg-gradient-to-r from-blue-500/10 to-purple-500/10 text-blue-600 text-sm font-medium">
+              Explore Our Features
+            </span>
+            <h2 className="text-4xl md:text-5xl font-extrabold bg-clip-text text-gray-800 bg-gradient-to-r from-blue-600 to-purple-600 mb-4">
+              Key Features
+            </h2>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              Discover what makes SkillXchange the perfect platform for your
+              learning journey
+            </p>
+          </motion.div>
+
+          <motion.div
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+            variants={staggerContainer}
+          >
+            {[
+              {
+                title: "Skill Matching",
+                description:
+                  "Advanced algorithm to connect you with perfect learning partners",
+                icon: "🤝",
+                gradient: "from-blue-500 to-indigo-500",
+              },
+              {
+                title: "Virtual Classrooms",
+                description:
+                  "Interactive online spaces for seamless knowledge sharing",
+                icon: "👨‍🏫",
+                gradient: "from-indigo-500 to-purple-500",
+              },
+              {
+                title: "Skill Tracking",
+                description:
+                  "Monitor your progress and growth with detailed analytics",
+                icon: "📊",
+                gradient: "from-purple-500 to-pink-500",
+              },
+              {
+                title: "Community Support",
+                description:
+                  "Connect with like-minded learners in our vibrant community",
+                icon: "👥",
+                gradient: "from-pink-500 to-rose-500",
+              },
+              {
+                title: "Flexible Schedule",
+                description:
+                  "Learn at your own pace with customizable time slots",
+                icon: "⏰",
+                gradient: "from-rose-500 to-orange-500",
+              },
+              {
+                title: "Verified Reviews",
+                description:
+                  "Transparent feedback system for quality assurance",
+                icon: "⭐",
+                gradient: "from-orange-500 to-yellow-500",
+              },
+            ].map((feature, index) => (
+              <motion.div
+                key={index}
+                variants={cardVariants}
+                initial="hidden"
+                whileInView="visible"
+                whileHover="hover"
+                whileTap="tap"
+                viewport={{ once: true }}
+                className="group relative bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-500 overflow-hidden border border-gray-100"
+              >
+                {/* Gradient Background on Hover */}
+                <div
+                  className="absolute inset-0 bg-gradient-to-r opacity-0 group-hover:opacity-5 transition-opacity duration-300"
+                  style={{
+                    backgroundImage: `linear-gradient(to right, var(--tw-gradient-stops))`,
+                    "--tw-gradient-from": "#3B82F6",
+                    "--tw-gradient-to": "#8B5CF6",
+                  }}
+                ></div>
+
+                {/* Content */}
+                <div className="relative z-10">
+                  <div
+                    className={`w-16 h-16 mb-6 rounded-xl bg-gradient-to-r ${feature.gradient} p-0.5`}
+                  >
+                    <div className="w-full h-full bg-white rounded-[10px] flex items-center justify-center">
+                      <span className="text-3xl transform group-hover:scale-110 transition-transform duration-300">
+                        {feature.icon}
+                      </span>
+                    </div>
+                  </div>
+
+                  <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-blue-600 transition-colors duration-300">
+                    {feature.title}
+                  </h3>
+
+                  <p className="text-gray-600 group-hover:text-gray-700 transition-colors duration-300">
+                    {feature.description}
+                  </p>
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      </motion.section>
+
       {/* How It Works Section */}
       <motion.section
-        className="relative bg-gradient-to-r from-gray-100 via-blue-50 to-gray-100 py-16 px-6 md:px-12 lg:px-24 overflow-hidden"
+        className="relative bg-gradient-to-br from-[#F8F9FF] to-white py-32 px-6 md:px-12 lg:px-24 overflow-hidden"
         variants={containerVariants}
         animate="visible"
         exit="exit"
-        whileInView={{ opacity: 1, y: 0 }}
-        initial={{ opacity: 0, y: 50 }}
-        transition={{ duration: 0.7 }}
       >
         <motion.div
-          className="text-center relative z-10 mb-16"
+          className="text-center relative z-10 mb-24"
           variants={textVariants}
         >
-          <h2 className="text-4xl md:text-5xl font-extrabold text-gray-700 tracking-tight leading-tight">
+          <span className="inline-block px-4 py-1.5 rounded-full bg-gradient-to-r from-blue-500/10 to-purple-500/10 text-blue-600 text-sm font-medium mb-4">
             How It Works
+          </span>
+          <h2 className="text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600 mb-4">
+            Swap Skills, Grow Together!
           </h2>
-          <p className="mt-4 text-gray-700 font-semibold text-lg md:text-xl max-w-2xl mx-auto">
-            Embark on your journey with us. Follow these easy steps to begin
-            your experience.
+          <p className="text-lg text-gray-600">
+            Follow these simple steps to get started
           </p>
         </motion.div>
 
-        <motion.div
-          className="grid gap-12 md:grid-cols-2 lg:grid-cols-3 relative z-10"
-          variants={staggerContainer}
-        >
-          {/* Step 1 */}
+        {/* Journey Steps Container */}
+        <div className="max-w-7xl mx-auto relative">
+          {/* Steps */}
           <motion.div
-            className="relative flex flex-col items-center text-center transform transition-all duration-500  rounded-lg py-5 hover:scale-105 hover:shadow-2xl hover:rotate-2"
-            variants={staggerItem}
+            className="space-y-16 relative z-10"
+            variants={staggerContainer}
           >
-            <div className="w-20 h-20 mb-6 bg-gradient-to-r from-blue-400 to-blue-500 text-white rounded-full flex items-center justify-center text-3xl font-extrabold shadow-lg">
-              1
-            </div>
-            <h3 className="text-2xl font-semibold text-gray-700 mb-4">
-              Sign Up & Join
-            </h3>
-            <p className="text-gray-700 leading-relaxed font-medium mb-6">
-              Sign up, create your profile, and become part of the SkillXchange
-              community!
-            </p>
-          </motion.div>
+            {[
+              {
+                step: "01",
+                title: "Sign Up & Create a Profile",
+                icon: "🚀",
+                color: "from-indigo-500 to-violet-500",
+                details: [
+                  "Register with your email or Google account",
+                  "Set up your profile with skills you offer and skills you want to learn",
+                  "Add a profile picture and location for better connections",
+                ],
+              },
+              {
+                step: "02",
+                title: "Explore & Find Matches",
+                icon: "🔍",
+                color: "from-violet-500 to-purple-500",
+                details: [
+                  "Browse through other users' profiles based on skills",
+                  "Use smart filters to find the perfect match",
+                  "View user ratings, reviews, and compatibility scores",
+                ],
+              },
+              {
+                step: "03",
+                title: "Connect & Chat",
+                icon: "💬",
+                color: "from-purple-500 to-fuchsia-500",
+                details: [
+                  "Send a connection request to users you want to swap skills with",
+                  "Use the built-in chat feature to discuss learning preferences and schedules",
+                  "Schedule sessions online or in person",
+                ],
+              },
+              {
+                step: "04",
+                title: "Start Learning & Teaching",
+                icon: "📚",
+                color: "from-fuchsia-500 to-pink-500",
+                details: [
+                  "Engage in skill-swapping sessions with your matched partners",
+                  "Exchange knowledge in a fun, interactive way",
+                  "Track your progress and get feedback",
+                ],
+              },
+              {
+                step: "05",
+                title: "Earn Badges & Grow Your Network",
+                icon: "🏆",
+                color: "from-pink-500 to-rose-500",
+                details: [
+                  "Complete sessions to earn credibility and badges",
+                  "Get positive reviews and level up your profile",
+                  "Keep expanding your skills and connections",
+                ],
+              },
+            ].map((step, index) => (
+              <motion.div
+                key={index}
+                className="relative"
+                variants={{
+                  hidden: { opacity: 0, y: 20 },
+                  visible: { opacity: 1, y: 0 },
+                }}
+              >
+                <div
+                  className={`bg-white rounded-2xl p-8 shadow-xl hover:shadow-2xl transition-all duration-500 lg:w-[60%] ${
+                    index % 2 === 0 ? "lg:ml-0" : "lg:ml-[40%]"
+                  }`}
+                >
+                  {/* Step Number & Icon */}
+                  <div className="flex items-center gap-4 mb-6">
+                    <div
+                      className={`w-12 h-12 rounded-xl bg-gradient-to-r ${step.color} flex items-center justify-center text-2xl shadow-lg`}
+                    >
+                      {step.icon}
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-sm font-medium text-gray-500">
+                        Step {step.step}
+                      </span>
+                      <h3 className="text-xl font-bold text-gray-900">
+                        {step.title}
+                      </h3>
+                    </div>
+                  </div>
 
-          {/* Step 2 */}
-          <motion.div
-            className="relative flex flex-col items-center text-center transform transition-all duration-500 hover:scale-105 rounded-lg py-5 hover:shadow-2xl hover:rotate-2"
-            variants={staggerItem}
-          >
-            <div className="w-20 h-20 mb-6 bg-gradient-to-r from-blue-400 to-blue-500 text-white rounded-full flex items-center justify-center text-3xl font-extrabold shadow-lg">
-              2
-            </div>
-            <h3 className="text-2xl font-semibold text-gray-700 mb-4">
-              Browse & Choose
-            </h3>
-            <p className="text-gray-700 leading-relaxed font-medium mb-6">
-              Explore and select the skills you want to learn or offer. Match
-              with like-minded people.
-            </p>
+                  {/* Details */}
+                  <ul className="space-y-3">
+                    {step.details.map((detail, idx) => (
+                      <li key={idx} className="flex items-start gap-2">
+                        <span className="text-indigo-500 mt-1">🔹</span>
+                        <span className="text-gray-600">{detail}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </motion.div>
+            ))}
           </motion.div>
-
-          {/* Step 3 */}
-          <motion.div
-            className="relative flex flex-col items-center text-center transform transition-all duration-500 hover:scale-105 rounded-lg py-5 hover:shadow-2xl hover:rotate-2"
-            variants={staggerItem}
-          >
-            <div className="w-20 h-20 mb-6 bg-gradient-to-r from-blue-400 to-blue-500 text-white rounded-full flex items-center justify-center text-3xl font-extrabold shadow-lg">
-              3
-            </div>
-            <h3 className="text-2xl font-semibold text-gray-700 mb-4">
-              Exchange & Grow
-            </h3>
-            <p className="text-gray-700 leading-relaxed font-medium mb-6">
-              Exchange skills, grow your knowledge, and build connections that
-              last.
-            </p>
-          </motion.div>
-        </motion.div>
+        </div>
       </motion.section>
 
       {/* Call to action */}
       <motion.section
-        className="relative bg-cover bg-center py-20 px-8 md:px-16 lg:px-24 text-gray-700"
+        className="relative bg-gradient-to-br from-[#F6F8FC] via-white to-[#F8F9FF] py-20 px-8 md:px-16 lg:px-24 text-gray-700"
         whileInView={{ opacity: 1, y: 0 }}
         initial={{ opacity: 0, y: 50 }}
         transition={{ duration: 0.7 }}
       >
-        {/* Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-r from-gray-100 via-blue-50 to-gray-200"></div>
+        {/* Update overlay */}
+        <div className="absolute inset-0 bg-gradient-to-r from-white/80 via-blue-50/30 to-white/80"></div>
 
         <div className="relative z-10 max-w-4xl mx-auto text-center">
           <h2 className="text-4xl md:text-5xl font-extrabold leading-tight">
@@ -355,7 +556,7 @@ function HomePage() {
             <Link to="/login">
               <motion.button
                 whileHover={{ scale: 1.1 }}
-                className="bg-blue-400 text-white px-6 py-3 rounded-lg shadow-lg hover:bg-blue-600 transition duration-300"
+                className="bg-gradient-to-r from-indigo-500 to-violet-500 text-white px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition duration-300"
               >
                 Get Started
               </motion.button>
