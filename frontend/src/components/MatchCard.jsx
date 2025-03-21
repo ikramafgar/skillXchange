@@ -8,7 +8,8 @@ import {
   Eye,
   Clock,
   Globe,
-  User
+  User,
+  Sparkles
 } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { useConnectionStore } from '../store/connectionStore';
@@ -19,6 +20,16 @@ const MatchCard = ({ match, onViewProfile }) => {
   const connectionStore = useConnectionStore();
   const [imageError, setImageError] = useState(false);
   
+  // Check if match and matchedUser exist before destructuring
+  if (!match || !match.matchedUser) {
+    console.error('Invalid match data:', match);
+    return (
+      <div className="bg-white rounded-xl shadow-md overflow-hidden p-4 h-full flex items-center justify-center">
+        <p className="text-red-500">Error: Invalid match data</p>
+      </div>
+    );
+  }
+
   const {
     matchedUser,
     matchType,
@@ -42,15 +53,35 @@ const MatchCard = ({ match, onViewProfile }) => {
   const getMatchTypeLabel = () => {
     switch (matchType) {
       case 'direct':
-        return { label: 'Perfect Match', color: 'bg-green-100 text-green-700' };
+        return { 
+          label: 'Perfect Match', 
+          color: 'bg-gradient-to-r from-green-50 to-emerald-50 text-emerald-600',
+          icon: <Sparkles className="w-3.5 h-3.5 text-emerald-500" />
+        };
       case 'alternative':
-        return { label: 'One-Way Match', color: 'bg-blue-100 text-blue-700' };
+        return { 
+          label: 'One-Way Match', 
+          color: 'bg-gradient-to-r from-blue-50 to-sky-50 text-blue-600',
+          icon: <Users className="w-3.5 h-3.5 text-blue-500" />
+        };
       case 'similar':
-        return { label: 'Similar Skill', color: 'bg-purple-100 text-purple-700' };
+        return { 
+          label: 'Similar Skill', 
+          color: 'bg-gradient-to-r from-purple-50 to-violet-50 text-violet-600',
+          icon: <Star className="w-3.5 h-3.5 text-violet-500" />
+        };
       case 'group':
-        return { label: 'Group Exchange', color: 'bg-amber-100 text-amber-700' };
+        return { 
+          label: 'Group Exchange', 
+          color: 'bg-gradient-to-r from-amber-50 to-yellow-50 text-amber-600',
+          icon: <Users className="w-3.5 h-3.5 text-amber-500" />
+        };
       default:
-        return { label: 'Match', color: 'bg-gray-100 text-gray-700' };
+        return { 
+          label: 'Match', 
+          color: 'bg-gradient-to-r from-gray-50 to-slate-50 text-slate-600',
+          icon: <Users className="w-3.5 h-3.5 text-slate-500" />
+        };
     }
   };
   
@@ -129,37 +160,44 @@ const MatchCard = ({ match, onViewProfile }) => {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100 hover:shadow-xl transition-shadow duration-300 h-full flex flex-col w-full"
+      whileHover={{ y: -4 }}
+      transition={{ duration: 0.2 }}
+      className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md hover:border-gray-200 transition-all duration-300 h-full flex flex-col w-full"
     >
       {/* Match Score Indicator */}
-      <div className="w-full bg-gray-100 h-1.5">
+      <div className="w-full bg-gray-50 h-1">
         <div 
-          className="h-full bg-blue-500" 
+          className={`h-full ${scorePercentage >= 80 ? 'bg-gradient-to-r from-blue-400 to-indigo-500' : 'bg-blue-500'}`} 
           style={{ width: `${scorePercentage}%` }}
         />
       </div>
       
-      <div className="p-4 flex-1 flex flex-col">
+      <div className="px-5 py-4 flex-1 flex flex-col">
         {/* Match Type Badge */}
-        <div className="flex justify-between items-start mb-4">
-          <span className={`px-3 py-1 rounded-full text-sm font-medium ${matchTypeInfo.color}`}>
-            {matchTypeInfo.label}
-          </span>
-          <span className="text-sm font-semibold text-blue-600">{scorePercentage}% Match</span>
+        <div className="flex justify-between items-center mb-5">
+          <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium ${matchTypeInfo.color} border border-gray-100`}>
+            {matchTypeInfo.icon}
+            <span>{matchTypeInfo.label}</span>
+          </div>
+          <div className="flex items-center">
+            <span className="text-xs font-medium px-2 py-1 bg-blue-50 text-blue-600 rounded-full">
+              {scorePercentage}% Match
+            </span>
+          </div>
         </div>
         
         <div className="flex flex-col items-center flex-1">
           {/* Profile Picture */}
           <div className="mb-4 relative w-20 h-20">
-            {imageError || !matchedUser.profile?.profilePic ? (
-              <div className="w-full h-full rounded-full bg-gray-200 flex items-center justify-center border-2 border-gray-100 shadow-md">
+            {imageError || !matchedUser?.profile?.profilePic ? (
+              <div className="w-full h-full rounded-full bg-gradient-to-r from-gray-100 to-gray-50 flex items-center justify-center border border-gray-100 shadow-sm">
                 <User className="w-10 h-10 text-gray-400" />
               </div>
             ) : (
               <img
                 src={matchedUser.profile.profilePic}
-                alt={matchedUser.name}
-                className="w-full h-full rounded-full object-cover shadow-md border-2 border-gray-100"
+                alt={matchedUser.name || 'User'}
+                className="w-full h-full rounded-full object-cover shadow-sm border-2 border-white ring-1 ring-gray-100"
                 onError={() => setImageError(true)}
               />
             )}
@@ -167,8 +205,8 @@ const MatchCard = ({ match, onViewProfile }) => {
 
           {/* User Info */}
           <div className="text-center w-full flex-1 flex flex-col">
-            <h3 className="font-bold text-lg text-gray-800 mb-1">{matchedUser.name}</h3>
-            <p className="text-gray-600 text-sm mb-4">
+            <h3 className="font-semibold text-lg text-gray-800 mb-1">{matchedUser.name || 'User'}</h3>
+            <p className="text-gray-500 text-xs font-medium uppercase tracking-wide mb-4">
               {getUserRole() === 'both' 
                 ? 'Learner & Teacher' 
                 : getUserRole() === 'learner' 
@@ -179,99 +217,140 @@ const MatchCard = ({ match, onViewProfile }) => {
             </p>
             
             {/* Match Details */}
-            <div className="mb-5 flex-1">
-              <div className="flex flex-col gap-3 text-sm text-center">
+            <div className="mb-5 flex-1 flex flex-col justify-center">
+              <div className="flex flex-col gap-2.5 text-sm text-center">
                 {/* Show skills to learn */}
                 {shouldShowLearnSkill() && (
-                  <div className="flex flex-wrap items-center justify-center gap-2">
-                    <span className="font-medium text-gray-700">You learn:</span>
-                    <span className="px-3 py-1 bg-blue-50 text-blue-600 rounded-full font-medium truncate max-w-[150px]">
+                  <motion.div 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="flex flex-wrap items-center justify-center gap-2"
+                  >
+                    <span className="text-xs font-medium text-gray-500">You learn:</span>
+                    <span className="px-3 py-1 bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-600 rounded-full text-xs font-medium border border-blue-100 truncate max-w-[150px]">
                       {skillToLearn?.name || 'A skill'}
                     </span>
-                  </div>
+                  </motion.div>
                 )}
                 
                 {/* Show skills to teach */}
                 {shouldShowTeachSkill() && (
-                  <div className="flex flex-wrap items-center justify-center gap-2">
-                    <span className="font-medium text-gray-700">You teach:</span>
-                    <span className="px-3 py-1 bg-green-50 text-green-600 rounded-full font-medium truncate max-w-[150px]">
+                  <motion.div 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.1 }}
+                    className="flex flex-wrap items-center justify-center gap-2"
+                  >
+                    <span className="text-xs font-medium text-gray-500">You teach:</span>
+                    <span className="px-3 py-1 bg-gradient-to-r from-green-50 to-emerald-50 text-green-600 rounded-full text-xs font-medium border border-green-100 truncate max-w-[150px]">
                       {skillToTeach?.name || 'A skill'}
                     </span>
-                  </div>
+                  </motion.div>
                 )}
               </div>
               
               {matchType === 'similar' && (
-                <div className="flex flex-col gap-3 text-sm text-center">
+                <motion.div 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.1 }}
+                  className="flex flex-col gap-2.5 text-sm text-center mt-2.5"
+                >
                   <div className="flex flex-wrap items-center justify-center gap-2">
-                    <span className="font-medium text-gray-700">Similar to what you want:</span>
-                    <span className="px-3 py-1 bg-purple-50 text-purple-600 rounded-full font-medium truncate max-w-[150px]">
+                    <span className="text-xs font-medium text-gray-500">Similar to what you want:</span>
+                    <span className="px-3 py-1 bg-gradient-to-r from-purple-50 to-violet-50 text-purple-600 rounded-full text-xs font-medium border border-purple-100 truncate max-w-[150px]">
                       {skillToLearn?.name || 'A similar skill'}
                     </span>
                   </div>
-                </div>
+                </motion.div>
               )}
               
-              {matchType === 'group' && (
-                <div className="flex flex-col gap-3 text-sm text-center">
-                  <span className="font-medium text-gray-700">Group Exchange:</span>
+              {matchType === 'group' && groupChain && (
+                <motion.div 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.1 }}
+                  className="flex flex-col gap-2.5 text-sm text-center mt-2.5"
+                >
+                  <span className="text-xs font-medium text-gray-500">Group Exchange:</span>
                   <div className="flex items-center justify-center gap-1 flex-wrap">
-                    {groupChain?.map((user, index) => (
-                      <React.Fragment key={user._id}>
-                        <span className="px-3 py-1 bg-amber-50 text-amber-600 rounded-full font-medium truncate max-w-[100px]">
-                          {user.name}
+                    {groupChain.map((user, index) => (
+                      <React.Fragment key={user?._id || index}>
+                        <span className="px-3 py-1 bg-gradient-to-r from-amber-50 to-yellow-50 text-amber-600 rounded-full text-xs font-medium border border-amber-100 truncate max-w-[100px]">
+                          {user?.name || `User ${index+1}`}
                         </span>
                         {index < groupChain.length - 1 && (
-                          <span className="text-gray-400">→</span>
+                          <span className="text-gray-300">→</span>
                         )}
                       </React.Fragment>
                     ))}
                   </div>
-                </div>
+                </motion.div>
               )}
             </div>
             
             {/* Match Score Components */}
-            <div className="grid grid-cols-2 gap-x-3 gap-y-2 mb-5 text-sm">
-              {scoreComponents && (
-                <>
-                  <div className="flex items-center gap-1">
-                    <Star className="w-4 h-4 text-amber-500" />
-                    <span className="text-gray-600">Skill: {Math.round(scoreComponents.exactSkillMatch)}</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Clock className="w-4 h-4 text-blue-500" />
-                    <span className="text-gray-600">Time: {Math.round(scoreComponents.availabilityOverlap)}</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <MapPin className="w-4 h-4 text-red-500" />
-                    <span className="text-gray-600">Location: {Math.round(scoreComponents.locationProximity)}</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Globe className="w-4 h-4 text-green-500" />
-                    <span className="text-gray-600">Mode: {Math.round(scoreComponents.preferredModeMatch)}</span>
-                  </div>
-                </>
-              )}
-            </div>
+            {scoreComponents && (
+              <div className="grid grid-cols-2 gap-x-3 gap-y-2 mb-5 px-2">
+                <motion.div 
+                  initial={{ opacity: 0, y: 5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 }}
+                  className="flex items-center gap-2 bg-gradient-to-r from-amber-50 to-amber-50/30 rounded-lg px-2.5 py-1.5"
+                >
+                  <Star className="w-3.5 h-3.5 text-amber-500" />
+                  <span className="text-xs text-gray-600 font-medium">Skill: {Math.round(scoreComponents.exactSkillMatch || 0)}</span>
+                </motion.div>
+                <motion.div 
+                  initial={{ opacity: 0, y: 5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.15 }}
+                  className="flex items-center gap-2 bg-gradient-to-r from-blue-50 to-blue-50/30 rounded-lg px-2.5 py-1.5"
+                >
+                  <Clock className="w-3.5 h-3.5 text-blue-500" />
+                  <span className="text-xs text-gray-600 font-medium">Time: {Math.round(scoreComponents.availabilityOverlap || 0)}</span>
+                </motion.div>
+                <motion.div 
+                  initial={{ opacity: 0, y: 5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="flex items-center gap-2 bg-gradient-to-r from-red-50 to-red-50/30 rounded-lg px-2.5 py-1.5"
+                >
+                  <MapPin className="w-3.5 h-3.5 text-red-500" />
+                  <span className="text-xs text-gray-600 font-medium">Location: {Math.round(scoreComponents.locationProximity || 0)}</span>
+                </motion.div>
+                <motion.div 
+                  initial={{ opacity: 0, y: 5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.25 }}
+                  className="flex items-center gap-2 bg-gradient-to-r from-green-50 to-green-50/30 rounded-lg px-2.5 py-1.5"
+                >
+                  <Globe className="w-3.5 h-3.5 text-green-500" />
+                  <span className="text-xs text-gray-600 font-medium">Mode: {Math.round(scoreComponents.preferredModeMatch || 0)}</span>
+                </motion.div>
+              </div>
+            )}
 
             {/* Action Buttons */}
-            <div className="grid grid-cols-2 gap-3 w-full mt-auto">
-              <button
+            <div className="grid grid-cols-2 gap-2 w-full mt-auto">
+              <motion.button
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.98 }}
                 onClick={() => onViewProfile(matchedUser._id)}
-                className="flex items-center justify-center gap-2 px-3 py-2 bg-white border border-blue-500 text-blue-500 rounded-lg hover:bg-blue-50 transition-colors duration-300 text-sm font-medium w-full"
+                className="flex items-center justify-center gap-2 px-3 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors duration-300 text-xs font-medium w-full"
               >
-                <Eye className="w-4 h-4 flex-shrink-0" />
+                <Eye className="w-3.5 h-3.5 flex-shrink-0" />
                 <span>View Profile</span>
-              </button>
-              <button
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.98 }}
                 onClick={handleConnect}
-                className="flex items-center justify-center gap-2 px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-300 text-sm font-medium w-full"
+                className="flex items-center justify-center gap-2 px-3 py-2.5 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-xl hover:from-blue-600 hover:to-indigo-600 transition-colors duration-300 text-xs font-medium w-full shadow-sm"
               >
-                <Users className="w-4 h-4 flex-shrink-0" />
+                <Users className="w-3.5 h-3.5 flex-shrink-0" />
                 <span>Connect</span>
-              </button>
+              </motion.button>
             </div>
           </div>
         </div>
@@ -284,16 +363,16 @@ const MatchCard = ({ match, onViewProfile }) => {
 MatchCard.propTypes = {
   match: PropTypes.shape({
     matchedUser: PropTypes.shape({
-      _id: PropTypes.string.isRequired,
-      name: PropTypes.string.isRequired,
+      _id: PropTypes.string,
+      name: PropTypes.string,
       role: PropTypes.string,
       profile: PropTypes.shape({
         role: PropTypes.string,
         profilePic: PropTypes.string
       })
-    }).isRequired,
-    matchType: PropTypes.string.isRequired,
-    score: PropTypes.number.isRequired,
+    }),
+    matchType: PropTypes.string,
+    score: PropTypes.number,
     scoreComponents: PropTypes.object,
     skillToLearn: PropTypes.object,
     skillToTeach: PropTypes.object,

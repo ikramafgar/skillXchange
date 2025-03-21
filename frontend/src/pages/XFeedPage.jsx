@@ -230,9 +230,9 @@ function XFeed() {
       return (
         <>
           <MatchFilterSection />
-          <div className="flex justify-center items-start">
-            {searchFilteredMatches.map((match, index) => (
-              <div key={match._id} className={index === 0 ? "block w-full max-w-[280px] mx-auto" : "hidden"}>
+          <div className="flex flex-col items-center gap-6">
+            {searchFilteredMatches.map((match) => (
+              <div key={match._id} className="w-full max-w-[280px]">
                 <MatchCard 
                   match={match} 
                   onViewProfile={visitProfile} 
@@ -240,10 +240,10 @@ function XFeed() {
               </div>
             ))}
           </div>
-          {searchFilteredMatches.length > 1 && (
+          {searchFilteredMatches.length > 0 && (
             <div className="mt-6 flex justify-center">
               <p className="text-sm text-gray-600">
-                Showing 1 of {searchFilteredMatches.length} matches
+                Showing {searchFilteredMatches.length} matches
               </p>
             </div>
           )}
