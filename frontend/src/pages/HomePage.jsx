@@ -1,5 +1,8 @@
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
+import { useEffect } from "react";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import Footer from "../components/Footer";
 import {
   FaDatabase,
@@ -37,6 +40,25 @@ import {
 } from "react-icons/fa";
 
 function HomePage() {
+  const location = useLocation();
+  // Check for account deleted query parameter
+  useEffect(() => {
+    const queryParams = new URLSearchParams(location.search);
+    if (queryParams.get('accountDeleted') === 'true') {
+      toast.success('Your account has been successfully deleted.', {
+        position: "top-center",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+      
+      // Clean up URL after showing notification
+      window.history.replaceState({}, document.title, '/');
+    }
+  }, [location]);
+
   // Variants for animations
   const containerVariants = {
     hidden: { opacity: 0, scale: 0.9 },
@@ -156,7 +178,8 @@ function HomePage() {
   };
 
   return (
-    <div>
+    <div className="bg-white">
+      <ToastContainer />
       {/* Hero Section */}
       <motion.section
         className="bg-[#FAFAFA] min-h-screen flex items-start justify-center px-4 sm:px-6 lg:px-8 relative overflow-hidden pt-24"
@@ -556,7 +579,7 @@ function HomePage() {
             <Link to="/login">
               <motion.button
                 whileHover={{ scale: 1.1 }}
-                className="bg-gradient-to-r from-indigo-500 to-violet-500 text-white px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition duration-300"
+                className="bg-blue-400 text-white px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition duration-300"
               >
                 Get Started
               </motion.button>

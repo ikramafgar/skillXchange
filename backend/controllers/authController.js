@@ -95,7 +95,7 @@ export const login = async (req, res) => {
   try {
     const user = await User.findOne({ email }).populate('profile');
     if (!user) {
-      return res.status(400).json({ message: "User not found" });
+      return res.status(400).json({ message: "You don`t have account. Please signup to get started." });
     }
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
@@ -317,5 +317,48 @@ export const googleLogin = async (req, res) => {
   } catch (error) {
     console.error("Google login error:", error);
     return res.status(400).json({ message: error.message || "Error logging in with Google" });
+  }
+};
+
+export const deleteAccount = async (req, res) => {
+  try {
+    const { password } = req.body;
+    const userId = req.userId;
+
+    // Find the user
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // For accounts with password, verify the password first
+    if (user.password) {
+      // Check if password is provided
+      if (!password) {
+        return res.status(400).json({ message: "Password is required to delete account" });
+      }
+      
+      // Verify password
+      const isPasswordValid = await bcrypt.compare(password, user.password);
+      if (!isPasswordValid) {
+        return res.status(400).json({ message: "Invalid password" });
+      }
+    }
+    
+    // Find and delete the profile
+    if (user.profile) {
+      await Profile.findByIdAndDelete(user.profile);
+    }
+    
+    // Delete the user
+    await User.findByIdAndDelete(userId);
+    
+    // Clear auth cookie
+    res.clearCookie("token");
+    
+    res.status(200).json({ message: "Account deleted successfully" });
+  } catch (error) {
+    console.error("Delete account error:", error);
+    return res.status(500).json({ message: error.message || "Error deleting account" });
   }
 };

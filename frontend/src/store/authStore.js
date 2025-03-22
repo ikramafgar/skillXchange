@@ -53,6 +53,35 @@ export const useAuthStore = create((set) => ({
 			throw error;
 		}
 	},
+
+	deleteAccount: async (password) => {
+		set({ isLoading: true, error: null });
+		try {
+			await customAxios.delete('/api/auth/delete-account', { 
+				data: { password } 
+			});
+			
+			// Clear auth state
+			set({ 
+				user: null, 
+				isAuthenticated: false, 
+				isAdmin: false, 
+				error: null, 
+				isLoading: false, 
+				token: null 
+			});
+			
+			// Redirect to home page with success message
+			window.location.href = "/?accountDeleted=true";
+		} catch (error) {
+			set({ 
+				error: error.response?.data?.message || "Error deleting account", 
+				isLoading: false 
+			});
+			throw error;
+		}
+	},
+
 	verifyEmail: async (code) => {
 		set({ isLoading: true, error: null });
 		try {

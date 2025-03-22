@@ -5,6 +5,7 @@ import { useAuthStore } from "../store/authStore";
 import { useNavigate } from "react-router-dom";
 import LoadingSpinner from "../components/LoadingSpinner";
 import AcceptedConnections from "../components/AcceptedConnections";
+import DeleteAccountModal from "../components/DeleteAccountModal";
 import {
   Camera,
   Mail,
@@ -23,6 +24,7 @@ import {
   CheckCircle,
   XCircle,
   Clock,
+  Trash2,
 } from "lucide-react";
 
 const ProfilePage = () => {
@@ -47,6 +49,7 @@ const ProfilePage = () => {
   const [profilePicFile, setProfilePicFile] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   // Check authentication status
   useEffect(() => {
@@ -1046,11 +1049,34 @@ const ProfilePage = () => {
                     <AcceptedConnections />
                   </div>
                 </div>
+                
+                {/* Delete Account Section */}
+                <div className="mt-12 border-t border-gray-200 pt-8">
+                  <div className="flex flex-col items-center">
+                    <h3 className="text-xl font-semibold text-gray-800 mb-2">Danger Zone</h3>
+                    <p className="text-gray-500 text-sm mb-4 text-center">
+                      Once you delete your account, there is no going back. Please be certain.
+                    </p>
+                    <button
+                      onClick={() => setIsDeleteModalOpen(true)}
+                      className="flex items-center gap-2 bg-red-50 hover:bg-red-100 text-red-600 px-4 py-2 rounded-lg transition-colors"
+                    >
+                      <Trash2 size={16} />
+                      Delete Account
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           )}
         </div>
       </div>
+      
+      {/* Delete Account Modal */}
+      <DeleteAccountModal 
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+      />
     </div>
   );
 };
