@@ -31,6 +31,7 @@ import AuthCallbackPage from "./pages/AuthCallbackPage"; // Import the Auth call
 import AdminPage from "./pages/AdminPage"; // Import the Admin page component
 import XFeed from "./pages/XFeedPage";
 import ErrorPage from "./pages/ErrorPage"; // Import the Error page component
+import ChatPage from "./pages/ChatPage"; // Import the Chat page component
 
 // Protect routes that require authentication
 const ProtectedRoute = ({ children }) => {
@@ -126,6 +127,14 @@ function App() {
           element={
             <ProtectedRoute>
               <DashboardPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/chat"
+          element={
+            <ProtectedRoute>
+              <ChatPage />
             </ProtectedRoute>
           }
         />

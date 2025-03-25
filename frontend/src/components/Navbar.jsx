@@ -12,6 +12,7 @@ import {
   User,
   LogOut,
   Bell,
+  MessageSquare,
 } from "lucide-react";
 import { useAuthStore } from "../store/authStore";
 import { useNavigate, useLocation, Link } from "react-router-dom";
@@ -109,6 +110,11 @@ const Navbar = () => {
       href: "/dashboard",
       icon: <LayoutDashboard className="w-4 h-4" />,
     },
+    {
+      name: "Chat",
+      href: "/chat",
+      icon: <MessageSquare className="w-4 h-4" />,
+    },
     { name: "Profile", href: "/profile", icon: <User className="w-4 h-4" /> },
     {
       name: "Logout",
@@ -119,7 +125,7 @@ const Navbar = () => {
 
   // Add admin link for admin users
   if (isAuthenticated && isAdmin) {
-    navItemsAfterLogin.splice(2, 0, {
+    navItemsAfterLogin.splice(3, 0, {
       name: "Admin",
       href: "/admin",
       icon: <Shield className="w-4 h-4" />,

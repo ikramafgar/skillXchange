@@ -1,9 +1,8 @@
 import dotenv from 'dotenv';
+import pkg from 'cloudinary';
+const { v2: cloudinary } = pkg;
 
 dotenv.config();
-
-// Use dynamic import for cloudinary
-const cloudinary = await import('cloudinary').then(pkg => pkg.v2);
 
 // Configure Cloudinary
 cloudinary.config({

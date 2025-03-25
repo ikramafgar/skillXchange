@@ -12,8 +12,12 @@ import connectionRoutes from './routes/connectionRoutes.js';
 import matchRoutes from './routes/matchRoutes.js'; // Import match routes
 import adminRoutes from './routes/adminRoutes.js'; // Import admin routes
 import contactRoutes from './routes/contactRoutes.js'; // Import contact routes
+import chatRoutes from './routes/chatRoutes.js'; // Import chat routes
+import messageRoutes from './routes/messageRoutes.js'; // Import message routes
 import { Server } from 'socket.io';
 import { createServer } from 'http';
+import path from 'path';
+import fs from 'fs';
 
 // Configure environment variables
 config();
@@ -55,6 +59,15 @@ app.use(passport.session());
 // Connect to Database
 connectDB();
 
+// Create uploads directory if it doesn't exist
+const uploadsDir = path.join(process.cwd(), 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
+// Serve static files from the uploads directory
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
+
 // Routes
 app.get('/', (req, res) => {
   res.send('Skill Exchange API is running...');
@@ -67,6 +80,8 @@ app.use('/api/connections', connectionRoutes);
 app.use('/api/matches', matchRoutes); // Use match routes
 app.use('/api/admin', adminRoutes); // Use admin routes
 app.use('/api/contact', contactRoutes); // Use contact routes
+app.use('/api/chat', chatRoutes); // Use chat routes
+app.use('/api/message', messageRoutes); // Use message routes
 
 // Error handling middleware
 app.use((err, req, res, next) => {
@@ -77,7 +92,7 @@ app.use((err, req, res, next) => {
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
   cors: {
-    origin: "http://localhost:5173",
+    origin: process.env.FRONTEND_URL || "http://localhost:5173",
     credentials: true
   }
 });
@@ -110,6 +125,60 @@ io.on('connection', (socket) => {
     } else {
       console.log('Received authenticate event without userId');
     }
+  });
+
+  // User joins a chat room
+  socket.on('join chat', (chatId) => {
+    socket.join(chatId);
+    console.log(`User joined chat room: ${chatId}`);
+  });
+
+  // New message handler
+  socket.on('new message', (newMessageReceived) => {
+    const chat = newMessageReceived.chat;
+
+    if (!chat || !chat.participants) {
+      console.log('Chat or participants not defined in message');
+      return;
+    }
+
+    console.log(`New message in chat ${chat._id}: ${newMessageReceived.content.substring(0, 50)}`);
+
+    // Send to all participants except the sender
+    chat.participants.forEach((participant) => {
+      // Skip if participant or its ID is undefined
+      if (!participant || !participant._id) {
+        console.log('Skipping undefined participant or missing _id');
+        return;
+      }
+      
+      // Skip the sender
+      if (participant._id.toString() === newMessageReceived.sender._id.toString()) {
+        return;
+      }
+      
+      // Emit to the user's private room
+      io.to(participant._id.toString()).emit('message received', newMessageReceived);
+    });
+  });
+
+  // User is typing indicator
+  socket.on('typing', ({chatId, userId}) => {
+    socket.to(chatId).emit('typing', {chatId, userId});
+  });
+
+  // User stopped typing indicator
+  socket.on('stop typing', (chatId) => {
+    socket.to(chatId).emit('stop typing', chatId);
+  });
+
+  // Message deleted handler
+  socket.on('message deleted', (data) => {
+    const { messageId, chatId } = data;
+    console.log(`Message deleted event: ${messageId} in chat ${chatId}`);
+    
+    // Broadcast to all users in the chat room (including sender for consistency)
+    io.to(chatId).emit('message deleted', data);
   });
 
   socket.on('disconnect', () => {

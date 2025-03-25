@@ -13,3 +13,97 @@
   position: relative;
   z-index: 100;
 }
+
+/* Emoji picker styles */
+.emoji-picker-container {
+  position: relative;
+}
+
+.emoji-grid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 4px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.emoji-btn {
+  font-size: 1.25rem;
+  padding: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border-radius: 4px;
+}
+
+.emoji-btn:hover {
+  background-color: #f3f4f6;
+}
+
+/* Typing indicator animation */
+.typing-indicator {
+  display: flex;
+  align-items: center;
+}
+
+.typing-indicator span {
+  height: 8px;
+  width: 8px;
+  margin: 0 1px;
+  background-color: #9ca3af;
+  border-radius: 50%;
+  display: inline-block;
+  animation: typing 1.4s infinite ease-in-out both;
+}
+
+.typing-indicator span:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.typing-indicator span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.typing-indicator span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes typing {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.5);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Message bubble styles */
+.message-bubble {
+  position: relative;
+  margin-bottom: 1rem;
+  max-width: 75%;
+  word-wrap: break-word;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.message-bubble-sender {
+  background-color: #2563eb;
+  color: white;
+  border-radius: 0.75rem 0 0.75rem 0.75rem;
+  margin-left: auto;
+}
+
+.message-bubble-receiver {
+  background-color: #e5e7eb;
+  color: #111827;
+  border-radius: 0 0.75rem 0.75rem 0.75rem;
+  margin-right: auto;
+}
+
+.message-timestamp {
+  font-size: 0.7rem;
+  margin-top: 0.25rem;
+  opacity: 0.7;
+}

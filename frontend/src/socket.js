@@ -1,10 +1,10 @@
 import { io } from 'socket.io-client';
 
 // Create socket instance with better configuration
-export const socket = io('http://localhost:5000', {
+export const socket = io(import.meta.env.VITE_API_URL || 'http://localhost:5000', {
   withCredentials: true,
   autoConnect: false,
-  reconnectionAttempts: 5,
+  reconnectionAttempts: 10,
   reconnectionDelay: 1000,
   timeout: 10000
 });
@@ -35,13 +35,19 @@ export const authenticateSocket = (userId) => {
   }
   
   console.log('Attempting to authenticate socket for user:', userId);
-  console.log('Current socket connection status:', socket.connected ? 'connected' : 'disconnected');
   
+  // Make sure socket is connected before authentication
   if (!socket.connected) {
     console.log('Socket not connected, connecting now...');
     socket.connect();
+    
+    // Wait for connection before authenticating
+    socket.on('connect', () => {
+      console.log('Socket connected, now authenticating user:', userId);
+      socket.emit('authenticate', userId);
+    });
+  } else {
+    socket.emit('authenticate', userId);
+    console.log('Socket authentication sent for user:', userId);
   }
-  
-  socket.emit('authenticate', userId);
-  console.log('Socket authentication sent for user:', userId);
 };
