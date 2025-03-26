@@ -59,7 +59,7 @@ const MyChats = ({ fetchAgain }) => {
   return (
     <div className="flex flex-col h-full">
       <div className="p-4 border-b border-gray-200">
-        <h2 className="text-xl font-semibold">Your Chats</h2>
+        <h2 className="text-xl font-semibold">Your Conversation</h2>
       </div>
 
       <div className="flex-1 overflow-y-auto p-3 space-y-2">
@@ -81,7 +81,7 @@ const MyChats = ({ fetchAgain }) => {
             );
             const name = otherUser?.name || "User";
             const avatar = otherUser?.profile?.profilePic || "";
-            const email = otherUser?.email || "";
+            // const email = otherUser?.email || "";
             const isSelected = selectedChat?._id === chat._id;
 
             return (
@@ -109,7 +109,7 @@ const MyChats = ({ fetchAgain }) => {
                       </span>
                     )}
                   </div>
-                  <p className="text-xs text-gray-500 truncate">{email}</p>
+                  {/* <p className="text-xs text-gray-500 truncate">{email}</p> */}
                   {chat.lastMessage ? (
                     <p className="text-sm text-gray-600 truncate">
                       {chat.lastMessage.messageType === "text"

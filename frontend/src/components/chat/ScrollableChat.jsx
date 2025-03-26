@@ -304,14 +304,10 @@ const ScrollableChat = ({ messages, loading, deleteMessage }) => {
       toast.error('Cannot delete message: Invalid message ID');
       return;
     }
-    
-    console.log('Attempting to delete message with ID:', messageId);
     setDeletingId(messageId);
     
     try {
       if (window.confirm("Are you sure you want to delete this message?")) {
-        console.log('User confirmed deletion for ID:', messageId);
-        
         if (typeof deleteMessage !== 'function') {
           console.error('deleteMessage is not a function');
           toast.error('Delete functionality is not available');
@@ -351,14 +347,19 @@ const ScrollableChat = ({ messages, loading, deleteMessage }) => {
     );
   }
 
+  // Sort messages by timestamp to ensure proper chronological order (oldest first)
+  const sortedMessages = [...messages].sort((a, b) => 
+    new Date(a.createdAt) - new Date(b.createdAt)
+  );
+
   return (
-    <div className="flex flex-col w-full ">
-      {messages.map((m, i) => {
-        const isSenderMessage = m.sender._id === user?._id;
+    <div className="flex flex-col w-full">
+      {sortedMessages.map((m, i) => {
+        const isSenderMessage = m.sender.email === user?.email;
         
         return (
           <Fragment key={m._id}>
-            {shouldShowDate(messages, i) && (
+            {shouldShowDate(sortedMessages, i) && (
               <div className="text-center my-4">
                 <span className="px-3 py-1 bg-gray-200 rounded-full text-sm text-gray-600">
                   {formatDate(m.createdAt)}
@@ -367,7 +368,7 @@ const ScrollableChat = ({ messages, loading, deleteMessage }) => {
             )}
             
             <div className={`flex items-end ${isSenderMessage ? 'justify-end' : 'justify-start'} mb-4 relative group`}>
-              {/* Show avatar only for other users' messages */}
+      
               {!isSenderMessage && (
                 <div className="flex-shrink-0 mr-2 mb-1">
                   <img
@@ -380,7 +381,7 @@ const ScrollableChat = ({ messages, loading, deleteMessage }) => {
               
               <div className={`flex flex-col ${isSenderMessage ? 'items-end' : 'items-start'}`}>
                 {/* Show sender name for first message from a user */}
-                {isFirstMessageByUser(messages, i) && !isSenderMessage && (
+                {isFirstMessageByUser(sortedMessages, i) && !isSenderMessage && (
                   <span className="text-xs text-gray-500 font-medium mb-1 ml-1">
                     {m.sender.name}
                   </span>

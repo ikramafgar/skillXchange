@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import axiosInstance from '../utils/axios';
 import { socket, authenticateSocket } from '../socket';
+import { useAuthStore } from './authStore';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
@@ -288,7 +289,12 @@ export const useChatStore = create((set, get) => ({
 
   // Socket typing event handlers
   startTyping: (chatId) => {
-    socket.emit('typing', { chatId, userId: localStorage.getItem('userId') });
+    const user = useAuthStore.getState().user;
+    socket.emit('typing', { 
+      chatId, 
+      userId: localStorage.getItem('userId'), 
+      userEmail: user?.email 
+    });
   },
 
   stopTyping: (chatId) => {
@@ -321,9 +327,10 @@ export const useChatStore = create((set, get) => ({
       handleNotification(newMessage);
     });
     
-    socket.on('typing', ({chatId, userId: typingUserId}) => {
+    socket.on('typing', ({chatId, userId: typingUserId, userEmail}) => {
       const { selectedChat } = get();
-      if (selectedChat && selectedChat._id === chatId && typingUserId !== userId) {
+      const user = useAuthStore.getState().user;
+      if (selectedChat && selectedChat._id === chatId && userEmail !== user?.email) {
         set({ isTyping: true });
       }
     });

@@ -82,8 +82,8 @@ const SingleChat = ({ fetchAgain, setFetchAgain, chatName }) => {
   }, [selectedChat]);
 
   useEffect(() => {
-    socket.on('typing', ({ chatId, userId }) => {
-      if (selectedChat?._id === chatId && userId !== user?._id) {
+    socket.on('typing', ({ chatId,  userEmail }) => {
+      if (selectedChat?._id === chatId && userEmail !== user?.email) {
         setIsTyping(true);
       }
     });
@@ -383,7 +383,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain, chatName }) => {
               
               // Get values with fallbacks
               const name = otherUser?.name || chatName || 'Chat';
-              const email = otherUser?.email || '';
+              // const email = otherUser?.email || '';
               const avatar = otherUser?.profile?.profilePic || '';
               
            
@@ -397,7 +397,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain, chatName }) => {
                   />
                   <div>
                     <h3 className="font-semibold">{name}</h3>
-                    <p className="text-sm text-gray-500">{email}</p>
+                    {/* <p className="text-sm text-gray-500">{email}</p> */}
                   </div>
                 </>
               );
