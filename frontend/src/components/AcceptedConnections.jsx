@@ -2,19 +2,23 @@ import { useState, useEffect } from 'react';
 import { useConnectionStore } from '../store/connectionStore';
 import { useAuthStore } from '../store/authStore';
 import { useProfileStore } from '../store/ProfileStore';
-import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Users, UserCheck, Loader2, UserMinus, AlertCircle } from 'lucide-react';
+import { Users, UserCheck, Loader2, UserMinus, AlertCircle, Mail, Phone, MapPin, Lightbulb, Book, ExternalLink } from 'lucide-react';
 import { CONNECTION_UPDATED_EVENT } from './ConnectionRequests';
 import { toast } from 'react-hot-toast';
+import UserProfileModal from './UserProfileModal';
 
 export default function AcceptedConnections() {
   const [connections, setConnections] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [newConnection, setNewConnection] = useState(null);
+  const [newConnectionId, setNewConnectionId] = useState(null);
   const [removingId, setRemovingId] = useState(null);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [connectionToRemove, setConnectionToRemove] = useState(null);
+  const [selectedConnection, setSelectedConnection] = useState(null);
+  const [showConnectionInfoModal, setShowConnectionInfoModal] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [selectedUserProfile, setSelectedUserProfile] = useState(null);
   const { fetchConnections, removeConnection } = useConnectionStore();
   const { user } = useAuthStore();
   const { fetchProfile } = useProfileStore();
@@ -27,14 +31,40 @@ export default function AcceptedConnections() {
       if (allConnections && allConnections.length > 0) {
         // Process connections to get the other user in each connection
         const processedConnections = allConnections.map(conn => {
-          const isCurrentUserSender = conn.sender._id === user?._id;
+          // IMPORTANT: Prefer to use the backend flag if available
+          let isCurrentUserSender = false;
+          
+          if (conn._isCurrentUserSender !== undefined) {
+            // Use the backend flag
+            isCurrentUserSender = conn._isCurrentUserSender;
+          } else {
+            // Fallback to manual calculation if backend flag not available
+            const currentUserId = user?._id?.toString();
+            const senderId = typeof conn.sender === 'object' 
+              ? conn.sender._id?.toString() 
+              : String(conn.sender);
+            isCurrentUserSender = senderId === currentUserId;
+          }
+          
+          // Set the otherUser based on whether current user is sender or receiver
           const otherUser = isCurrentUserSender ? conn.receiver : conn.sender;
+          
+          // Ensure otherUser has all required properties
+          const sanitizedOtherUser = {
+            _id: otherUser._id || 'unknown',
+            name: otherUser.name || 'Unknown User',
+            profilePic: otherUser.profilePic || '/default-avatar.png',
+            ...otherUser
+          };
+          
           return {
             ...conn,
-            otherUser
+            otherUser: sanitizedOtherUser,
+            isCurrentUserSender
           };
         });
         
+        console.log('Processed connections:', processedConnections);
         setConnections(processedConnections);
       } else {
         setConnections([]);
@@ -54,17 +84,24 @@ export default function AcceptedConnections() {
 
     // Listen for connection updates
     const handleConnectionUpdate = (event) => {
+      console.log('AcceptedConnections: Received connection update event', event.detail);
+      
       if (event.detail.status === 'accepted') {
-        // Highlight the new connection
-        setNewConnection(event.detail.sender);
+        const { connectionId, sender } = event.detail;
+        
+        // Store the connection ID to highlight
+        if (connectionId) {
+          console.log('Setting new connection ID for highlight:', connectionId);
+          setNewConnectionId(connectionId);
+          
+          // Clear the highlight after 5 seconds
+          setTimeout(() => {
+            setNewConnectionId(null);
+          }, 5000);
+        }
         
         // Refresh the connections list
         loadAcceptedConnections();
-        
-        // Clear the highlight after 5 seconds
-        setTimeout(() => {
-          setNewConnection(null);
-        }, 5000);
       }
     };
 
@@ -125,6 +162,22 @@ export default function AcceptedConnections() {
     setShowConfirmModal(true);
   };
 
+  const openConnectionInfoModal = (connection, e) => {
+    // Prevent navigation if clicking on the connection card
+    if (e) {
+      e.preventDefault();
+    }
+    
+    setSelectedConnection(connection);
+    setShowConnectionInfoModal(true);
+  };
+
+  const openProfileModal = (connection) => {
+    setSelectedUserProfile(connection.otherUser);
+    setSelectedConnection(connection);
+    setShowProfileModal(true);
+  };
+
   if (isLoading) {
     return (
       <div className="flex justify-center items-center p-8">
@@ -152,56 +205,67 @@ export default function AcceptedConnections() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           <AnimatePresence>
-            {connections.map((connection) => (
-              <motion.div
-                key={connection._id}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ 
-                  opacity: 1, 
-                  scale: 1,
-                  boxShadow: newConnection && newConnection._id === connection.otherUser._id 
-                    ? '0 0 0 2px rgba(59, 130, 246, 0.5)' 
-                    : 'none'
-                }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                className={`bg-gray-50 p-4 rounded-lg hover:shadow-md transition-all relative group ${
-                  newConnection && newConnection._id === connection.otherUser._id 
-                    ? 'ring-2 ring-blue-500 bg-blue-50' 
-                    : ''
-                }`}
-              >
-                {/* Remove button (visible on hover) */}
-                <button
-                  onClick={() => openRemoveConfirmation(connection)}
-                  className="absolute top-2 right-2 p-1.5 bg-red-100 text-red-600 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-200"
-                  title="Remove connection"
+            {connections.map((connection) => {
+              // Check if this is the newly accepted connection
+              const isNewConnection = newConnectionId && connection._id === newConnectionId;
+              
+              return (
+                <motion.div
+                  key={connection._id}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ 
+                    opacity: 1, 
+                    scale: 1,
+                    boxShadow: isNewConnection
+                      ? '0 0 0 2px rgba(59, 130, 246, 0.5)' 
+                      : 'none'
+                  }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  className={`bg-gray-50 p-4 rounded-lg hover:shadow-md transition-all relative group ${
+                    isNewConnection 
+                      ? 'ring-2 ring-blue-500 bg-blue-50' 
+                      : ''
+                  }`}
                 >
-                  <UserMinus className="w-4 h-4" />
-                </button>
-                
-                <Link to={`/user/${connection.otherUser._id}`} className="flex flex-col items-center">
-                  <img
-                    src={connection.otherUser.profilePic || '/default-avatar.png'}
-                    alt={connection.otherUser.name}
-                    className="w-16 h-16 rounded-full object-cover mb-2"
-                  />
-                  <h4 className="font-medium text-gray-800 text-center">{connection.otherUser.name}</h4>
-                  <p className="text-xs text-gray-500 mt-1">
-                    Connected since {new Date(connection.updatedAt).toLocaleDateString()}
-                  </p>
-                  {newConnection && newConnection._id === connection.otherUser._id && (
-                    <span className="mt-2 px-2 py-1 bg-green-100 text-green-600 rounded-full text-xs animate-pulse">
-                      New Connection
-                    </span>
-                  )}
-                </Link>
-              </motion.div>
-            ))}
+                  {/* Remove button (visible on hover) */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openRemoveConfirmation(connection);
+                    }}
+                    className="absolute top-2 right-2 p-1.5 bg-red-100 text-red-600 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-200 z-10"
+                    title="Remove connection"
+                  >
+                    <UserMinus className="w-4 h-4" />
+                  </button>
+                  
+                  <div 
+                    onClick={(e) => openConnectionInfoModal(connection, e)}
+                    className="flex flex-col items-center cursor-pointer"
+                  >
+                    <img
+                      src={connection.otherUser.profilePic || '/default-avatar.png'}
+                      alt={connection.otherUser.name}
+                      className="w-16 h-16 rounded-full object-cover mb-2"
+                    />
+                    <h4 className="font-medium text-gray-800 text-center">{connection.otherUser.name}</h4>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Connected since {new Date(connection.updatedAt).toLocaleDateString()}
+                    </p>
+                    {isNewConnection && (
+                      <span className="mt-2 px-2 py-1 bg-green-100 text-green-600 rounded-full text-xs animate-pulse">
+                        New Connection
+                      </span>
+                    )}
+                  </div>
+                </motion.div>
+              );
+            })}
           </AnimatePresence>
         </div>
       )}
 
-      {/* Confirmation Modal */}
+      {/* Confirmation Modal for Removing Connection */}
       {showConfirmModal && connectionToRemove && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <motion.div 
@@ -264,6 +328,154 @@ export default function AcceptedConnections() {
           </motion.div>
         </div>
       )}
+
+      {/* Connection Info Modal */}
+      {showConnectionInfoModal && selectedConnection && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            className="bg-white rounded-lg p-6 max-w-md w-full max-h-[90vh] overflow-y-auto"
+          >
+            <div className="flex justify-between items-start mb-6">
+              <h3 className="text-xl font-semibold">Connection Details</h3>
+              <button 
+                onClick={() => setShowConnectionInfoModal(false)} 
+                className="p-1 hover:bg-gray-100 rounded-full"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-500">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
+            </div>
+            
+            <div className="flex flex-col items-center mb-6">
+              <img
+                src={selectedConnection.otherUser.profilePic || '/default-avatar.png'}
+                alt={selectedConnection.otherUser.name}
+                className="w-24 h-24 rounded-full object-cover mb-3"
+              />
+              <h2 className="text-xl font-bold text-gray-800">{selectedConnection.otherUser.name}</h2>
+              <div className="flex items-center mt-1">
+                <UserCheck className="w-4 h-4 text-green-500 mr-1" />
+                <span className="text-sm text-gray-600">Connected since {new Date(selectedConnection.updatedAt).toLocaleDateString()}</span>
+              </div>
+            </div>
+            
+            <div className="space-y-4 mb-6">
+              {selectedConnection.otherUser.bio && (
+                <div className="bg-gray-50 p-3 rounded-lg">
+                  <p className="text-gray-700">{selectedConnection.otherUser.bio}</p>
+                </div>
+              )}
+              
+              <div className="space-y-2">
+                {selectedConnection.otherUser.email && (
+                  <div className="flex items-center">
+                    <Mail className="w-4 h-4 text-gray-500 mr-2" />
+                    <span className="text-sm text-gray-700">{selectedConnection.otherUser.email}</span>
+                  </div>
+                )}
+                
+                {selectedConnection.otherUser.phone && (
+                  <div className="flex items-center">
+                    <Phone className="w-4 h-4 text-gray-500 mr-2" />
+                    <span className="text-sm text-gray-700">{selectedConnection.otherUser.phone}</span>
+                  </div>
+                )}
+                
+                {selectedConnection.otherUser.location && (
+                  <div className="flex items-center">
+                    <MapPin className="w-4 h-4 text-gray-500 mr-2" />
+                    <span className="text-sm text-gray-700">{selectedConnection.otherUser.location}</span>
+                  </div>
+                )}
+              </div>
+              
+              {/* Skills to Teach */}
+              {selectedConnection.otherUser.skillsToTeach && selectedConnection.otherUser.skillsToTeach.length > 0 && (
+                <div className="mt-4">
+                  <div className="flex items-center mb-2">
+                    <Lightbulb className="w-4 h-4 text-amber-500 mr-2" />
+                    <h4 className="font-medium text-gray-700">Skills Teaching</h4>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedConnection.otherUser.skillsToTeach.map((skillItem, index) => {
+                      const skillName = skillItem.skill?.name || skillItem.name || skillItem;
+                      return skillName ? (
+                        <span 
+                          key={index} 
+                          className="px-2 py-1 bg-amber-50 text-amber-700 rounded-full text-xs border border-amber-100"
+                        >
+                          {skillName}
+                        </span>
+                      ) : null;
+                    })}
+                  </div>
+                </div>
+              )}
+              
+              {/* Skills to Learn */}
+              {selectedConnection.otherUser.skillsToLearn && selectedConnection.otherUser.skillsToLearn.length > 0 && (
+                <div className="mt-4">
+                  <div className="flex items-center mb-2">
+                    <Book className="w-4 h-4 text-blue-500 mr-2" />
+                    <h4 className="font-medium text-gray-700">Skills Learning</h4>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedConnection.otherUser.skillsToLearn.map((skillItem, index) => {
+                      const skillName = skillItem.skill?.name || skillItem.name || skillItem;
+                      return skillName ? (
+                        <span 
+                          key={index} 
+                          className="px-2 py-1 bg-blue-50 text-blue-700 rounded-full text-xs border border-blue-100"
+                        >
+                          {skillName}
+                        </span>
+                      ) : null;
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+            
+            <div className="flex justify-between pt-4 border-t border-gray-200">
+              <button
+                onClick={() => {
+                  setShowConfirmModal(true);
+                  setConnectionToRemove(selectedConnection);
+                  setShowConnectionInfoModal(false);
+                }}
+                className="flex items-center px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg text-sm transition-colors"
+              >
+                <UserMinus className="w-4 h-4 mr-1" />
+                Remove Connection
+              </button>
+              
+              <button
+                onClick={() => {
+                  setShowConnectionInfoModal(false);
+                  openProfileModal(selectedConnection);
+                }}
+                className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition-colors"
+              >
+                <ExternalLink className="w-4 h-4 mr-1" />
+                View Full Profile
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
+      {/* Full User Profile Modal */}
+      <UserProfileModal 
+        isOpen={showProfileModal}
+        onClose={() => setShowProfileModal(false)}
+        userData={selectedUserProfile}
+        connectionDate={selectedConnection?.updatedAt}
+      />
     </div>
   );
 } 

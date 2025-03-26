@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useChatStore } from '../store/chatStore';
 import { useAuthStore } from '../store/authStore';
 import SideDrawer from '../components/chat/SideDrawer';
@@ -20,6 +20,8 @@ const ChatPage = () => {
   } = useChatStore();
   const [fetchAgain, setFetchAgain] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const { userId } = useParams(); // Get userId from URL params
+  const [directChatLoading, setDirectChatLoading] = useState(false);
 
   useEffect(() => {
     // Check if user is authenticated
@@ -100,6 +102,100 @@ const ChatPage = () => {
     }
   }, [notification, selectedChat]);
 
+  // Effect to handle direct message from profile
+  useEffect(() => {
+    const accessDirectChat = async () => {
+      if (userId && user?._id && userId !== user._id) {
+        setDirectChatLoading(true);
+        try {
+          // Check if we already have a chat with this user
+          const chatStore = useChatStore.getState();
+          const existingChats = await chatStore.fetchChats();
+          
+          
+          // Find existing chat with this user, checking various possible structures
+          const existingChat = existingChats.find(chat => {
+            // Safety check for null/undefined chat
+            if (!chat) return false;
+            
+            // Skip group chats
+            if (chat.isGroupChat === true) return false;
+            
+            // console.log("Checking chat:", chat._id, 
+            //   "users:", chat.users ? "exists" : "missing", 
+            //   "participants:", chat.participants ? "exists" : "missing");
+            
+            try {
+              // First check users array if it exists
+              if (Array.isArray(chat.users)) {
+                return chat.users.some(u => {
+                  if (!u) return false;
+                  return (u._id === userId) || (typeof u === 'string' && u === userId);
+                });
+              }
+              
+              // Then check participants array if it exists
+              if (Array.isArray(chat.participants)) {
+                return chat.participants.some(p => {
+                  if (!p) return false;
+                  return (p._id === userId) || (typeof p === 'string' && p === userId);
+                });
+              }
+            } catch  {
+             
+              return false;
+            }
+            
+            // If neither exists, this isn't the chat we're looking for
+            return false;
+          });
+          
+          if (existingChat) {
+            // We already have a chat, just select it
+            setSelectedChat(existingChat);
+          } else {
+            console.log("Creating new chat with user:", userId);
+            // Create a new chat by using the accessChat function from the store
+            try {
+              const newChat = await chatStore.accessChat(userId);
+              setSelectedChat(newChat);
+            } catch (err) {
+              console.error("Error creating new chat:", err);
+              toast.error("Could not create chat. Please try again later.");
+            }
+          }
+        } catch (error) {
+          console.error("Error accessing direct chat:", error);
+          
+          // Provide more specific error messages based on the type of error
+          if (error.response) {
+            // The request was made and the server responded with a status code
+            // that falls out of the range of 2xx
+            if (error.response.status === 403) {
+              toast.error("You need to connect with this user before starting a chat");
+            } else if (error.response.status === 404) {
+              toast.error("User not found");
+            } else {
+              toast.error(error.response.data?.message || "Failed to access chat");
+            }
+          } else if (error.request) {
+            // The request was made but no response was received
+            toast.error("Network error. Please check your connection");
+          } else {
+            // Something happened in setting up the request that triggered an Error
+            toast.error("Failed to start chat with this user");
+          }
+        } finally {
+          setDirectChatLoading(false);
+        }
+      }
+    };
+    
+    if (userId && user?._id) {
+      accessDirectChat();
+    }
+  }, [userId, user, setSelectedChat]);
+
   return (
     <div className="w-full h-screen flex flex-col bg-gray-100">
       <SideDrawer isOpen={isDrawerOpen} onClose={() => setIsDrawerOpen(false)} />
@@ -161,7 +257,11 @@ const ChatPage = () => {
         
         {/* Chat Area */}
         <div className="w-full md:w-2/3 flex flex-col">
-          <ChatBox fetchAgain={fetchAgain} setFetchAgain={setFetchAgain} />
+          <ChatBox 
+            fetchAgain={fetchAgain} 
+            setFetchAgain={setFetchAgain}
+            directChatLoading={directChatLoading}
+          />
         </div>
       </div>
       

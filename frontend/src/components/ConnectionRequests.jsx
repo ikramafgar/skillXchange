@@ -161,7 +161,8 @@ export default function ConnectionRequests({ inSidebar = false }) {
         { duration: 3000 }
       );
       
-      await respondToConnection(connectionId, status);
+      const response = await respondToConnection(connectionId, status);
+      console.log('Response from respondToConnection:', response);
       
       // Remove the request from the list
       setPendingRequests(prev => 
@@ -172,10 +173,16 @@ export default function ConnectionRequests({ inSidebar = false }) {
       window.dispatchEvent(new CustomEvent('connection-updated', { 
         detail: { 
           status, 
-          connectionId,
-          sender: senderInfo
+          connectionId, // Ensure this is included for highlighting
+          sender: senderInfo // Include sender info for the receiver to display
         } 
       }));
+      
+      console.log('Dispatched connection-updated event with details:', {
+        status,
+        connectionId,
+        sender: senderInfo
+      });
       
       // Dismiss the loading toast
       toast.dismiss(toastId);

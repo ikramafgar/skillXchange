@@ -71,11 +71,23 @@ export const useChatStore = create((set, get) => ({
       return response.data;
     } catch (error) {
       console.error('Error accessing chat:', error.response?.data || error.message || error);
+      
+      // Extract specific error message for better user feedback
+      let errorMessage = 'Failed to access chat';
+      
+      if (error.response?.status === 403) {
+        errorMessage = error.response.data?.message || 'You need to connect with this user before starting a chat';
+      } else if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      }
+      
       set({ 
-        error: error.response?.data?.message || 'Failed to access chat', 
+        error: errorMessage, 
         loading: false 
       });
-      return null;
+      
+      // Re-throw the error with the message so the UI can handle it
+      throw new Error(errorMessage);
     }
   },
 

@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { useChatStore } from '../../store/chatStore';
 import { useAuthStore } from '../../store/authStore';
@@ -11,6 +10,7 @@ const SideDrawer = ({ isOpen, onClose }) => {
   const [search, setSearch] = useState('');
   const [searchResult, setSearchResult] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [searchError, setSearchError] = useState('');
   const { user } = useAuthStore();
   const { 
     setSelectedChat, 
@@ -35,15 +35,22 @@ const SideDrawer = ({ isOpen, onClose }) => {
 
     try {
       setLoading(true);
+      setSearchError('');
       const response = await axiosInstance.get(`/api/users?search=${search}`);
       
       // Filter out current user from search results
       const filteredResults = response.data.filter(u => u._id !== user?._id);
       
       setSearchResult(filteredResults);
+      
+      if (filteredResults.length === 0) {
+        setSearchError('No connected users found with that name');
+      }
+      
       setLoading(false);
     } catch (error) {
       console.error('Error searching users:', error);
+      setSearchError(error.response?.data?.message || 'Error searching for users');
       setLoading(false);
     }
   };
@@ -51,6 +58,7 @@ const SideDrawer = ({ isOpen, onClose }) => {
   const handleChatAccess = async (userId) => {
     try {
       setLoading(true);
+      setSearchError('');
       const data = await accessChat(userId);
       if (data) {
         setSelectedChat(data);
@@ -59,6 +67,7 @@ const SideDrawer = ({ isOpen, onClose }) => {
       setLoading(false);
     } catch (error) {
       console.error('Error accessing chat:', error);
+      setSearchError(error.response?.data?.message || 'Error accessing chat');
       setLoading(false);
     }
   };
@@ -77,10 +86,14 @@ const SideDrawer = ({ isOpen, onClose }) => {
 
         {/* Search Users */}
         <div className="p-4 border-b border-gray-200">
+          <div className="mb-2 p-2 bg-blue-50 text-blue-700 rounded-md text-sm">
+            <p>You can only chat with users you&apos;re connected with.</p>
+          </div>
+          
           <div className="flex items-center gap-2 mb-4">
             <input
               type="text"
-              placeholder="Search users..."
+              placeholder="Search connected users..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full p-2 border border-gray-300 rounded-md"
@@ -95,11 +108,17 @@ const SideDrawer = ({ isOpen, onClose }) => {
             </button>
           </div>
 
+          {searchError && (
+            <div className="mb-4 p-2 bg-red-100 text-red-700 rounded-md text-sm">
+              {searchError}
+            </div>
+          )}
+
           {/* Search Results */}
           <div className="max-h-60 overflow-y-auto">
             {loading ? (
               <ChatLoading />
-            ) : (
+            ) : searchResult.length > 0 ? (
               searchResult.map((user) => (
                 <UserListItem
                   key={user._id}
@@ -107,7 +126,12 @@ const SideDrawer = ({ isOpen, onClose }) => {
                   handleFunction={() => handleChatAccess(user._id)}
                 />
               ))
-            )}
+            ) : search && !searchError ? (
+              <div className="text-center py-4 text-gray-500">
+                <p>No connected users found</p>
+                <p className="text-sm">Try connecting with users first</p>
+              </div>
+            ) : null}
           </div>
         </div>
 

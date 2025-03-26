@@ -138,6 +138,14 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/messages/:userId"
+          element={
+            <ProtectedRoute>
+              <ChatPage />
+            </ProtectedRoute>
+          }
+        />
         <Route path="/verify-email" element={<EmailVerificationPage />} />
         <Route path="/auth-callback" element={<AuthCallbackPage />} /> {/* Auth callback route */}
         <Route

@@ -2,6 +2,7 @@ import asyncHandler from 'express-async-handler';
 import Chat from '../models/Chat.js';
 import User from '../models/User.js';
 import Message from '../models/Message.js';
+import mongoose from 'mongoose';
 
 // @desc    Create or access a one-on-one chat
 // @route   POST /api/chat
@@ -25,6 +26,24 @@ export const accessChat = asyncHandler(async (req, res) => {
     }
     
     console.log('Current user found:', currentUser.name);
+
+    // NEW: Check if users are connected before allowing chat
+    const Connection = mongoose.model('Connection');
+    const connection = await Connection.findOne({
+      $or: [
+        { sender: req.userId, receiver: userId, status: 'accepted' },
+        { sender: userId, receiver: req.userId, status: 'accepted' }
+      ]
+    });
+
+    if (!connection) {
+      console.log('Users are not connected. Connection required to start a chat.');
+      return res.status(403).json({ 
+        message: 'You can only chat with users you are connected with'
+      });
+    }
+    
+    console.log('Connection verified, proceeding with chat access');
 
     // Check if chat already exists between these two users
     let chatExists = await Chat.find({
@@ -96,6 +115,23 @@ export const fetchChats = asyncHandler(async (req, res) => {
   try {
     console.log('Fetching chats for user:', req.userId);
     
+    // Find all users that the current user is connected with
+    const Connection = mongoose.model('Connection');
+    const connections = await Connection.find({
+      $or: [
+        { sender: req.userId, status: 'accepted' },
+        { receiver: req.userId, status: 'accepted' }
+      ]
+    });
+    
+    // Extract connected user IDs
+    const connectedUserIds = connections.map(conn => 
+      conn.sender.toString() === req.userId ? conn.receiver.toString() : conn.sender.toString()
+    );
+    
+    console.log('Connected user IDs:', connectedUserIds);
+    
+    // Get chats where the participants include the current user and a connected user
     let chats = await Chat.find({
       participants: { $elemMatch: { $eq: req.userId } },
       isGroupChat: false
@@ -110,8 +146,17 @@ export const fetchChats = asyncHandler(async (req, res) => {
       })
       .populate('lastMessage')
       .sort({ updatedAt: -1 });
+    
+    // Filter chats to only include those with connected users
+    chats = chats.filter(chat => {
+      const otherParticipant = chat.participants.find(p => 
+        p._id.toString() !== req.userId
+      );
+      
+      return otherParticipant && connectedUserIds.includes(otherParticipant._id.toString());
+    });
 
-    console.log('Chats found:', chats.length);
+    console.log('Chats found after connection filtering:', chats.length);
 
     if (chats.length > 0 && chats.some(chat => chat.lastMessage)) {
       chats = await User.populate(chats, {

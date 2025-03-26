@@ -5,7 +5,7 @@ import { useAuthStore } from '../../store/authStore';
 import SingleChat from './SingleChat';
 import { socket } from '../../socket';
 
-const ChatBox = ({ fetchAgain, setFetchAgain }) => {
+const ChatBox = ({ fetchAgain, setFetchAgain, directChatLoading = false }) => {
   const { user } = useAuthStore();
   const { selectedChat, setSelectedChat } = useChatStore();
 
@@ -48,7 +48,12 @@ const ChatBox = ({ fetchAgain, setFetchAgain }) => {
 
   return (
     <div className="flex flex-col h-full bg-white">
-      {selectedChat ? (
+      {directChatLoading ? (
+        <div className="flex flex-col items-center justify-center h-full">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mb-4"></div>
+          <p className="text-gray-600">Opening chat...</p>
+        </div>
+      ) : selectedChat ? (
         <SingleChat
           fetchAgain={fetchAgain}
           setFetchAgain={setFetchAgain}
@@ -78,6 +83,7 @@ const ChatBox = ({ fetchAgain, setFetchAgain }) => {
 ChatBox.propTypes = {
   fetchAgain: PropTypes.bool.isRequired,
   setFetchAgain: PropTypes.func.isRequired,
+  directChatLoading: PropTypes.bool
 };
 
 export default ChatBox; 
