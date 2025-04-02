@@ -14,12 +14,12 @@ const ScrollableChat = ({ messages, loading, deleteMessage }) => {
   const createImageModal = (imageUrl, fileName) => {
     // Create modal container
     const modal = document.createElement('div');
-    modal.className = 'fixed inset-0 z-50 flex flex-col items-center justify-center bg-black bg-opacity-90';
+    modal.className = 'fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/80 backdrop-blur-sm transition-all duration-300';
     
     // Create image element
     const img = document.createElement('img');
     img.src = imageUrl;
-    img.className = 'max-h-[80vh] max-w-[90vw] object-contain';
+    img.className = 'max-h-[80vh] max-w-[90vw] object-contain rounded-lg shadow-2xl transition-transform duration-300 ease-out';
     
     // Create button container
     const buttonContainer = document.createElement('div');
@@ -27,14 +27,14 @@ const ScrollableChat = ({ messages, loading, deleteMessage }) => {
     
     // Create close button
     const closeBtn = document.createElement('button');
-    closeBtn.className = 'absolute top-4 right-4 text-white hover:text-gray-300';
+    closeBtn.className = 'absolute top-4 right-4 text-white hover:text-gray-300 transition-colors duration-200';
     closeBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8">
       <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
     </svg>`;
     
     // Create download button
     const downloadBtn = document.createElement('button');
-    downloadBtn.className = 'bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md flex items-center';
+    downloadBtn.className = 'bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-full flex items-center transition-all duration-200 shadow-md';
     downloadBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2">
       <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
     </svg>
@@ -42,7 +42,7 @@ const ScrollableChat = ({ messages, loading, deleteMessage }) => {
     
     // Create button to copy image URL (without leaving the app)
     const copyBtn = document.createElement('button');
-    copyBtn.className = 'bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md flex items-center';
+    copyBtn.className = 'bg-gray-700 hover:bg-gray-800 text-white px-4 py-2 rounded-full flex items-center transition-all duration-200 shadow-md';
     copyBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2">
       <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 011.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 00-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 01-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 00-3.375-3.375h-1.5a1.125 1.125 0 01-1.125-1.125v-1.5a3.375 3.375 0 00-3.375-3.375H9.75" />
     </svg>
@@ -62,18 +62,50 @@ const ScrollableChat = ({ messages, loading, deleteMessage }) => {
           a.click();
           window.URL.revokeObjectURL(url);
           document.body.removeChild(a);
-          toast.success('Downloading image...');
+          toast.success('Downloading image...', {
+            style: {
+              borderRadius: '10px',
+              background: '#333',
+              color: '#fff',
+            },
+            iconTheme: {
+              primary: '#4F46E5',
+              secondary: '#fff',
+            },
+          });
         })
-        .catch(() => toast.error('Download failed'));
+        .catch(() => toast.error('Download failed', {
+          style: {
+            borderRadius: '10px',
+            background: '#333',
+            color: '#fff',
+          },
+        }));
     });
     
     copyBtn.addEventListener('click', () => {
       navigator.clipboard.writeText(imageUrl)
         .then(() => {
-          toast.success('Image URL copied to clipboard');
+          toast.success('Image URL copied to clipboard', {
+            style: {
+              borderRadius: '10px',
+              background: '#333',
+              color: '#fff',
+            },
+            iconTheme: {
+              primary: '#4F46E5',
+              secondary: '#fff',
+            },
+          });
         })
         .catch(() => {
-          toast.error('Failed to copy URL');
+          toast.error('Failed to copy URL', {
+            style: {
+              borderRadius: '10px',
+              background: '#333',
+              color: '#fff',
+            },
+          });
         });
     });
     
@@ -86,21 +118,35 @@ const ScrollableChat = ({ messages, loading, deleteMessage }) => {
     modal.appendChild(img);
     modal.appendChild(buttonContainer);
     
+    // Add animation classes after a small delay
+    setTimeout(() => {
+      img.classList.add('scale-100');
+    }, 50);
+    
     // Close modal events
     closeBtn.addEventListener('click', () => {
-      document.body.removeChild(modal);
+      modal.classList.add('opacity-0');
+      setTimeout(() => {
+        document.body.removeChild(modal);
+      }, 300);
     });
     
     modal.addEventListener('click', (e) => {
       if (e.target === modal) {
-        document.body.removeChild(modal);
+        modal.classList.add('opacity-0');
+        setTimeout(() => {
+          document.body.removeChild(modal);
+        }, 300);
       }
     });
     
     document.addEventListener('keydown', function onEscPress(e) {
       if (e.key === 'Escape') {
-        document.body.removeChild(modal);
-        document.removeEventListener('keydown', onEscPress);
+        modal.classList.add('opacity-0');
+        setTimeout(() => {
+          document.body.removeChild(modal);
+          document.removeEventListener('keydown', onEscPress);
+        }, 300);
       }
     });
     
@@ -110,7 +156,13 @@ const ScrollableChat = ({ messages, loading, deleteMessage }) => {
 
   // Utility function to handle file downloads
   const handleFileDownload = (fileUrl, fileName) => {
-    toast.loading('Preparing download...');
+    toast.loading('Preparing download...', {
+      style: {
+        borderRadius: '10px',
+        background: '#333',
+        color: '#fff',
+      },
+    });
     
     fetch(fileUrl)
       .then(response => response.blob())
@@ -125,12 +177,28 @@ const ScrollableChat = ({ messages, loading, deleteMessage }) => {
         window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
         toast.dismiss();
-        toast.success(`Downloading ${fileName || 'file'}...`);
+        toast.success(`Downloading ${fileName || 'file'}...`, {
+          style: {
+            borderRadius: '10px',
+            background: '#333',
+            color: '#fff',
+          },
+          iconTheme: {
+            primary: '#4F46E5',
+            secondary: '#fff',
+          },
+        });
       })
       .catch(error => {
         console.error('Download error:', error);
         toast.dismiss();
-        toast.error('Download failed');
+        toast.error('Download failed', {
+          style: {
+            borderRadius: '10px',
+            background: '#333',
+            color: '#fff',
+          },
+        });
       });
   };
   
@@ -138,28 +206,28 @@ const ScrollableChat = ({ messages, loading, deleteMessage }) => {
   const createPdfModal = (pdfUrl, fileName) => {
     // Create modal container
     const modal = document.createElement('div');
-    modal.className = 'fixed inset-0 z-50 flex flex-col items-center justify-center bg-black bg-opacity-90 p-4';
+    modal.className = 'fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/80 backdrop-blur-sm p-4 transition-all duration-300';
     
     // Create close button
     const closeBtn = document.createElement('button');
-    closeBtn.className = 'absolute top-4 right-4 text-white hover:text-gray-300';
+    closeBtn.className = 'absolute top-4 right-4 text-white hover:text-gray-300 transition-colors duration-200';
     closeBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8">
       <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
     </svg>`;
     
     // Create info text
     const infoText = document.createElement('div');
-    infoText.className = 'text-white text-center mb-4';
+    infoText.className = 'text-white text-center mb-6';
     infoText.innerHTML = `<h3 class="text-xl font-bold mb-2">${fileName || 'PDF Document'}</h3>
       <p class="text-gray-300">PDF files can be viewed or downloaded</p>`;
     
     // Create button container
     const buttonContainer = document.createElement('div');
-    buttonContainer.className = 'flex flex-wrap justify-center gap-3 mb-4';
+    buttonContainer.className = 'flex flex-wrap justify-center gap-4 mb-4';
     
     // Create download button
     const downloadBtn = document.createElement('button');
-    downloadBtn.className = 'bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md flex items-center';
+    downloadBtn.className = 'bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-full flex items-center transition-all duration-200 shadow-md';
     downloadBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2">
       <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
     </svg>
@@ -167,7 +235,7 @@ const ScrollableChat = ({ messages, loading, deleteMessage }) => {
     
     // Create view button
     const viewBtn = document.createElement('button');
-    viewBtn.className = 'bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md flex items-center';
+    viewBtn.className = 'bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-full flex items-center transition-all duration-200 shadow-md';
     viewBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2">
       <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
       <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -176,7 +244,7 @@ const ScrollableChat = ({ messages, loading, deleteMessage }) => {
     
     // Create copy URL button
     const copyBtn = document.createElement('button');
-    copyBtn.className = 'bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md flex items-center';
+    copyBtn.className = 'bg-gray-700 hover:bg-gray-800 text-white px-5 py-2.5 rounded-full flex items-center transition-all duration-200 shadow-md';
     copyBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2">
       <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 011.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 00-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 01-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 00-3.375-3.375h-1.5a1.125 1.125 0 01-1.125-1.125v-1.5a3.375 3.375 0 00-3.375-3.375H9.75" />
     </svg>
@@ -190,7 +258,7 @@ const ScrollableChat = ({ messages, loading, deleteMessage }) => {
     viewBtn.addEventListener('click', () => {
       // Create an iframe to display the PDF
       const pdfContainer = document.createElement('div');
-      pdfContainer.className = 'w-full h-[80vh] bg-white rounded-lg overflow-hidden';
+      pdfContainer.className = 'w-full h-[80vh] bg-white rounded-lg overflow-hidden shadow-2xl opacity-0 transition-opacity duration-300';
       
       const iframe = document.createElement('iframe');
       iframe.src = pdfUrl;
@@ -203,15 +271,23 @@ const ScrollableChat = ({ messages, loading, deleteMessage }) => {
       infoText.style.display = 'none';
       modal.appendChild(pdfContainer);
       
+      // Add animation after a small delay
+      setTimeout(() => {
+        pdfContainer.classList.remove('opacity-0');
+      }, 50);
+      
       // Add back button
       const backBtn = document.createElement('button');
-      backBtn.className = 'mt-4 bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md';
+      backBtn.className = 'mt-4 bg-gray-700 hover:bg-gray-800 text-white px-4 py-2 rounded-full transition-all duration-200 shadow-md';
       backBtn.textContent = 'Back to options';
       backBtn.addEventListener('click', () => {
-        pdfContainer.remove();
-        backBtn.remove();
-        buttonContainer.style.display = 'flex';
-        infoText.style.display = 'block';
+        pdfContainer.classList.add('opacity-0');
+        setTimeout(() => {
+          pdfContainer.remove();
+          backBtn.remove();
+          buttonContainer.style.display = 'flex';
+          infoText.style.display = 'block';
+        }, 300);
       });
       
       modal.appendChild(backBtn);
@@ -220,10 +296,26 @@ const ScrollableChat = ({ messages, loading, deleteMessage }) => {
     copyBtn.addEventListener('click', () => {
       navigator.clipboard.writeText(pdfUrl)
         .then(() => {
-          toast.success('PDF URL copied to clipboard');
+          toast.success('PDF URL copied to clipboard', {
+            style: {
+              borderRadius: '10px',
+              background: '#333',
+              color: '#fff',
+            },
+            iconTheme: {
+              primary: '#4F46E5',
+              secondary: '#fff',
+            },
+          });
         })
         .catch(() => {
-          toast.error('Failed to copy URL');
+          toast.error('Failed to copy URL', {
+            style: {
+              borderRadius: '10px',
+              background: '#333',
+              color: '#fff',
+            },
+          });
         });
     });
     
@@ -239,24 +331,39 @@ const ScrollableChat = ({ messages, loading, deleteMessage }) => {
     
     // Close modal events
     closeBtn.addEventListener('click', () => {
-      document.body.removeChild(modal);
+      modal.classList.add('opacity-0');
+      setTimeout(() => {
+        document.body.removeChild(modal);
+      }, 300);
     });
     
     modal.addEventListener('click', (e) => {
       if (e.target === modal) {
-        document.body.removeChild(modal);
+        modal.classList.add('opacity-0');
+        setTimeout(() => {
+          document.body.removeChild(modal);
+        }, 300);
       }
     });
     
     document.addEventListener('keydown', function onEscPress(e) {
       if (e.key === 'Escape') {
-        document.body.removeChild(modal);
-        document.removeEventListener('keydown', onEscPress);
+        modal.classList.add('opacity-0');
+        setTimeout(() => {
+          document.body.removeChild(modal);
+          document.removeEventListener('keydown', onEscPress);
+        }, 300);
       }
     });
     
-    // Add to document
+    // Add to document with initial opacity settings for animation
+    modal.style.opacity = '0';
     document.body.appendChild(modal);
+    
+    // Trigger animation
+    setTimeout(() => {
+      modal.style.opacity = '1';
+    }, 10);
   };
   
 
@@ -301,7 +408,13 @@ const ScrollableChat = ({ messages, loading, deleteMessage }) => {
     
     if (!messageId) {
       console.error('Message ID is undefined or null');
-      toast.error('Cannot delete message: Invalid message ID');
+      toast.error('Cannot delete message: Invalid message ID', {
+        style: {
+          borderRadius: '10px',
+          background: '#333',
+          color: '#fff',
+        },
+      });
       return;
     }
     setDeletingId(messageId);
@@ -310,7 +423,13 @@ const ScrollableChat = ({ messages, loading, deleteMessage }) => {
       if (window.confirm("Are you sure you want to delete this message?")) {
         if (typeof deleteMessage !== 'function') {
           console.error('deleteMessage is not a function');
-          toast.error('Delete functionality is not available');
+          toast.error('Delete functionality is not available', {
+            style: {
+              borderRadius: '10px',
+              background: '#333',
+              color: '#fff',
+            },
+          });
           return;
         }
         
@@ -319,16 +438,38 @@ const ScrollableChat = ({ messages, loading, deleteMessage }) => {
         console.log('Delete operation result:', success);
         
         if (success) {
-          toast.success('Message deleted successfully');
+          toast.success('Message deleted successfully', {
+            style: {
+              borderRadius: '10px',
+              background: '#333',
+              color: '#fff',
+            },
+            iconTheme: {
+              primary: '#4F46E5',
+              secondary: '#fff',
+            },
+          });
         } else {
-          toast.error('Failed to delete message');
+          toast.error('Failed to delete message', {
+            style: {
+              borderRadius: '10px',
+              background: '#333',
+              color: '#fff',
+            },
+          });
         }
       } else {
         console.log('User cancelled deletion');
       }
     } catch (error) {
       console.error('Error in handleDeleteMessage:', error);
-      toast.error('Failed to delete message: ' + (error.message || 'Unknown error'));
+      toast.error(`Failed to delete message: ${error.message || 'Unknown error'}`, {
+        style: {
+          borderRadius: '10px',
+          background: '#333',
+          color: '#fff',
+        },
+      });
     } finally {
       setDeletingId(null);
     }
@@ -340,8 +481,11 @@ const ScrollableChat = ({ messages, loading, deleteMessage }) => {
 
   if (messages.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-64 text-gray-500">
-        <p>No messages yet</p>
+      <div className="flex flex-col items-center justify-center h-80 text-gray-500">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-12 h-12 mb-3 text-gray-400">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 20.25c4.97 0 9-3.694 9-8.25s-4.03-8.25-9-8.25S3 7.444 3 12c0 2.104.859 4.023 2.273 5.48.432.447.74 1.04.586 1.641a4.483 4.483 0 01-.923 1.785A5.969 5.969 0 006 21c1.282 0 2.47-.402 3.445-1.087.81.22 1.668.337 2.555.337z" />
+        </svg>
+        <p className="text-lg font-medium mb-1">No messages yet</p>
         <p className="text-sm">Start the conversation!</p>
       </div>
     );
@@ -360,26 +504,26 @@ const ScrollableChat = ({ messages, loading, deleteMessage }) => {
         return (
           <Fragment key={m._id}>
             {shouldShowDate(sortedMessages, i) && (
-              <div className="text-center my-4">
-                <span className="px-3 py-1 bg-gray-200 rounded-full text-sm text-gray-600">
+              <div className="text-center my-6">
+                <span className="px-4 py-1.5 bg-gray-100 rounded-full text-sm font-medium text-gray-600 shadow-sm">
                   {formatDate(m.createdAt)}
                 </span>
               </div>
             )}
             
-            <div className={`flex items-end ${isSenderMessage ? 'justify-end' : 'justify-start'} mb-4 relative group`}>
+            <div className={`flex items-end ${isSenderMessage ? 'justify-end' : 'justify-start'} mb-5 relative group`}>
       
               {!isSenderMessage && (
                 <div className="flex-shrink-0 mr-2 mb-1">
                   <img
                     src={m.sender.profile?.profilePic || ''}
                     alt={m.sender.name}
-                    className="w-8 h-8 rounded-full"
+                    className="w-9 h-9 rounded-full border-2 border-white shadow-sm object-cover"
                   />
                 </div>
               )}
               
-              <div className={`flex flex-col ${isSenderMessage ? 'items-end' : 'items-start'}`}>
+              <div className={`flex flex-col ${isSenderMessage ? 'items-end' : 'items-start'} max-w-[85%] sm:max-w-[75%] md:max-w-[65%]`}>
                 {/* Show sender name for first message from a user */}
                 {isFirstMessageByUser(sortedMessages, i) && !isSenderMessage && (
                   <span className="text-xs text-gray-500 font-medium mb-1 ml-1">
@@ -397,7 +541,7 @@ const ScrollableChat = ({ messages, loading, deleteMessage }) => {
                         deletingId === m._id 
                           ? 'bg-gray-200 text-gray-400' 
                           : 'bg-red-500 text-white hover:bg-red-600'
-                      } shadow-md transition-all duration-200 z-50 opacity-0 group-hover:opacity-100`}
+                      } shadow-md transition-all duration-200 z-20 opacity-0 group-hover:opacity-100 transform group-hover:translate-x-0 translate-x-2`}
                       aria-label="Delete message"
                       title="Delete message"
                     >
@@ -415,10 +559,10 @@ const ScrollableChat = ({ messages, loading, deleteMessage }) => {
                   )}
                 
                   <div 
-                    className={`max-w-xs sm:max-w-sm md:max-w-md px-3 py-2 rounded-lg ${
+                    className={`w-full px-4 py-2.5 rounded-2xl shadow-sm ${
                       isSenderMessage 
-                        ? 'bg-blue-500 text-white rounded-tr-none' 
-                        : 'bg-gray-200 text-gray-800 rounded-tl-none'
+                        ? 'bg-gradient-to-br from-indigo-500 to-indigo-600 text-white rounded-tr-none' 
+                        : 'bg-white text-gray-800 rounded-tl-none border border-gray-100'
                     }`}
                   >
                     {/* Message content based on type */}
@@ -435,14 +579,14 @@ const ScrollableChat = ({ messages, loading, deleteMessage }) => {
                           <img 
                             src={m.fileUrl} 
                             alt={m.fileName || "Image"}
-                            className="max-h-60 rounded-md cursor-pointer object-contain"
+                            className="max-h-60 rounded-lg cursor-pointer object-contain hover:opacity-95 transition-opacity"
                             onError={(e) => {
                               console.error('Image failed to load:', m.fileUrl);
                               e.target.src = 'https://via.placeholder.com/200x150?text=Image+Failed+to+Load';
                             }}
                           />
                           {m.fileName && (
-                            <p className={`text-xs mt-1 ${isSenderMessage ? 'text-blue-100' : 'text-gray-500'}`}>
+                            <p className={`text-xs mt-2 ${isSenderMessage ? 'text-indigo-100' : 'text-gray-500'}`}>
                               {m.fileName}
                             </p>
                           )}
@@ -451,9 +595,9 @@ const ScrollableChat = ({ messages, loading, deleteMessage }) => {
                     ) : (
                       <div className="file-container">
                         <button 
-                          className={`flex items-center gap-2 p-3 rounded-md w-full text-left ${
-                            isSenderMessage ? 'bg-blue-400' : 'bg-white'
-                          }`}
+                          className={`flex items-center gap-3 p-3 rounded-xl w-full text-left ${
+                            isSenderMessage ? 'bg-indigo-400 bg-opacity-30 hover:bg-opacity-40' : 'bg-gray-50 hover:bg-gray-100'
+                          } transition-colors duration-200`}
                           onClick={(e) => {
                             e.preventDefault();
                             // Determine file type from extension or mime type
@@ -493,7 +637,7 @@ const ScrollableChat = ({ messages, loading, deleteMessage }) => {
                 </div>
                 
                 {/* Timestamp */}
-                <div className={`text-xs mt-1 text-gray-500 w-full`}>
+                <div className={`text-xs mt-1.5 text-gray-500 px-1`}>
                   {formatTime(m.createdAt)}
                 </div>
               </div>
@@ -501,7 +645,7 @@ const ScrollableChat = ({ messages, loading, deleteMessage }) => {
           </Fragment>
         );
       })}
-      <div ref={messagesEndRef} />
+      <div ref={messagesEndRef} className="pb-2" />
     </div>
   );
 };

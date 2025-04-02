@@ -371,7 +371,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain, chatName }) => {
   return (
     <div className="flex flex-col h-full">
       {/* Chat Header */}
-      <div className="p-3 border-b border-gray-200 flex justify-between items-center">
+      <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-white shadow-sm backdrop-blur-sm bg-opacity-90 sticky top-0 z-10">
         <div className="flex items-center">
           {selectedChat && selectedChat.participants && user && user.email && (
             (() => {
@@ -383,21 +383,24 @@ const SingleChat = ({ fetchAgain, setFetchAgain, chatName }) => {
               
               // Get values with fallbacks
               const name = otherUser?.name || chatName || 'Chat';
-              // const email = otherUser?.email || '';
               const avatar = otherUser?.profile?.profilePic || '';
-              
-           
               
               return (
                 <>
-                  <img
-                    src={avatar}
-                    alt={name}
-                    className="w-10 h-10 rounded-full mr-3 object-cover border border-gray-200"
-                  />
+                  <div className="relative">
+                    <img
+                      src={avatar}
+                      alt={name}
+                      className="w-12 h-12 rounded-full mr-3 object-cover border-2 border-white shadow-md"
+                    />
+                    <span className="absolute bottom-0 right-2 w-3 h-3 bg-emerald-500 rounded-full border-2 border-white shadow-sm"></span>
+                  </div>
                   <div>
-                    <h3 className="font-semibold">{name}</h3>
-                    {/* <p className="text-sm text-gray-500">{email}</p> */}
+                    <h3 className="font-semibold text-gray-800">{name}</h3>
+                    {/* <p className="text-xs text-gray-500 flex items-center">
+                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 mr-1.5"></span>
+                      Online
+                    </p> */}
                   </div>
                 </>
               );
@@ -409,7 +412,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain, chatName }) => {
         <div className="flex gap-2">
           <button
             onClick={handleDeleteChat}
-            className="p-2 text-gray-600 hover:text-red-600 rounded-full hover:bg-gray-100"
+            className="p-2 text-gray-500 hover:text-red-500 rounded-full hover:bg-gray-100 transition-colors duration-200"
             title="Delete chat"
           >
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
@@ -420,10 +423,16 @@ const SingleChat = ({ fetchAgain, setFetchAgain, chatName }) => {
       </div>
 
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-3 bg-gray-50 ">
+      <div className="flex-1 overflow-y-auto p-4 bg-gray-50 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
         {loading ? (
           <div className="flex justify-center items-center h-full">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+            <div className="flex flex-col items-center">
+              <div className="relative w-12 h-12">
+                <div className="absolute top-0 left-0 w-full h-full border-4 border-indigo-100 rounded-full animate-ping opacity-75"></div>
+                <div className="absolute top-0 left-0 w-full h-full border-4 border-t-indigo-500 border-indigo-100 rounded-full animate-spin"></div>
+              </div>
+              <p className="mt-3 text-gray-500 text-sm font-medium">Loading messages...</p>
+            </div>
           </div>
         ) : (
           <div className="flex flex-col h-full">
@@ -436,37 +445,41 @@ const SingleChat = ({ fetchAgain, setFetchAgain, chatName }) => {
           </div>
         )}
         {isTyping && (
-          <div className="flex items-center text-gray-500 text-sm mt-1">
-            <div className="typing-indicator">
-              <span></span>
-              <span></span>
-              <span></span>
+          <div className="flex items-center text-gray-500 text-sm mt-1 ml-2">
+            <div className="typing-indicator flex space-x-1">
+              <span className="w-2 h-2 rounded-full bg-indigo-400 animate-[bounce_1s_infinite_0ms]"></span>
+              <span className="w-2 h-2 rounded-full bg-indigo-400 animate-[bounce_1s_infinite_200ms]"></span>
+              <span className="w-2 h-2 rounded-full bg-indigo-400 animate-[bounce_1s_infinite_400ms]"></span>
             </div>
-            <span className="ml-2">typing...</span>
+            <span className="ml-2 text-xs font-medium">typing...</span>
           </div>
         )}
       </div>
 
       {/* Selected File Preview */}
       {selectedFile && (
-        <div className="p-2 border-t border-gray-200 bg-gray-50">
-          <div className="flex items-center justify-between">
+        <div className="px-4 pt-3 border-t border-gray-100 bg-white">
+          <div className="flex items-center justify-between bg-gray-50 p-3 rounded-lg shadow-sm">
             <div className="flex items-center">
               {filePreview ? (
-                <img src={filePreview} alt="Preview" className="h-16 w-16 object-contain mr-2" />
+                <div className="h-16 w-16 rounded-md overflow-hidden mr-3 border border-gray-200 bg-white flex-shrink-0 shadow-sm">
+                  <img src={filePreview} alt="Preview" className="h-full w-full object-contain" />
+                </div>
               ) : (
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 mr-2 text-gray-600">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m6.75 12H9m1.5-12H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
-                </svg>
+                <div className="h-16 w-16 rounded-md bg-indigo-50 text-indigo-500 flex items-center justify-center mr-3 flex-shrink-0 shadow-sm">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m6.75 12H9m1.5-12H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
+                  </svg>
+                </div>
               )}
               <div className="text-sm">
-                <p className="font-medium truncate w-40">{selectedFile.name}</p>
-                <p className="text-gray-500">{(selectedFile.size / 1024).toFixed(1)} KB</p>
+                <p className="font-medium truncate max-w-[180px] md:max-w-xs">{selectedFile.name}</p>
+                <p className="text-gray-500 text-xs">{(selectedFile.size / 1024).toFixed(1)} KB</p>
               </div>
             </div>
             <button
               onClick={removeSelectedFile}
-              className="p-1 text-gray-600 hover:text-gray-900"
+              className="p-1.5 text-gray-500 hover:text-red-500 bg-white rounded-full hover:bg-gray-100 transition-colors shadow-sm"
             >
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -477,21 +490,21 @@ const SingleChat = ({ fetchAgain, setFetchAgain, chatName }) => {
       )}
 
       {/* Message Input */}
-      <form onSubmit={handleSendMessage} className="p-3 border-t border-gray-200 bg-white">
+      <form onSubmit={handleSendMessage} className="p-4 border-t border-gray-100 bg-white">
         <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className="p-2 text-gray-600 hover:text-gray-900 rounded-full hover:bg-gray-100 relative"
+            className="p-2.5 text-gray-500 hover:text-indigo-600 rounded-full hover:bg-gray-100 transition-all duration-200 relative"
             title="Attach a file (Images or PDF)"
           >
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
               <path strokeLinecap="round" strokeLinejoin="round" d="M18.375 12.739l-7.693 7.693a4.5 4.5 0 01-6.364-6.364l10.94-10.94A3 3 0 1119.5 7.372L8.552 18.32m.009-.01l-.01.01m5.699-9.941l-7.81 7.81a1.5 1.5 0 002.112 2.13" />
             </svg>
             {loading && (
-              <span className="absolute -top-2 -right-2 h-3 w-3">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-3 w-3 bg-blue-500"></span>
+              <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-3 w-3 bg-indigo-500"></span>
               </span>
             )}
           </button>
@@ -509,7 +522,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain, chatName }) => {
             <button
               type="button"
               onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-              className="p-2 text-gray-600 hover:text-gray-900 rounded-full hover:bg-gray-100"
+              className="p-2.5 text-gray-500 hover:text-amber-500 rounded-full hover:bg-gray-100 transition-all duration-200"
               title="Add emoji"
             >
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
@@ -519,7 +532,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain, chatName }) => {
             
             {/* Emoji Picker */}
             {showEmojiPicker && (
-              <div className="absolute bottom-12 left-0 bg-white rounded-lg shadow-lg p-2 border z-10 w-72">
+              <div className="absolute bottom-12 left-0 bg-white rounded-lg shadow-lg p-3 border border-gray-100 z-20 w-72">
                 <div className="mb-2">
                   <input
                     ref={emojiSearchInputRef}
@@ -527,7 +540,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain, chatName }) => {
                     placeholder="Search emoji..."
                     value={emojiSearch}
                     onChange={(e) => setEmojiSearch(e.target.value)}
-                    className="w-full p-1.5 text-sm border border-gray-200 rounded mb-1.5"
+                    className="w-full p-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 transition-all"
                   />
                 </div>
                 
@@ -535,42 +548,42 @@ const SingleChat = ({ fetchAgain, setFetchAgain, chatName }) => {
                   <div className="flex border-b mb-2">
                     <button 
                       onClick={() => setActiveEmojiCategory('recent')}
-                      className={`p-1.5 flex-1 ${activeEmojiCategory === 'recent' ? 'bg-blue-100 text-blue-600' : 'hover:bg-gray-100'} text-sm rounded-t-md transition-colors`}
+                      className={`p-1.5 flex-1 ${activeEmojiCategory === 'recent' ? 'bg-indigo-100 text-indigo-600' : 'hover:bg-gray-100'} text-sm rounded-t-md transition-colors`}
                       title="Recent"
                     >
                       🕒
                     </button>
                     <button 
                       onClick={() => setActiveEmojiCategory('smileys')}
-                      className={`p-1.5 flex-1 ${activeEmojiCategory === 'smileys' ? 'bg-blue-100 text-blue-600' : 'hover:bg-gray-100'} text-sm rounded-t-md transition-colors`}
+                      className={`p-1.5 flex-1 ${activeEmojiCategory === 'smileys' ? 'bg-indigo-100 text-indigo-600' : 'hover:bg-gray-100'} text-sm rounded-t-md transition-colors`}
                       title="Smileys & Emotions"
                     >
                       😀
                     </button>
                     <button 
                       onClick={() => setActiveEmojiCategory('people')}
-                      className={`p-1.5 flex-1 ${activeEmojiCategory === 'people' ? 'bg-blue-100 text-blue-600' : 'hover:bg-gray-100'} text-sm rounded-t-md transition-colors`}
+                      className={`p-1.5 flex-1 ${activeEmojiCategory === 'people' ? 'bg-indigo-100 text-indigo-600' : 'hover:bg-gray-100'} text-sm rounded-t-md transition-colors`}
                       title="People"
                     >
                       👍
                     </button>
                     <button 
                       onClick={() => setActiveEmojiCategory('emotions')}
-                      className={`p-1.5 flex-1 ${activeEmojiCategory === 'emotions' ? 'bg-blue-100 text-blue-600' : 'hover:bg-gray-100'} text-sm rounded-t-md transition-colors`}
+                      className={`p-1.5 flex-1 ${activeEmojiCategory === 'emotions' ? 'bg-indigo-100 text-indigo-600' : 'hover:bg-gray-100'} text-sm rounded-t-md transition-colors`}
                       title="Hearts & Symbols"
                     >
                       ❤️
                     </button>
                     <button 
                       onClick={() => setActiveEmojiCategory('animals')}
-                      className={`p-1.5 flex-1 ${activeEmojiCategory === 'animals' ? 'bg-blue-100 text-blue-600' : 'hover:bg-gray-100'} text-sm rounded-t-md transition-colors`}
+                      className={`p-1.5 flex-1 ${activeEmojiCategory === 'animals' ? 'bg-indigo-100 text-indigo-600' : 'hover:bg-gray-100'} text-sm rounded-t-md transition-colors`}
                       title="Animals"
                     >
                       🐶
                     </button>
                     <button 
                       onClick={() => setActiveEmojiCategory('food')}
-                      className={`p-1.5 flex-1 ${activeEmojiCategory === 'food' ? 'bg-blue-100 text-blue-600' : 'hover:bg-gray-100'} text-sm rounded-t-md transition-colors`}
+                      className={`p-1.5 flex-1 ${activeEmojiCategory === 'food' ? 'bg-indigo-100 text-indigo-600' : 'hover:bg-gray-100'} text-sm rounded-t-md transition-colors`}
                       title="Food & Drinks"
                     >
                       🍎
@@ -578,13 +591,13 @@ const SingleChat = ({ fetchAgain, setFetchAgain, chatName }) => {
                   </div>
                 )}
                 
-                <div className="grid grid-cols-8 gap-1 max-h-44 overflow-y-auto">
+                <div className="grid grid-cols-8 gap-1 max-h-44 overflow-y-auto pr-1 emoji-scrollbar">
                   {filteredEmojis 
                     ? filteredEmojis.map((emoji, index) => (
                         <button
                           key={index}
                           type="button"
-                          className="p-1 hover:bg-gray-100 rounded text-xl transition-colors"
+                          className="p-1.5 hover:bg-indigo-50 rounded text-xl transition-colors"
                           onClick={() => handleEmojiClick(emoji)}
                         >
                           {emoji}
@@ -601,7 +614,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain, chatName }) => {
                           <button
                             key={index}
                             type="button"
-                            className="p-1 hover:bg-gray-100 rounded text-xl transition-colors"
+                            className="p-1.5 hover:bg-indigo-50 rounded text-xl transition-colors"
                             onClick={() => handleEmojiClick(emoji)}
                           >
                             {emoji}
@@ -614,17 +627,19 @@ const SingleChat = ({ fetchAgain, setFetchAgain, chatName }) => {
             )}
           </div>
           
-          <input
-            type="text"
-            value={newMessage}
-            onChange={handleTyping}
-            placeholder="Type a message..."
-            className="flex-1 p-2 border border-gray-300 rounded-md"
-          />
+          <div className="flex-1 relative">
+            <input
+              type="text"
+              value={newMessage}
+              onChange={handleTyping}
+              placeholder="Type a message..."
+              className="w-full py-2.5 px-4 border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-transparent transition-all bg-gray-50"
+            />
+          </div>
           <button
             type="submit"
             disabled={(!newMessage.trim() && !selectedFile) || loading}
-            className="p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 disabled:bg-blue-300"
+            className="p-2.5 bg-gradient-to-r from-indigo-500 to-indigo-600 text-white rounded-full hover:from-indigo-600 hover:to-indigo-700 disabled:from-indigo-300 disabled:to-indigo-400 disabled:cursor-not-allowed shadow-sm transition-all duration-200"
           >
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
