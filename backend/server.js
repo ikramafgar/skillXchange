@@ -14,10 +14,12 @@ import adminRoutes from './routes/adminRoutes.js'; // Import admin routes
 import contactRoutes from './routes/contactRoutes.js'; // Import contact routes
 import chatRoutes from './routes/chatRoutes.js'; // Import chat routes
 import messageRoutes from './routes/messageRoutes.js'; // Import message routes
+import sessionRoutes from './routes/sessionRoutes.js'; // Import session routes
+import skillRoutes from './routes/skillRoutes.js'; // Import skill routes
 import { Server } from 'socket.io';
 import { createServer } from 'http';
-import path from 'path';
-import fs from 'fs';
+// import path from 'path';
+// import fs from 'fs';
 
 // Configure environment variables
 config();
@@ -31,6 +33,16 @@ const app = express();
 app.use(cookieParser()); // Parse cookies
 app.use(express.json({ limit: '50mb' })); // Increase payload size limit
 app.use(express.urlencoded({ limit: '50mb', extended: true })); // Increase payload size limit for URL-encoded data
+
+// Log all requests
+app.use((req, res, next) => {
+  console.log(`${new Date().toISOString()} - ${req.method} ${req.originalUrl}`);
+  if (req.method === 'POST' || req.method === 'PUT') {
+    console.log('Request body:', JSON.stringify(req.body, null, 2));
+  }
+  next();
+});
+
 app.use(session({
   secret: process.env.SESSION_SECRET || 'your-secret-key',
   resave: false,
@@ -59,14 +71,14 @@ app.use(passport.session());
 // Connect to Database
 connectDB();
 
-// Create uploads directory if it doesn't exist
-const uploadsDir = path.join(process.cwd(), 'uploads');
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
-}
+// // Create uploads directory if it doesn't exist
+// const uploadsDir = path.join(process.cwd(), 'uploads');
+// if (!fs.existsSync(uploadsDir)) {
+//   fs.mkdirSync(uploadsDir, { recursive: true });
+// }
 
-// Serve static files from the uploads directory
-app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
+// // Serve static files from the uploads directory
+// app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
 // Routes
 app.get('/', (req, res) => {
@@ -75,13 +87,15 @@ app.get('/', (req, res) => {
 
 app.use('/api/auth', authRoutes); // Use auth routes
 app.use('/api/profile', profileRoutes);
-app.use(userRoutes); // Use user routes with paths defined in the route file
+app.use('/', userRoutes); // Use user routes with paths defined in the route file
 app.use('/api/connections', connectionRoutes);
 app.use('/api/matches', matchRoutes); // Use match routes
 app.use('/api/admin', adminRoutes); // Use admin routes
 app.use('/api/contact', contactRoutes); // Use contact routes
 app.use('/api/chat', chatRoutes); // Use chat routes
 app.use('/api/message', messageRoutes); // Use message routes
+app.use('/api/sessions', sessionRoutes); // Use session routes
+app.use('/api/skills', skillRoutes); // Use skill routes
 
 // Error handling middleware
 app.use((err, req, res, next) => {

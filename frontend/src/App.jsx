@@ -32,6 +32,8 @@ import AdminPage from "./pages/AdminPage"; // Import the Admin page component
 import XFeed from "./pages/XFeedPage";
 import ErrorPage from "./pages/ErrorPage"; // Import the Error page component
 import ChatPage from "./pages/ChatPage"; // Import the Chat page component
+import SessionsPage from "./pages/SessionsPage"; // Import the Sessions page component
+import SessionDetailPage from "./pages/SessionDetailPage"; // Import the Session Detail page component
 
 // Protect routes that require authentication
 const ProtectedRoute = ({ children }) => {
@@ -143,6 +145,23 @@ function App() {
           element={
             <ProtectedRoute>
               <ChatPage />
+            </ProtectedRoute>
+          }
+        />
+        {/* Session routes */}
+        <Route
+          path="/sessions"
+          element={
+            <ProtectedRoute>
+              <SessionsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/sessions/:sessionId"
+          element={
+            <ProtectedRoute>
+              <SessionDetailPage />
             </ProtectedRoute>
           }
         />

@@ -5,6 +5,52 @@ import { verifyToken } from '../middleware/verifyToken.js';
 
 const router = express.Router();
 
+// Get connected users - users who have accepted connection with the current user
+router.get('/api/users/connections', verifyToken, async (req, res) => {
+  try {
+    const currentUserId = req.userId; // User ID from verifyToken middleware
+    
+    // Import the Connection model
+    const Connection = mongoose.model('Connection');
+    
+    // Find all accepted connections for the current user
+    const connections = await Connection.find({
+      $or: [
+        { sender: currentUserId, status: 'accepted' },
+        { receiver: currentUserId, status: 'accepted' }
+      ]
+    }).populate('sender receiver', 'name email profile');
+    
+    // Transform connections to a more usable format
+    const userConnections = connections.map(connection => {
+      const otherUser = connection.sender.toString() === currentUserId 
+        ? connection.receiver 
+        : connection.sender;
+        
+      return {
+        _id: connection._id,
+        user: {
+          _id: otherUser._id,
+          name: otherUser.name,
+          email: otherUser.email,
+          profile: otherUser.profile
+        },
+        status: connection.status,
+        createdAt: connection.createdAt
+      };
+    });
+    
+    res.status(200).json({
+      success: true,
+      count: userConnections.length,
+      connections: userConnections
+    });
+  } catch (error) {
+    console.error('Error fetching user connections:', error);
+    res.status(500).json({ message: 'Error fetching user connections' });
+  }
+});
+
 router.get('/api/users', verifyToken, async (req, res) => {
   try {
     const currentUserId = req.userId; // User ID from verifyToken middleware
