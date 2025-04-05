@@ -1,0 +1,51 @@
+<svg width="400" height="300" viewBox="0 0 400 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- Background -->
+    <circle cx="200" cy="150" r="120" fill="#F0F9FF" />
+    
+    <!-- Video Call Frame -->
+    <rect x="100" y="70" width="200" height="160" rx="12" fill="white" stroke="#0369A1" stroke-width="2"/>
+    
+    <!-- Participants -->
+    <g transform="translate(110,80)">
+        <!-- Teacher -->
+        <rect width="85" height="65" rx="8" fill="#0EA5E9"/>
+        <circle cx="42" cy="32" r="20" fill="#BAE6FD"/>
+        <path d="M42 22C46.4 22 50 25.6 50 30C50 34.4 46.4 38 42 38C37.6 38 34 34.4 34 30C34 25.6 37.6 22 42 22Z" fill="#0369A1"/>
+        
+        <!-- Teaching Indicator -->
+        <circle cx="70" cy="15" r="8" fill="#BAE6FD"/>
+        <text x="67" y="19" font-family="Arial" font-size="12" font-weight="bold" fill="#0369A1">✓</text>
+    </g>
+    
+    <!-- Screen Share -->
+    <rect x="110" y="155" width="180" height="65" rx="8" fill="#BAE6FD"/>
+    <rect x="120" y="165" width="160" height="45" rx="4" fill="#0EA5E9"/>
+    
+    <!-- Student -->
+    <g transform="translate(205,80)">
+        <rect width="85" height="65" rx="8" fill="#0EA5E9"/>
+        <circle cx="42" cy="32" r="20" fill="#BAE6FD"/>
+        <path d="M42 22C46.4 22 50 25.6 50 30C50 34.4 46.4 38 42 38C37.6 38 34 34.4 34 30C34 25.6 37.6 22 42 22Z" fill="#0369A1"/>
+        
+        <!-- Learning Indicator -->
+        <circle cx="70" cy="15" r="8" fill="#BAE6FD"/>
+        <text x="67" y="19" font-family="Arial" font-size="12" font-weight="bold" fill="#0369A1">?</text>
+    </g>
+    
+    <!-- Controls -->
+    <g transform="translate(160,240)">
+        <circle cx="15" cy="15" r="12" fill="#0EA5E9"/>
+        <circle cx="45" cy="15" r="12" fill="#0EA5E9"/>
+        <circle cx="75" cy="15" r="12" fill="#0EA5E9"/>
+        
+        <!-- Icons -->
+        <text x="9" y="20" font-family="Arial" font-size="12" fill="white">🎤</text>
+        <text x="39" y="20" font-family="Arial" font-size="12" fill="white">📹</text>
+        <text x="69" y="20" font-family="Arial" font-size="12" fill="white">💻</text>
+    </g>
+    
+    <!-- Decorative Elements -->
+    <circle cx="320" cy="100" r="15" fill="#0EA5E9" opacity="0.2"/>
+    <circle cx="80" cy="200" r="20" fill="#38BDF8" opacity="0.2"/>
+    <circle cx="300" cy="220" r="25" fill="#0369A1" opacity="0.2"/>
+</svg>

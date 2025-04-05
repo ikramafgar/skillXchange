@@ -1,0 +1,33 @@
+<svg width="400" height="300" viewBox="0 0 400 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- Background -->
+    <circle cx="200" cy="150" r="120" fill="#F0FDFA" />
+    
+    <!-- Connection Lines -->
+    <path d="M160 150 L240 150" stroke="#0D9488" stroke-width="2" stroke-dasharray="4 4"/>
+    <path d="M140 120 L260 180" stroke="#0D9488" stroke-width="2" stroke-dasharray="4 4"/>
+    <path d="M140 180 L260 120" stroke="#0D9488" stroke-width="2" stroke-dasharray="4 4"/>
+    
+    <!-- Profile Cards -->
+    <g transform="translate(120,100)">
+        <rect width="80" height="100" rx="8" fill="white" stroke="#0D9488" stroke-width="2"/>
+        <circle cx="40" cy="30" r="15" fill="#14B8A6"/>
+        <rect x="20" y="55" width="40" height="6" rx="3" fill="#CCFBF1"/>
+        <rect x="15" y="70" width="50" height="6" rx="3" fill="#CCFBF1"/>
+    </g>
+    
+    <g transform="translate(200,100)">
+        <rect width="80" height="100" rx="8" fill="white" stroke="#0D9488" stroke-width="2"/>
+        <circle cx="40" cy="30" r="15" fill="#14B8A6"/>
+        <rect x="20" y="55" width="40" height="6" rx="3" fill="#CCFBF1"/>
+        <rect x="15" y="70" width="50" height="6" rx="3" fill="#CCFBF1"/>
+    </g>
+    
+    <!-- Match Percentage -->
+    <circle cx="200" cy="150" r="20" fill="#0D9488"/>
+    <text x="200" y="155" text-anchor="middle" fill="white" font-family="Arial" font-size="12" font-weight="bold">95%</text>
+    
+    <!-- Decorative Elements -->
+    <circle cx="100" cy="80" r="15" fill="#14B8A6" opacity="0.2"/>
+    <circle cx="300" cy="220" r="25" fill="#0D9488" opacity="0.2"/>
+    <circle cx="320" cy="100" r="20" fill="#14B8A6" opacity="0.2"/>
+</svg>

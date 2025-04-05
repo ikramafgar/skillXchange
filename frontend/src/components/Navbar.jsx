@@ -151,20 +151,20 @@ const Navbar = () => {
         isScrolled ? "bg-white/60 backdrop-blur-lg shadow-lg" : "bg-transparent"
       }`}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 lg:px-24">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 xl:px-12">
         <div className="flex items-center justify-between h-16">
           {/* Logo - Left side */}
           <div
             className="flex items-center cursor-pointer"
             onClick={handleLogoClick}
           >
-            <h1 className="text-2xl font-bold text-gray-800">Skill</h1>
-            <img src="images/logo.png" alt="Swap Icon" className="w-8 h-8" />
-            <h1 className="text-2xl font-bold text-gray-800">Change</h1>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Skill</h1>
+            <img src="images/logo.png" alt="Swap Icon" className="w-6 h-6 sm:w-8 sm:h-8" />
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Change</h1>
           </div>
 
           {/* Desktop Navigation - Right side */}
-          <div className="hidden md:flex ml-auto items-center space-x-8">
+          <div className="hidden md:flex ml-auto items-center space-x-4 lg:space-x-8">
             {navigationItems.map((item) => (
               <Link
                 key={item.name}
@@ -239,7 +239,7 @@ const Navbar = () => {
             : "bg-transparent"
         }`}
       >
-        <div className="px-2 pt-2 pb-3 space-y-1">
+        <div className="px-3 sm:px-4 pt-2 pb-3 space-y-1">
           {navigationItems.map((item) => (
             <Link
               key={item.name}
@@ -290,7 +290,7 @@ const Navbar = () => {
       {/* Mobile Notifications Panel - Fixed Overlay */}
       {showMobileNotifications && (
         <div
-          className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 flex justify-center items-center p-4"
+          className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 flex justify-center items-center p-3 sm:p-4"
           onClick={closeMobileNotifications}
         >
           <div

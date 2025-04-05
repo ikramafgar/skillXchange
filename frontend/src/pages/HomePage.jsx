@@ -4,40 +4,6 @@ import { useEffect } from "react";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Footer from "../components/Footer";
-import {
-  FaDatabase,
-  FaJs,
-  FaJava,
-  FaPython,
-  FaReact,
-  FaMusic,
-  FaCamera,
-  FaPen,
-  FaLanguage,
-  FaComments,
-  FaCode,
-  FaHtml5,
-  FaCss3,
-  FaNodeJs,
-  FaGitAlt,
-  FaDocker,
-  FaAws,
-  FaChartLine,
-  FaMobileAlt,
-  FaPaintBrush,
-  FaVideo,
-  FaBusinessTime,
-  FaCalculator,
-  FaCloud,
-  FaGamepad,
-  FaGlobe,
-  FaLightbulb,
-  FaRocket,
-  FaServer,
-  FaShieldAlt,
-  FaTools,
-  FaUserTie,
-} from "react-icons/fa";
 
 function HomePage() {
   const location = useLocation();
@@ -68,23 +34,6 @@ function HomePage() {
       transition: { duration: 0.8, ease: "easeOut" },
     },
     exit: { opacity: 0, scale: 0.9, transition: { duration: 0.5 } },
-  };
-
-  const textVariants = {
-    hidden: { y: 50, opacity: 0 },
-    visible: {
-      y: 0,
-      opacity: 1,
-      transition: { delay: 0.2, duration: 0.8, ease: "easeOut" },
-    },
-  };
-
-  const fadeInVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: { delay: 0.5, duration: 1 },
-    },
   };
 
   const staggerContainer = {
@@ -128,295 +77,286 @@ function HomePage() {
     },
   };
 
-  const skillIcons = [
-    { icon: <FaDatabase />, label: "Data Science", color: "text-blue-500" },
-    { icon: <FaJs />, label: "JavaScript", color: "text-yellow-500" },
-    { icon: <FaJava />, label: "Java", color: "text-red-500" },
-    { icon: <FaPython />, label: "Python", color: "text-green-500" },
-    { icon: <FaReact />, label: "React", color: "text-cyan-500" },
-    { icon: <FaMusic />, label: "Music", color: "text-purple-500" },
-    { icon: <FaCamera />, label: "Photography", color: "text-pink-500" },
-    { icon: <FaPen />, label: "Writing", color: "text-orange-500" },
-    { icon: <FaLanguage />, label: "Languages", color: "text-indigo-500" },
-    { icon: <FaComments />, label: "Communication", color: "text-teal-500" },
-    { icon: <FaCode />, label: "Programming", color: "text-blue-400" },
-    { icon: <FaHtml5 />, label: "HTML", color: "text-orange-500" },
-    { icon: <FaCss3 />, label: "CSS", color: "text-blue-600" },
-    { icon: <FaNodeJs />, label: "Node.js", color: "text-green-600" },
-    { icon: <FaGitAlt />, label: "Git", color: "text-red-600" },
-    { icon: <FaDocker />, label: "Docker", color: "text-blue-300" },
-    { icon: <FaAws />, label: "AWS", color: "text-yellow-600" },
-    { icon: <FaChartLine />, label: "Data Analysis", color: "text-green-400" },
-    { icon: <FaMobileAlt />, label: "Mobile Dev", color: "text-purple-400" },
-    { icon: <FaPaintBrush />, label: "Design", color: "text-pink-400" },
-    { icon: <FaVideo />, label: "Video Editing", color: "text-red-400" },
-    { icon: <FaBusinessTime />, label: "Business", color: "text-indigo-400" },
-    { icon: <FaCalculator />, label: "Finance", color: "text-green-500" },
-    { icon: <FaCloud />, label: "Cloud Computing", color: "text-blue-200" },
-    { icon: <FaGamepad />, label: "Game Dev", color: "text-purple-500" },
-    { icon: <FaGlobe />, label: "Web Development", color: "text-blue-500" },
-    { icon: <FaLightbulb />, label: "Innovation", color: "text-yellow-400" },
-    { icon: <FaRocket />, label: "Startups", color: "text-red-500" },
-    { icon: <FaServer />, label: "DevOps", color: "text-gray-500" },
-    { icon: <FaShieldAlt />, label: "Cybersecurity", color: "text-green-600" },
-    { icon: <FaTools />, label: "Tools", color: "text-gray-600" },
-    { icon: <FaUserTie />, label: "Leadership", color: "text-indigo-500" },
-  ];
-
-  const marqueeVariants = {
-    animate: {
-      x: [0, -4000],
-      transition: {
-        x: {
-          repeat: Infinity,
-          repeatType: "loop",
-          duration: 80,
-          ease: "linear",
-        },
-      },
-    },
-  };
-
   return (
     <div className="bg-white">
       <ToastContainer />
       {/* Hero Section */}
       <motion.section
-        className="bg-[#FAFAFA] min-h-screen flex items-start justify-center px-4 sm:px-6 lg:px-8 relative overflow-hidden pt-24"
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-        exit="exit"
+        className="relative min-h-screen flex items-center bg-gradient-to-b from-gray-50 to-white overflow-hidden"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.6 }}
       >
-        {/* Background Image */}
-        {/* <motion.div
-          className="absolute inset-0 w-full h-full"
-          variants={fadeInVariants}
-        >
-          <motion.img
-            src="images/Hero.png"
-            alt="SkillXchange Illustration"
-            className="w-full h-full object-cover opacity-25 mix-blend-multiply"
-            initial={{ y: 50, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 1, ease: "easeOut" }}
-          />
-        </motion.div> */}
-        {/* Abstract Shapes */}
-        <motion.div
-          className="absolute inset-0 pointer-events-none"
-          variants={fadeInVariants}
-        >
-          {/* Circle 1 - Left Side */}
-          <motion.div
-            className="absolute w-[300px] h-[300px] bg-purple-400 opacity-40 blur-3xl rounded-full -left-20 top-1/3"
-            animate={{ scale: [1, 1.2, 1] }}
-            transition={{ duration: 6, repeat: Infinity }}
-          ></motion.div>
+        {/* Background Elements */}
+        <div className="absolute inset-0">
+          <div className="absolute inset-0 bg-[#F8FAFC] [mask-image:radial-gradient(ellipse_at_center,transparent_20%,black)]"></div>
+          <div className="absolute top-0 right-0 -translate-y-1/4 translate-x-1/4 w-96 h-96 bg-blue-100 rounded-full mix-blend-multiply filter opacity-70"></div>
+          <div className="absolute bottom-0 left-0 translate-y-1/4 -translate-x-1/4 w-96 h-96 bg-purple-100 rounded-full mix-blend-multiply filter opacity-70"></div>
+        </div>
 
-          {/* Circle 2 - Center */}
-          <motion.div
-            className="absolute w-[400px] h-[400px] bg-indigo-300 opacity-30 blur-3xl rounded-full"
-            animate={{ scale: [1, 1.3, 1] }}
-            transition={{ duration: 7, repeat: Infinity }}
-          ></motion.div>
-
-          {/* Circle 3 - Right Side */}
-          <motion.div
-            className="absolute w-[250px] h-[250px] bg-violet-400 opacity-40 blur-3xl rounded-full -right-20 bottom-1/4"
-            animate={{ scale: [1, 1.1, 1] }}
-            transition={{ duration: 8, repeat: Infinity }}
-          ></motion.div>
-        </motion.div>
-
-        {/* Content Section */}
-        <motion.div
-          className="relative z-10 text-center max-w-4xl mx-auto w-full px-4 sm:px-6"
-          variants={textVariants}
-        >
-          {/* Tagline */}
-          <div className="bg-white bg-opacity-20 backdrop-blur-lg border border-blue-500/40 text-gray-700 font-semibold py-2 px-6 rounded-full mb-6 inline-block text-sm md:text-base shadow-2xl hover:shadow-xl transition-shadow duration-300">
-            🚀 Your #1 Platform for Skills Sharing
-          </div>
-
-          {/* Main Heading */}
-          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-gray-900 leading-tight tracking-tight text-center">
-            Unlock New Skills with{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-purple-600 animate-text-shimmer">
-              SkillXChange.
-            </span>
-          </h1>
-
-          {/* Subheading */}
-          <p className="mt-6 text-lg sm:text-xl md:text-2xl text-gray-700 max-w-3xl mx-auto leading-relaxed font-semibold tracking-tight">
-            Join our vibrant community where skills are currency. Learn, teach,
-            and grow together in a space designed for mutual success.
-          </p>
-
-          {/* CTA Buttons */}
-          <div className="mt-10 flex flex-col sm:flex-row justify-center gap-4 sm:gap-6">
-            <Link to="/login" className="flex-1 sm:flex-none">
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="w-full sm:w-auto bg-blue-400 text-white px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 text-lg font-semibold"
+        {/* Content Container */}
+        <div className="relative container mx-auto px-3 sm:px-4 md:px-6 lg:px-8 xl:px-12 py-16 sm:py-24 lg:py-32">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            {/* Text Content */}
+            <div className="max-w-xl mx-auto lg:mx-0 text-center lg:text-left">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2, duration: 0.8 }}
               >
-                Get Started
-              </motion.button>
-            </Link>
-            <Link to="/about" className="flex-1 sm:flex-none">
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="w-full sm:w-auto bg-white/90 backdrop-blur-sm text-gray-700 px-8 py-4 rounded-xl border-2 border-gray-200 hover:border-blue-200 shadow-sm hover:shadow-md transition-all duration-300 text-lg font-semibold"
-              >
-                Learn More
-              </motion.button>
-            </Link>
-          </div>
+                <span className="inline-flex items-center px-4 py-1.5 rounded-full text-sm font-medium bg-gradient-to-r from-blue-500/10 to-purple-500/10 text-blue-600">
+                  <span className="relative flex h-2 w-2 mr-2">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-blue-400 opacity-75"></span>
+                    <span className="relative inline-flex h-2 w-2 rounded-full bg-blue-500"></span>
+                  </span>
+                  Transform Your Skills Today
+                </span>
 
-          {/* Skill Icons Marquee */}
-          <motion.div className="mt-6  overflow-hidden relative w-full before:absolute before:left-0 before:top-0 before:h-full before:w-8 sm:before:w-16  before:z-20 after:absolute after:right-0 after:top-0 after:h-full after:w-8 sm:after:w-16  after:z-20">
-            <motion.div
-              className="inline-flex space-x-8 sm:space-x-12 py-3"
-              variants={marqueeVariants}
-              animate="animate"
-            >
-              {[...skillIcons, ...skillIcons].map((skill, index) => (
-                <div
-                  key={index}
-                  className="flex flex-col items-center shrink-0"
-                >
-                  <div
-                    className={`text-3xl  ${skill.color} hover:scale-110 transition-transform duration-300`}
-                  >
-                    {skill.icon}
-                  </div>
-                  <p className="mt-2 text-sm sm:text-base md:text-lg text-gray-600 font-medium">
-                    {skill.label}
-                  </p>
+                <h1 className="mt-6 text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-gray-900">
+                  Unlock Your
+                  <span className="block mt-2 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                    Full Potential
+                  </span>
+                </h1>
+
+                <p className="mt-6 text-lg sm:text-xl leading-relaxed text-gray-600">
+                  Connect with experts, share knowledge, and master new skills in a vibrant community dedicated to mutual growth and success.
+                </p>
+
+                <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+                  <Link to="/register">
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      className="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 transition-colors duration-200"
+                    >
+                      Get Started Free
+                      <svg className="ml-2 -mr-1 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                      </svg>
+                    </motion.button>
+                  </Link>
+                  <Link to="/about">
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      className="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3 border-2 border-gray-200 text-base font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition-colors duration-200"
+                    >
+                      Learn More
+                      <svg className="ml-2 -mr-1 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                      </svg>
+                    </motion.button>
+                  </Link>
                 </div>
-              ))}
+
+                {/* Trust Indicators */}
+                <div className="mt-12 pt-8 border-t border-gray-100">
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-gray-900">10K+</div>
+                      <div className="mt-1 text-sm text-gray-500">Active Users</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-gray-900">4.9/5</div>
+                      <div className="mt-1 text-sm text-gray-500">User Rating</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-gray-900">50+</div>
+                      <div className="mt-1 text-sm text-gray-500">Skills</div>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+
+            {/* Image/Illustration Section */}
+            <motion.div
+              className="relative lg:block"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.4, duration: 0.8 }}
+            >
+              <div className="relative">
+                {/* Feature Cards */}
+                <div className="space-y-4">
+                  {[
+                    {
+                      icon: "💻",
+                      title: "Programming",
+                      desc: "Learn coding from experts",
+                      color: "bg-blue-50 border-blue-100",
+                    },
+                    {
+                      icon: "🎨",
+                      title: "Design",
+                      desc: "Master creative skills",
+                      color: "bg-purple-50 border-purple-100",
+                    },
+                    {
+                      icon: "🎵",
+                      title: "Music",
+                      desc: "Learn instruments online",
+                      color: "bg-pink-50 border-pink-100",
+                    },
+                  ].map((card, index) => (
+                    <motion.div
+                      key={index}
+                      className={`relative p-6 rounded-xl border ${card.color} backdrop-blur-sm`}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.6 + index * 0.2 }}
+                      whileHover={{ y: -5 }}
+                    >
+                      <div className="flex items-center gap-4">
+                        <span className="text-2xl">{card.icon}</span>
+                        <div>
+                          <h3 className="font-semibold text-gray-900">{card.title}</h3>
+                          <p className="text-sm text-gray-600">{card.desc}</p>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
             </motion.div>
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
       </motion.section>
 
       {/* Key Features Section */}
       <motion.section
-        className="py-24 bg-gradient-to-b from-[#F6F8FC] to-white relative overflow-hidden"
+        className="py-24 sm:py-32 lg:py-40 bg-gradient-to-b from-[#F6F8FC] via-white to-[#F8F9FF] relative overflow-hidden"
         variants={containerVariants}
         initial="hidden"
         animate="visible"
         exit="exit"
       >
-        {/* Background Elements */}
+        {/* Enhanced Background Elements */}
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-0 left-0 w-72 h-72 bg-purple-200/30 rounded-full filter blur-3xl"></div>
-          <div className="absolute bottom-0 right-0 w-96 h-96 bg-blue-200/30 rounded-full filter blur-3xl"></div>
+          <div className="absolute top-1/4 left-0 w-96 h-96 bg-purple-200/20 rounded-full filter blur-3xl transform rotate-12 animate-pulse"></div>
+          <div className="absolute bottom-1/4 right-0 w-96 h-96 bg-blue-200/20 rounded-full filter blur-3xl transform -rotate-12 animate-pulse"></div>
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[radial-gradient(circle_at_center,rgba(248,250,252,0.8)_0%,transparent_100%)]"></div>
         </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <motion.div className="text-center mb-20" variants={textVariants}>
-            <span className="inline-block px-4 py-1.5 mb-4 rounded-full bg-gradient-to-r from-blue-500/10 to-purple-500/10 text-blue-600 text-sm font-medium">
+          <motion.div 
+            className="text-center mb-24"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+          >
+            <motion.span 
+              className="inline-block px-4 py-1.5 mb-4 rounded-full bg-gradient-to-r from-blue-500/10 to-purple-500/10 text-blue-600 text-sm font-medium"
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.2 }}
+            >
               Explore Our Features
-            </span>
-            <h2 className="text-4xl md:text-5xl font-extrabold bg-clip-text text-gray-800 bg-gradient-to-r from-blue-600 to-purple-600 mb-4">
-              Key Features
+            </motion.span>
+            <h2 className="text-4xl md:text-5xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 via-blue-600 to-purple-600 mb-6">
+              Powerful Features for
+              <br />
+              Seamless Skill Exchange
             </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Discover what makes SkillXchange the perfect platform for your
-              learning journey
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
+              Experience a revolutionary way to learn and teach with our cutting-edge platform features
             </p>
           </motion.div>
 
           <motion.div
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-12"
             variants={staggerContainer}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
           >
             {[
               {
-                title: "Skill Matching",
-                description:
-                  "Advanced algorithm to connect you with perfect learning partners",
+                title: "AI-Powered Skill Matching",
+                description: "Our intelligent algorithm analyzes your profile to connect you with the perfect learning partners based on skill compatibility and learning goals.",
                 icon: "🤝",
                 gradient: "from-blue-500 to-indigo-500",
+                highlights: ["Smart Matching", "Compatibility Score", "Personalized Suggestions"]
               },
               {
-                title: "Virtual Classrooms",
-                description:
-                  "Interactive online spaces for seamless knowledge sharing",
+                title: "Interactive Virtual Classrooms",
+                description: "Engage in real-time learning sessions with HD video, screen sharing, and collaborative tools for an immersive learning experience.",
                 icon: "👨‍🏫",
                 gradient: "from-indigo-500 to-purple-500",
+                highlights: ["HD Video Calls", "Screen Sharing", "Interactive Whiteboard"]
               },
               {
-                title: "Skill Tracking",
-                description:
-                  "Monitor your progress and growth with detailed analytics",
+                title: "Advanced Skill Analytics",
+                description: "Track your progress with detailed analytics, skill growth metrics, and personalized learning recommendations.",
                 icon: "📊",
                 gradient: "from-purple-500 to-pink-500",
+                highlights: ["Progress Tracking", "Skill Metrics", "Growth Analysis"]
               },
               {
-                title: "Community Support",
-                description:
-                  "Connect with like-minded learners in our vibrant community",
+                title: "Thriving Community Hub",
+                description: "Join topic-specific groups, participate in discussions, and build lasting connections with fellow learners.",
                 icon: "👥",
                 gradient: "from-pink-500 to-rose-500",
+                highlights: ["Group Discussions", "Resource Sharing", "Community Events"]
               },
               {
-                title: "Flexible Schedule",
-                description:
-                  "Learn at your own pace with customizable time slots",
+                title: "Smart Scheduling System",
+                description: "Automatically find the perfect time slots that work for both parties across different time zones.",
                 icon: "⏰",
                 gradient: "from-rose-500 to-orange-500",
+                highlights: ["timezone", "Calendar Sync", "Smart Reminders"]
               },
               {
-                title: "Verified Reviews",
-                description:
-                  "Transparent feedback system for quality assurance",
+                title: "Trust & Verification",
+                description: "Our comprehensive review system and skill verification process ensures quality learning experiences.",
                 icon: "⭐",
                 gradient: "from-orange-500 to-yellow-500",
+                highlights: ["Verified Reviews", "Skill Badges", "Trust Score"]
               },
             ].map((feature, index) => (
               <motion.div
                 key={index}
                 variants={cardVariants}
-                initial="hidden"
-                whileInView="visible"
                 whileHover="hover"
                 whileTap="tap"
-                viewport={{ once: true }}
-                className="group relative bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-500 overflow-hidden border border-gray-100"
+                className="group relative bg-white rounded-2xl p-8 shadow-xl hover:shadow-2xl transition-all duration-500 overflow-hidden border border-gray-100"
               >
-                {/* Gradient Background on Hover */}
-                <div
-                  className="absolute inset-0 bg-gradient-to-r opacity-0 group-hover:opacity-5 transition-opacity duration-300"
+                {/* Gradient Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-5 transition-opacity duration-500"
                   style={{
-                    backgroundImage: `linear-gradient(to right, var(--tw-gradient-stops))`,
+                    backgroundImage: `linear-gradient(to bottom right, var(--tw-gradient-stops))`,
                     "--tw-gradient-from": "#3B82F6",
                     "--tw-gradient-to": "#8B5CF6",
                   }}
                 ></div>
 
-                {/* Content */}
-                <div className="relative z-10">
-                  <div
-                    className={`w-16 h-16 mb-6 rounded-xl bg-gradient-to-r ${feature.gradient} p-0.5`}
-                  >
-                    <div className="w-full h-full bg-white rounded-[10px] flex items-center justify-center">
-                      <span className="text-3xl transform group-hover:scale-110 transition-transform duration-300">
-                        {feature.icon}
-                      </span>
-                    </div>
+                {/* Icon Container */}
+                <div className={`w-16 h-16 mb-6 rounded-2xl bg-gradient-to-br ${feature.gradient} p-0.5 transform group-hover:scale-110 transition-transform duration-500`}>
+                  <div className="w-full h-full bg-white rounded-xl flex items-center justify-center text-3xl">
+                    {feature.icon}
                   </div>
+                </div>
 
-                  <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-blue-600 transition-colors duration-300">
-                    {feature.title}
-                  </h3>
+                {/* Content */}
+                <h3 className="text-xl font-bold text-gray-900 mb-4 group-hover:text-blue-600 transition-colors duration-300">
+                  {feature.title}
+                </h3>
 
-                  <p className="text-gray-600 group-hover:text-gray-700 transition-colors duration-300">
-                    {feature.description}
-                  </p>
+                <p className="text-gray-600 mb-6 group-hover:text-gray-700 transition-colors duration-300">
+                  {feature.description}
+                </p>
+
+                {/* Highlights */}
+                <div className="space-y-2">
+                  {feature.highlights.map((highlight, idx) => (
+                    <div key={idx} className="flex items-center text-sm text-gray-500 group-hover:text-gray-600">
+                      <span className="mr-2 text-blue-500">✓</span>
+                      {highlight}
+                    </div>
+                  ))}
                 </div>
               </motion.div>
             ))}
@@ -426,139 +366,275 @@ function HomePage() {
 
       {/* How It Works Section */}
       <motion.section
-        className="relative bg-gradient-to-br from-[#F8F9FF] to-white py-32 px-6 md:px-12 lg:px-24 overflow-hidden"
+        className="relative bg-gradient-to-br from-[#F8F9FF] via-white to-[#F6F8FC] py-16 sm:py-24 lg:py-32 overflow-hidden"
         variants={containerVariants}
+        initial="hidden"
         animate="visible"
         exit="exit"
       >
-        <motion.div
-          className="text-center relative z-10 mb-24"
-          variants={textVariants}
-        >
-          <span className="inline-block px-4 py-1.5 rounded-full bg-gradient-to-r from-blue-500/10 to-purple-500/10 text-blue-600 text-sm font-medium mb-4">
-            How It Works
-          </span>
-          <h2 className="text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600 mb-4">
-            Swap Skills, Grow Together!
-          </h2>
-          <p className="text-lg text-gray-600">
-            Follow these simple steps to get started
-          </p>
-        </motion.div>
+        {/* Enhanced Background Elements with SVG Patterns */}
+        <div className="absolute inset-0">
+          <div className="absolute inset-0 bg-[url('/patterns/dots.svg')] opacity-[0] bg-repeat"></div>
+          <div className="absolute bottom-0 left-0 right-0 h-64">
+            <img src="/patterns/wave.svg" alt="" className="w-full h-full object-cover opacity-50" />
+          </div>
+          <div className="absolute top-1/4 -left-32 w-64 h-64">
+            <img src="/patterns/blob.svg" alt="" className="w-full h-full object-contain opacity-30 animate-float" />
+          </div>
+          <div className="absolute bottom-1/4 -right-32 w-64 h-64 transform rotate-180">
+            <img src="/patterns/blob.svg" alt="" className="w-full h-full object-contain opacity-30 animate-float-delayed" />
+          </div>
+          <div className="absolute inset-0 bg-gradient-to-b from-white/60 via-transparent to-white/60"></div>
+        </div>
 
-        {/* Journey Steps Container */}
-        <div className="max-w-7xl mx-auto relative">
-          {/* Steps */}
+        <style>
+          {`
+            @keyframes float {
+              0%, 100% { transform: translateY(0px); }
+              50% { transform: translateY(-20px); }
+            }
+            @keyframes float-delayed {
+              0%, 100% { transform: translateY(0px) rotate(180deg); }
+              50% { transform: translateY(-20px) rotate(180deg); }
+            }
+            .animate-float {
+              animation: float 6s ease-in-out infinite;
+            }
+            .animate-float-delayed {
+              animation: float-delayed 6s ease-in-out infinite;
+              animation-delay: 3s;
+            }
+          `}
+        </style>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <motion.div
-            className="space-y-16 relative z-10"
-            variants={staggerContainer}
+            className="text-center mb-24"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
           >
+            <motion.span
+              className="inline-block px-4 py-1.5 rounded-full bg-gradient-to-r from-blue-500/10 to-purple-500/10 text-blue-600 text-sm font-medium mb-4"
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.2 }}
+            >
+              Your Path to Success
+            </motion.span>
+            <h2 className="text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 via-blue-600 to-purple-600 mb-6">
+              How SkillXchange Works
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+              Follow these simple steps to embark on your learning journey and unlock your full potential
+            </p>
+          </motion.div>
+
+          {/* Modern Journey Steps */}
+          <div className="relative">
+            {/* Enhanced Connection Line */}
+            <div className="absolute left-1/2 top-0 bottom-0 w-0.5 bg-gradient-to-b from-blue-200 via-purple-200 to-pink-200 hidden lg:block transform translate-x-[-50%]">
+              <div className="absolute top-0 left-1/2 w-3 h-3 bg-blue-400 rounded-full transform -translate-x-1/2 animate-bounce"></div>
+              <div className="absolute bottom-0 left-1/2 w-3 h-3 bg-pink-400 rounded-full transform -translate-x-1/2 animate-bounce"></div>
+            </div>
+
             {[
               {
                 step: "01",
-                title: "Sign Up & Create a Profile",
+                title: "Create Your Profile",
+                description: "Start your journey by creating a personalized profile that showcases your skills and learning aspirations.",
                 icon: "🚀",
-                color: "from-indigo-500 to-violet-500",
+                color: "from-blue-500 to-indigo-500",
                 details: [
-                  "Register with your email or Google account",
-                  "Set up your profile with skills you offer and skills you want to learn",
-                  "Add a profile picture and location for better connections",
+                  { icon: "📝", text: "Quick sign-up with email or Google" },
+                  { icon: "🎯", text: "Add skills you want to learn and teach" },
+                  { icon: "📸", text: "Upload profile photo and set preferences" }
                 ],
+                image: "/images/steps/create-profile.svg",
+                stats: [
+                  { value: "2 min", label: "Setup Time" },
+                  { value: "100%", label: "Free" }
+                ]
               },
               {
                 step: "02",
-                title: "Explore & Find Matches",
+                title: "Discover Perfect Matches",
+                description: "Our AI-powered matching system connects you with ideal learning partners based on your goals and preferences.",
                 icon: "🔍",
-                color: "from-violet-500 to-purple-500",
+                color: "from-indigo-500 to-purple-500",
                 details: [
-                  "Browse through other users' profiles based on skills",
-                  "Use smart filters to find the perfect match",
-                  "View user ratings, reviews, and compatibility scores",
+                  { icon: "🤝", text: "Browse compatible skill partners" },
+                  { icon: "⚡", text: "Use advanced filters for better matches" },
+                  { icon: "👥", text: "View detailed user profiles and ratings" }
                 ],
+                image: "/images/steps/discover-matches.svg",
+                stats: [
+                  { value: "93%", label: "Match Rate" },
+                  { value: "24/7", label: "Available" }
+                ]
               },
               {
                 step: "03",
-                title: "Connect & Chat",
+                title: "Connect & Schedule",
+                description: "Easily connect with your matches and schedule convenient learning sessions that fit your schedule.",
                 icon: "💬",
-                color: "from-purple-500 to-fuchsia-500",
+                color: "from-purple-500 to-pink-500",
                 details: [
-                  "Send a connection request to users you want to swap skills with",
-                  "Use the built-in chat feature to discuss learning preferences and schedules",
-                  "Schedule sessions online or in person",
+                  { icon: "✉️", text: "Send personalized connection requests" },
+                  { icon: "💭", text: "Chat and discuss learning goals" },
+                  { icon: "📅", text: "Schedule convenient learning sessions" }
                 ],
+                image: "/images/steps/connect-schedule.svg",
+                stats: [
+                  { value: "1-Click", label: "Scheduling" },
+                  { value: "Global", label: "Coverage" }
+                ]
               },
               {
                 step: "04",
-                title: "Start Learning & Teaching",
+                title: "Learn & Share Knowledge",
+                description: "Engage in interactive learning sessions using our suite of collaborative tools and features.",
                 icon: "📚",
-                color: "from-fuchsia-500 to-pink-500",
+                color: "from-pink-500 to-rose-500",
                 details: [
-                  "Engage in skill-swapping sessions with your matched partners",
-                  "Exchange knowledge in a fun, interactive way",
-                  "Track your progress and get feedback",
+                  { icon: "🎓", text: "Engage in interactive learning sessions" },
+                  { icon: "🎯", text: "Share your expertise with others" },
+                  { icon: "🛠️", text: "Use built-in learning tools" }
                 ],
+                image: "/images/steps/learn-share.svg",
+                stats: [
+                  { value: "HD", label: "Video Quality" },
+                  { value: "Live", label: "Interaction" }
+                ]
               },
               {
                 step: "05",
-                title: "Earn Badges & Grow Your Network",
+                title: "Grow & Achieve",
+                description: "Track your progress, earn recognition, and build lasting connections in our community.",
                 icon: "🏆",
-                color: "from-pink-500 to-rose-500",
+                color: "from-rose-500 to-orange-500",
                 details: [
-                  "Complete sessions to earn credibility and badges",
-                  "Get positive reviews and level up your profile",
-                  "Keep expanding your skills and connections",
+                  { icon: "📊", text: "Track your learning progress" },
+                  { icon: "🎖️", text: "Earn skill badges and certifications" },
+                  { icon: "🌐", text: "Build your professional network" }
                 ],
-              },
+                image: "/images/steps/grow-achieve.svg",
+                stats: [
+                  { value: "∞", label: "Growth" },
+                  { value: "Real", label: "Results" }
+                ]
+              }
             ].map((step, index) => (
               <motion.div
                 key={index}
-                className="relative"
-                variants={{
-                  hidden: { opacity: 0, y: 20 },
-                  visible: { opacity: 1, y: 0 },
-                }}
+                className="relative mb-16 last:mb-0" // Reduced margin bottom from mb-20
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.8, delay: index * 0.2 }}
               >
-                <div
-                  className={`bg-white rounded-2xl p-8 shadow-xl hover:shadow-2xl transition-all duration-500 lg:w-[60%] ${
-                    index % 2 === 0 ? "lg:ml-0" : "lg:ml-[40%]"
-                  }`}
-                >
-                  {/* Step Number & Icon */}
-                  <div className="flex items-center gap-4 mb-6">
-                    <div
-                      className={`w-12 h-12 rounded-xl bg-gradient-to-r ${step.color} flex items-center justify-center text-2xl shadow-lg`}
+                <div className={`flex flex-col lg:flex-row items-center gap-4 lg:gap-8 ${
+                  index % 2 === 0 ? 'lg:flex-row' : 'lg:flex-row-reverse'
+                }`}>
+                  {/* Enhanced Content Side */}
+                  <div className="lg:w-1/2">
+                    <motion.div 
+                      className="bg-white rounded-lg p-5 shadow-lg hover:shadow-xl transition-all duration-500"
+                      whileHover={{ y: -2 }}
                     >
-                      {step.icon}
-                    </div>
-                    <div className="flex flex-col">
-                      <span className="text-sm font-medium text-gray-500">
-                        Step {step.step}
-                      </span>
-                      <h3 className="text-xl font-bold text-gray-900">
-                        {step.title}
-                      </h3>
-                    </div>
+                      {/* Step Header */}
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${step.color} p-0.5 transform hover:scale-105 transition-transform duration-500`}>
+                          <div className="w-full h-full bg-white rounded-lg flex items-center justify-center text-xl">
+                            {step.icon}
+                          </div>
+                        </div>
+                        <div>
+                          <span className="text-xs font-medium text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">Step {step.step}</span>
+                          <h3 className="text-lg font-bold text-gray-900 mt-0.5">{step.title}</h3>
+                        </div>
+                      </div>
+
+                      {/* Description */}
+                      <p className="text-sm text-gray-600 mb-3 leading-relaxed">
+                        {step.description}
+                      </p>
+
+                      {/* Enhanced Details */}
+                      <ul className="space-y-1.5 mb-3">
+                        {step.details.map((detail, idx) => (
+                          <motion.li 
+                            key={idx} 
+                            className="flex items-center gap-2 p-1.5 rounded-lg hover:bg-gray-50 transition-colors duration-300"
+                            whileHover={{ x: 2 }}
+                          >
+                            <span className="text-base">{detail.icon}</span>
+                            <span className="text-sm text-gray-700">{detail.text}</span>
+                          </motion.li>
+                        ))}
+                      </ul>
+
+                      {/* Stats */}
+                      <div className="grid grid-cols-2 gap-2 pt-3 border-t border-gray-100">
+                        {step.stats.map((stat, idx) => (
+                          <div key={idx} className="text-center">
+                            <div className="text-base font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                              {stat.value}
+                            </div>
+                            <div className="text-xs text-gray-500">{stat.label}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </motion.div>
                   </div>
 
-                  {/* Details */}
-                  <ul className="space-y-3">
-                    {step.details.map((detail, idx) => (
-                      <li key={idx} className="flex items-start gap-2">
-                        <span className="text-indigo-500 mt-1">🔹</span>
-                        <span className="text-gray-600">{detail}</span>
-                      </li>
-                    ))}
-                  </ul>
+                  {/* Enhanced Image Side - Updated sizing */}
+                  <div className="lg:w-1/2">
+                    <motion.div 
+                      className="relative rounded-lg overflow-hidden bg-white p-4 shadow-lg group hover:shadow-xl transition-all duration-500"
+                      whileHover={{ scale: 1.01 }}
+                    >
+                      {/* SVG Container with reduced aspect ratio */}
+                      <div className="relative w-full aspect-[3/2] bg-gradient-to-br from-gray-50 to-white rounded-lg overflow-hidden">
+                        <img
+                          src={step.image}
+                          alt={step.title}
+                          className="w-full h-full object-contain p-2 transform group-hover:scale-102 transition-transform duration-700"
+                        />
+                        
+                        {/* Floating Labels */}
+                        <div className="absolute top-2 left-2 bg-white/90 backdrop-blur-sm px-2 py-0.5 rounded-full text-xs font-medium text-blue-600 opacity-0 group-hover:opacity-100 transform -translate-y-2 group-hover:translate-y-0 transition-all duration-300">
+                          {step.title}
+                        </div>
+                        <div className="absolute bottom-2 right-2 bg-white/90 backdrop-blur-sm px-2 py-0.5 rounded-full text-xs font-medium text-purple-600 opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300">
+                          Step {step.step}/05
+                        </div>
+                      </div>
+
+                      {/* Decorative Elements - Reduced size */}
+                      <div className="absolute -bottom-2 -right-2 w-12 h-12 bg-gradient-to-br from-blue-400/20 to-purple-400/20 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                      <div className="absolute -top-2 -left-2 w-12 h-12 bg-gradient-to-br from-purple-400/20 to-pink-400/20 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    </motion.div>
+                  </div>
                 </div>
+
+                {/* Step Connector - Enhanced */}
+                {index < 4 && (
+                  <div className="hidden lg:block absolute left-1/2 bottom-0 transform -translate-x-1/2 translate-y-1/2">
+                    <div className="w-px h-8 bg-gradient-to-b from-blue-200 to-transparent"></div>
+                  </div>
+                )}
               </motion.div>
             ))}
-          </motion.div>
+          </div>
         </div>
       </motion.section>
 
       {/* Call to action */}
       <motion.section
-        className="relative bg-gradient-to-br from-[#F6F8FC] via-white to-[#F8F9FF] py-20 px-8 md:px-16 lg:px-24 text-gray-700"
+        className="relative bg-gradient-to-br from-[#F6F8FC] via-white to-[#F8F9FF] py-16 sm:py-20 px-3 sm:px-4 md:px-6 lg:px-8 xl:px-12 text-gray-700"
         whileInView={{ opacity: 1, y: 0 }}
         initial={{ opacity: 0, y: 50 }}
         transition={{ duration: 0.7 }}
@@ -579,7 +655,7 @@ function HomePage() {
             <Link to="/login">
               <motion.button
                 whileHover={{ scale: 1.1 }}
-                className="bg-blue-400 text-white px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition duration-300"
+                className="bg-blue-400 text-white px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition duration: 300"
               >
                 Get Started
               </motion.button>
