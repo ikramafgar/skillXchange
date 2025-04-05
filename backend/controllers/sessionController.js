@@ -18,25 +18,32 @@ export const createSession = async (req, res) => {
       duration,
       mode,
       location,
+      price, // New price field
       isRecurring,
       recurrencePattern,
     } = req.body;
 
     const userId = req.userId;
 
-    // Determine teacher and learner IDs based on the user's role
-    let teacherId, learnerId;
-    if (userRole === "teacher") {
-      teacherId = userId;
-      learnerId = otherUserId;
-    } else if (userRole === "learner") {
-      teacherId = otherUserId;
-      learnerId = userId;
-    } else {
-      console.log("DEBUG - INVALID ROLE: User provided invalid role", userRole);
+    // Ensure that only teachers can create sessions
+    if (userRole !== "teacher") {
+      console.log("DEBUG - INVALID ROLE: Only teachers can create sessions, received:", userRole);
       return res
-        .status(400)
-        .json({ message: 'Invalid role. Must be "teacher" or "learner"' });
+        .status(403)
+        .json({ message: 'Only teachers can create sessions' });
+    }
+
+    // Determine teacher and learner IDs based on the user's role
+    const teacherId = userId;
+    const learnerId = otherUserId;
+
+    // Validate price field
+    let sessionPrice = 0;
+    if (price !== undefined) {
+      sessionPrice = Number(price);
+      if (isNaN(sessionPrice) || sessionPrice < 0) {
+        return res.status(400).json({ message: "Invalid price. Price must be a non-negative number." });
+      }
     }
 
     // Convert startTime and endTime strings to Date objects
@@ -105,6 +112,8 @@ export const createSession = async (req, res) => {
       duration,
       mode,
       location,
+      price: sessionPrice,
+      isPaid: sessionPrice === 0, // Mark as paid if it's free
       meetingLink: zoomMeetingDetails?.joinUrl || null,
       isRecurring,
       recurrencePattern,

@@ -74,6 +74,23 @@ const profileSchema = new mongoose.Schema(
       enum: ['teacher', 'learner', 'both'],
       default: 'learner',
     },
+    hourlyRate: {
+      type: Number,
+      min: 0,
+      default: 0
+    },
+    learningBudget: {
+      type: Number,
+      min: 0,
+      default: 0
+    },
+    // Bank account details for payment processing
+    bankDetails: {
+      accountHolderName: { type: String },
+      bankName: { type: String },
+      accountNumber: { type: String },
+      iban: { type: String }
+    },
     availability: [{
       day: { 
         type: String, 

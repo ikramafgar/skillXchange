@@ -11,6 +11,8 @@ const initialState = {
     badges: [], // Add badges to initial state
     coursesEnrolled: 0, // Add coursesEnrolled to initial state
     achievements: [], // Add achievements to initial state
+    hourlyRate: 0, // Add hourlyRate to initial state
+    learningBudget: 0, // Add learningBudget to initial state
 };
 
 const actions = (set, get) => ({

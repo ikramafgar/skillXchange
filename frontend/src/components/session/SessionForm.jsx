@@ -4,6 +4,7 @@ import { useAuthStore } from '../../store/authStore';
 import { useProfileStore } from '../../store/ProfileStore';
 import { format } from 'date-fns';
 import { toast } from 'react-hot-toast';
+import customAxios from '../../utils/axios';
 
 // UI Components - using Tailwind CSS
 const SessionForm = ({ onSuccess, matchDetails = null, teacherId = null, learnerId = null, skillId = null }) => {
@@ -27,6 +28,7 @@ const SessionForm = ({ onSuccess, matchDetails = null, teacherId = null, learner
     startTime: '12:00',
     duration: '60', // 1 hour default
     location: '',
+    price: '0', // Default to free
     isRecurring: false,
     frequency: 'weekly',
     interval: '1',
@@ -35,6 +37,9 @@ const SessionForm = ({ onSuccess, matchDetails = null, teacherId = null, learner
     selectedSkillId: '',
     teachingRole: 'teacher' // Default role: 'teacher' or 'learner'
   });
+  
+  // Check if user can schedule (has role of teacher or both)
+  const canSchedule = profile?.role === 'teacher' || profile?.role === 'both';
   
   // Check authentication status when component mounts
   useEffect(() => {
@@ -50,7 +55,7 @@ const SessionForm = ({ onSuccess, matchDetails = null, teacherId = null, learner
     return () => clearError();
   }, [clearError]);
   
-  // Set initial values if provided
+  // Fetch skills and connections when component mounts
   useEffect(() => {
     if (matchDetails) {
       // If match details are provided, prefill the form
@@ -79,22 +84,28 @@ const SessionForm = ({ onSuccess, matchDetails = null, teacherId = null, learner
     // Fetch skills and connections
     fetchSkills();
     fetchConnections();
-  }, [matchDetails, teacherId, learnerId, skillId, user?._id, profile]);
+    
+    // Retry fetching connections after 1 second if there was an issue
+    const retryTimer = setTimeout(() => {
+      if (connections.length === 0 && isAuthenticated) {
+        console.log('No connections found on initial load, retrying...');
+        fetchConnections();
+      }
+    }, 1000);
+    
+    return () => clearTimeout(retryTimer);
+  }, [matchDetails, teacherId, learnerId, skillId, user?._id, profile, isAuthenticated]);
   
   // Fetch skills from backend API
   const fetchSkills = async () => {
     setIsLoadingSkills(true);
     try {
-      const response = await fetch('/api/skills', {
-        credentials: 'include'
-      });
+      const skillsResponse = await customAxios.get('/api/skills');
       
-      const data = await response.json();
-      
-      if (response.ok && Array.isArray(data.skills)) {
-        setSkills(data.skills);
+      if (skillsResponse.data?.skills && Array.isArray(skillsResponse.data.skills)) {
+        setSkills(skillsResponse.data.skills);
       } else {
-        console.error('Failed to fetch skills:', data.message || 'Unknown error');
+        console.error('Failed to fetch skills:', skillsResponse.data?.message || 'Unknown error');
         setSkills([]);
       }
     } catch (error) {
@@ -109,21 +120,30 @@ const SessionForm = ({ onSuccess, matchDetails = null, teacherId = null, learner
   const fetchConnections = async () => {
     setIsLoadingConnections(true);
     try {
-      const response = await fetch('/api/users/connections', {
-        credentials: 'include'
-      });
+      console.log('Fetching connections from /api/users');
+      // Use customAxios for consistent auth headers
+      const response = await customAxios.get('/api/users');
       
-      const data = await response.json();
+      console.log('API Response from /api/users:', response.data);
       
-      if (response.ok && Array.isArray(data.connections)) {
-        setConnections(data.connections);
+      if (Array.isArray(response.data)) {
+        console.log('Connected users fetched successfully. Count:', response.data.length);
+        // Log the first user to see its structure
+        if (response.data.length > 0) {
+          console.log('Sample user format:', JSON.stringify(response.data[0], null, 2));
+        }
+        setConnections(response.data.map(user => ({
+          _id: user._id,
+          user: user // Maintain the expected structure for the dropdown
+        })));
       } else {
-        console.error('Failed to fetch connections:', data.message || 'Unknown error');
+        console.error('Failed to fetch connections: Unexpected response format');
         setConnections([]);
       }
     } catch (error) {
-      console.error('Error fetching connections:', error);
+      console.error('Error fetching connections:', error.response?.data || error.message);
       setConnections([]);
+      toast.error('Failed to load connections. Please try again.');
     } finally {
       setIsLoadingConnections(false);
     }
@@ -146,13 +166,13 @@ const SessionForm = ({ onSuccess, matchDetails = null, teacherId = null, learner
     }
   };
   
-  // Handle role change
-  const handleRoleChange = (role) => {
-    setFormData(prev => ({
-      ...prev,
-      teachingRole: role
-    }));
-  };
+  // // Handle role change
+  // const handleRoleChange = (role) => {
+  //   setFormData(prev => ({
+  //     ...prev,
+  //     teachingRole: role
+  //   }));
+  // };
   
   // Validate form
   const validateForm = () => {
@@ -166,6 +186,12 @@ const SessionForm = ({ onSuccess, matchDetails = null, teacherId = null, learner
       if (!formData.description.trim()) errors.description = 'Description is required';
       if (formData.mode === 'in-person' && !formData.location.trim()) {
         errors.location = 'Location is required for in-person sessions';
+      }
+      
+      // Validate price
+      const price = Number(formData.price);
+      if (isNaN(price) || price < 0) {
+        errors.price = 'Price must be a non-negative number';
       }
     }
     
@@ -245,6 +271,7 @@ const SessionForm = ({ onSuccess, matchDetails = null, teacherId = null, learner
         duration: Number(formData.duration),
         mode: formData.mode,
         location: formData.mode === 'in-person' ? formData.location : null,
+        price: Number(formData.price),
         isRecurring: formData.isRecurring,
         recurrencePattern: formData.isRecurring ? {
           frequency: formData.frequency,
@@ -270,6 +297,7 @@ const SessionForm = ({ onSuccess, matchDetails = null, teacherId = null, learner
         startTime: '12:00',
         duration: '60',
         location: '',
+        price: '0',
         isRecurring: false,
         frequency: 'weekly',
         interval: '1',
@@ -335,6 +363,27 @@ const SessionForm = ({ onSuccess, matchDetails = null, teacherId = null, learner
     );
   }
   
+  // If user is a learner only, show message that they cannot schedule sessions
+  if (!canSchedule) {
+    return (
+      <div className="bg-white rounded-xl shadow-sm p-6 max-w-2xl mx-auto border border-gray-100">
+        <div className="text-center py-8">
+          <h2 className="text-2xl font-medium text-gray-800 mb-4">Cannot Schedule Sessions</h2>
+          <div className="bg-amber-50 border border-amber-200 text-amber-700 px-4 py-3 rounded-lg mb-6">
+            <p>Only teachers can schedule teaching sessions. Your current role is set to &quot;Learner&quot;.</p>
+            <p className="mt-2">To schedule sessions, please update your profile to set your role as &quot;Teacher&quot; or &quot;Both&quot;.</p>
+          </div>
+          <a
+            href="/profile"
+            className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-lg shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
+          >
+            Update Profile
+          </a>
+        </div>
+      </div>
+    );
+  }
+  
   return (
     <div className="bg-white rounded-xl shadow-sm p-6 max-w-2xl mx-auto">
       <h2 className="text-2xl font-medium text-gray-800 mb-6">Schedule a Session</h2>
@@ -368,21 +417,46 @@ const SessionForm = ({ onSuccess, matchDetails = null, teacherId = null, learner
                     disabled={!!matchDetails} // Disable if match details provided
                   >
                     <option value="">Select a connection</option>
-                    {connections.map((connection) => (
-                      <option key={connection._id} value={connection.user._id}>
-                        {connection.user.name}
+                    {connections.length > 0 ? (
+                      connections.map((connection) => {
+                        // Safely access the user property (which is now the full user object)
+                        const userId = connection?.user?._id;
+                        const userName = connection?.user?.name || 'Unknown User';
+                        
+                        if (!userId) {
+                          console.warn('Missing user ID for connection:', connection);
+                          return null;
+                        }
+                        
+                        return (
+                          <option key={connection._id} value={userId}>
+                            {userName}
+                          </option>
+                        );
+                      })
+                    ) : (
+                      <option value="" disabled>
+                        {isLoadingConnections ? 'Loading connections...' : 'No connections available'}
                       </option>
-                    ))}
+                    )}
                   </select>
                 )}
                 {formErrors.selectedUserId && (
                   <p className="text-red-500 text-sm mt-1">{formErrors.selectedUserId}</p>
                 )}
+                {!isLoadingConnections && connections.length === 0 && (
+                  <div className="mt-2 p-2 bg-amber-50 text-amber-800 rounded-md text-xs border border-amber-100">
+                    <p>You don&apos;t have any connections yet. Connect with other users on the Connections page to schedule sessions with them.</p>
+                    <a href="/connections" className="text-blue-600 hover:underline font-medium mt-1 inline-block">
+                      Go to Connections
+                    </a>
+                  </div>
+                )}
               </div>
             </div>
             
             {/* Your role selection */}
-            <div>
+            {/* <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Your Role
               </label>
@@ -411,29 +485,26 @@ const SessionForm = ({ onSuccess, matchDetails = null, teacherId = null, learner
                 </div>
                 
                 <div 
-                  onClick={() => handleRoleChange('learner')}
-                  className={`flex-1 p-3.5 border rounded-lg cursor-pointer transition-all duration-200 ${
-                    formData.teachingRole === 'learner' 
-                      ? 'border-blue-500 bg-blue-50 shadow-sm' 
-                      : 'border-gray-200 hover:bg-gray-50'
-                  }`}
+                  className="flex-1 p-3.5 border rounded-lg cursor-not-allowed bg-gray-50 opacity-60"
                 >
                   <div className="flex items-center space-x-3">
                     <input 
                       type="radio" 
                       name="teachingRole" 
-                      checked={formData.teachingRole === 'learner'} 
-                      onChange={() => {}} 
-                      className="h-4 w-4 text-blue-600"
+                      disabled
+                      className="h-4 w-4 text-gray-400"
                     />
                     <div>
-                      <p className="font-medium text-gray-800">Learner</p>
-                      <p className="text-xs text-gray-500">I will learn in this session</p>
+                      <p className="font-medium text-gray-500">Learner</p>
+                      <p className="text-xs text-gray-500">Only teachers can create sessions</p>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
+              <div className="mt-2 text-xs text-amber-600 bg-amber-50 p-2 rounded-lg border border-amber-100">
+                <p>Note: Only users in the teacher role can create sessions. Learners can join sessions created by teachers.</p>
+              </div>
+            </div> */}
             
             {/* Skill selection */}
             <div>
@@ -514,6 +585,23 @@ const SessionForm = ({ onSuccess, matchDetails = null, teacherId = null, learner
                 <option value="hybrid">Hybrid</option>
               </select>
               {formErrors.mode && <p className="text-red-500 text-sm mt-1">{formErrors.mode}</p>}
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Session Price (PKR)
+              </label>
+              <input
+                type="number"
+                name="price"
+                value={formData.price}
+                onChange={handleChange}
+                min="0"
+                className={`w-full px-3 py-2.5 border ${formErrors.price ? 'border-red-300 ring-1 ring-red-300' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors`}
+                placeholder="0 for free sessions"
+              />
+              {formErrors.price && <p className="text-red-500 text-sm mt-1">{formErrors.price}</p>}
+              <p className="text-xs text-gray-500 mt-1">Enter 0 for free sessions, or set your hourly rate in PKR.</p>
             </div>
             
             {(formData.mode === 'in-person' || formData.mode === 'hybrid') && (

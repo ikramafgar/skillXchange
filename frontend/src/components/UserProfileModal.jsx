@@ -4,7 +4,8 @@ import { motion } from 'framer-motion';
 import { 
   UserCheck, Mail, Phone, MapPin, Lightbulb, Book, 
   Award, Briefcase, Calendar, Clock, MessageSquare,
-  X, ExternalLink, Facebook, Twitter, Linkedin, Github, Globe
+  X, ExternalLink, Facebook, Twitter, Linkedin, Github, Globe,
+  DollarSign
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { useProfileStore } from '../store/ProfileStore';
@@ -123,6 +124,19 @@ export default function UserProfileModal({
                       <Lightbulb className="w-5 h-5 text-amber-600 mr-2" />
                       <h3 className="font-medium text-gray-900">Skills Teaching</h3>
                     </div>
+                    
+                    {/* Show hourly rate */}
+                    {typeof displayData.hourlyRate !== 'undefined' && (
+                      <div className="mb-3 flex items-center px-3 py-1.5 bg-white text-amber-800 rounded-lg border border-amber-200 w-fit">
+                        <DollarSign className="w-4 h-4 mr-1 text-amber-600" />
+                        <span className="font-medium">
+                          {displayData.hourlyRate > 0 
+                            ? `${displayData.hourlyRate} PKR/hour` 
+                            : "Teaching for free"}
+                        </span>
+                      </div>
+                    )}
+                    
                     <div className="flex flex-wrap gap-2">
                       {displayData.skillsToTeach.map((skillItem, index) => {
                         const skillName = skillItem.skill?.name || skillItem.name || skillItem;
@@ -153,6 +167,19 @@ export default function UserProfileModal({
                       <Book className="w-5 h-5 text-blue-600 mr-2" />
                       <h3 className="font-medium text-gray-900">Skills Learning</h3>
                     </div>
+                    
+                    {/* Show learning budget */}
+                    {typeof displayData.learningBudget !== 'undefined' && (
+                      <div className="mb-3 flex items-center px-3 py-1.5 bg-white text-blue-800 rounded-lg border border-blue-200 w-fit">
+                        <DollarSign className="w-4 h-4 mr-1 text-blue-600" />
+                        <span className="font-medium">
+                          {displayData.learningBudget > 0 
+                            ? `Budget: ${displayData.learningBudget} PKR/hour` 
+                            : "Looking for free sessions"}
+                        </span>
+                      </div>
+                    )}
+                    
                     <div className="flex flex-wrap gap-2">
                       {displayData.skillsToLearn.map((skillItem, index) => {
                         const skillName = skillItem.skill?.name || skillItem.name || skillItem;

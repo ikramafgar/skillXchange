@@ -4,6 +4,7 @@ import { useSessionStore } from '../store/sessionStore';
 import { useAuthStore } from '../store/authStore';
 import { format, parseISO, differenceInMinutes, isBefore, isAfter } from 'date-fns';
 import { toast } from 'react-hot-toast';
+import { DollarSign, CreditCard } from 'lucide-react';
 
 const SessionDetailPage = () => {
   const { sessionId } = useParams();
@@ -136,6 +137,22 @@ const SessionDetailPage = () => {
     } finally {
       setIsRefreshingZoom(false);
     }
+  };
+  
+  // Handle payment
+  const handlePayment = () => {
+    // This is a placeholder - will be replaced with actual payment implementation later
+    toast.success("Redirecting to payment page...");
+    // Future implementation will redirect to payment gateway or process payment
+    // For now, we'll just show a toast
+    
+    // Simulating redirection to a payment page
+    setTimeout(() => {
+      toast("Payment functionality will be implemented soon", {
+        icon: '💳',
+        duration: 4000,
+      });
+    }, 1500);
   };
   
   // Determine if session is active (can join now)
@@ -292,6 +309,30 @@ const SessionDetailPage = () => {
                   <div>
                     <p className="text-sm font-medium text-gray-500">Duration</p>
                     <p className="mt-1">{currentSession.duration} minutes</p>
+                  </div>
+                </div>
+                
+                {/* Price Information */}
+                <div className="flex items-start">
+                  <DollarSign className="w-4 h-4 text-gray-400 mt-0.5 mr-2 flex-shrink-0" />
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">Price</p>
+                    <div className="flex items-center mt-1">
+                      <span className="font-medium">
+                        {currentSession.price > 0 
+                          ? `${currentSession.price} PKR/hr` 
+                          : "Free Session"}
+                      </span>
+                      {currentSession.price > 0 && (
+                        <span className={`ml-2 px-2 py-0.5 text-xs rounded-full ${
+                          currentSession.isPaid 
+                          ? "bg-green-100 text-green-700" 
+                          : "bg-amber-100 text-amber-700"
+                        }`}>
+                          {currentSession.isPaid ? "Paid" : "Payment Required"}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
                 
@@ -525,7 +566,20 @@ const SessionDetailPage = () => {
                     Cancel Session
                   </button>
                   
-                  {currentSession.status === 'scheduled' && (currentSession.mode === 'online' || currentSession.mode === 'hybrid') && (currentSession.meetingLink || zoomMeetingDetails?.joinUrl) && (
+                  {/* Payment button - Only for learners with unpaid sessions */}
+                  {isLearner && currentSession.price > 0 && !currentSession.isPaid && (
+                    <button
+                      onClick={handlePayment}
+                      className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg shadow-sm text-white bg-amber-600 hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 transition-colors duration-200"
+                    >
+                      <CreditCard className="w-4 h-4 mr-1.5" />
+                      Pay Now
+                    </button>
+                  )}
+                  
+                  {currentSession.status === 'scheduled' && (currentSession.mode === 'online' || currentSession.mode === 'hybrid') && (currentSession.meetingLink || zoomMeetingDetails?.joinUrl) && 
+                    // Only show Join button if the session is free or paid
+                    (currentSession.price === 0 || currentSession.isPaid) && (
                     <button
                       onClick={handleJoinZoom}
                       className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"

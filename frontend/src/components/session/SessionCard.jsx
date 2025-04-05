@@ -17,6 +17,8 @@ import {
   Video,
   XCircle,
   CheckCircle,
+  DollarSign,
+  CreditCard,
 } from "lucide-react";
 
 const SessionCard = ({ session }) => {
@@ -120,6 +122,22 @@ const SessionCard = ({ session }) => {
     } catch {
       toast.error("Failed to mark session as completed");
     }
+  };
+
+  // Handle payment
+  const handlePayment = () => {
+    // This is a placeholder - will be replaced with actual payment implementation later
+    toast.success("Redirecting to payment page...");
+    // Future implementation will redirect to payment gateway or process payment
+    // For now, we'll just show a toast
+    
+    // Simulating redirection to a payment page
+    setTimeout(() => {
+      toast("Payment functionality will be implemented soon", {
+        icon: '💳',
+        duration: 4000,
+      });
+    }, 1500);
   };
 
   // Determine status color
@@ -233,6 +251,27 @@ const SessionCard = ({ session }) => {
               {isTeacher ? session.learner?.name : session.teacher?.name}
             </div>
           </div>
+
+          {/* Session Price */}
+          <div className="flex items-start">
+            <DollarSign className="w-4 h-4 text-gray-400 mt-0.5 mr-2 flex-shrink-0" />
+            <div>
+              <span className="font-medium">
+                {session.price > 0 
+                  ? `${session.price} PKR/hr` 
+                  : "Free Session"}
+              </span>
+              {session.price > 0 && (
+                <span className={`ml-2 px-2 py-0.5 text-xs rounded-full ${
+                  session.isPaid 
+                    ? "bg-green-100 text-green-700" 
+                    : "bg-amber-100 text-amber-700"
+                }`}>
+                  {session.isPaid ? "Paid" : "Payment Required"}
+                </span>
+              )}
+            </div>
+          </div>
         </div>
 
         {session.description && (
@@ -256,10 +295,23 @@ const SessionCard = ({ session }) => {
             Details
           </Link>
 
+          {/* Payment Button - Only show for learners if session requires payment and is not paid */}
+          {isLearner && session.price > 0 && !session.isPaid && session.status === "scheduled" && (
+            <button
+              onClick={handlePayment}
+              className="text-sm bg-amber-600 text-white hover:bg-amber-700 px-3 py-2 rounded-lg font-medium transition-colors duration-200 flex items-center"
+            >
+              <CreditCard className="w-4 h-4 mr-1.5" />
+              Pay Now
+            </button>
+          )}
+
           {/* Join Zoom Button - Only show for online/hybrid sessions that are scheduled */}
           {(session.mode === "online" || session.mode === "hybrid") &&
             session.meetingLink &&
-            isJoinZoomEnabled() && (
+            isJoinZoomEnabled() && 
+            // Only allow joining if free or paid
+            (session.price === 0 || session.isPaid) && (
               <button
                 onClick={() => handleOpenZoom(session.meetingLink)}
                 className="text-sm bg-blue-600 text-white hover:bg-blue-700 px-3 py-2 rounded-lg font-medium transition-colors duration-200 flex items-center"
@@ -311,6 +363,8 @@ SessionCard.propTypes = {
     endTime: PropTypes.string,
     duration: PropTypes.number,
     mode: PropTypes.string,
+    price: PropTypes.number,
+    isPaid: PropTypes.bool,
     location: PropTypes.string,
     description: PropTypes.string,
     meetingLink: PropTypes.string,

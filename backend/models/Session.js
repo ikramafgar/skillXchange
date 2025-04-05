@@ -42,6 +42,15 @@ const sessionSchema = new mongoose.Schema(
       type: Number, // Duration in minutes
       required: true
     },
+    price: {
+      type: Number,
+      min: 0,
+      default: 0 // Default to free
+    },
+    isPaid: {
+      type: Boolean,
+      default: false // Default to unpaid
+    },
     mode: {
       type: String,
       enum: ['online', 'in-person', 'hybrid'],

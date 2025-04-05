@@ -63,6 +63,8 @@ export const updateProfile = async (req, res) => {
       badges, 
       skillsToLearn, 
       skillsToTeach,
+      hourlyRate,
+      learningBudget,
       ...updateData 
     } = req.body;
     
@@ -146,6 +148,26 @@ export const updateProfile = async (req, res) => {
         console.error('Error processing skillsToTeach:', error);
         // Don't include skillsToTeach in the update if there's an error
       }
+    }
+    
+    // Add hourly rate and learning budget if provided
+    if (hourlyRate !== undefined) {
+      updateFields.hourlyRate = Number(hourlyRate);
+    }
+    
+    if (learningBudget !== undefined) {
+      updateFields.learningBudget = Number(learningBudget);
+    }
+    
+    // Handle bank account details if provided
+    const { bankAccountName, bankName, bankAccountNumber, bankIBAN } = req.body;
+    if (bankAccountName || bankName || bankAccountNumber || bankIBAN) {
+      updateFields.bankDetails = {
+        accountHolderName: bankAccountName || profile.bankDetails?.accountHolderName,
+        bankName: bankName || profile.bankDetails?.bankName,
+        accountNumber: bankAccountNumber || profile.bankDetails?.accountNumber,
+        iban: bankIBAN || profile.bankDetails?.iban
+      };
     }
     
     console.log('Updating profile with fields:', updateFields);
@@ -312,13 +334,33 @@ export const updateProfilePicture = async (req, res) => {
     }
     
     // Preserve the role if it's provided in the request body
-    const { role } = req.body;
+    const { role, hourlyRate, learningBudget } = req.body;
     if (role && ['teacher', 'learner', 'both'].includes(role)) {
       console.log('Preserving role from request body:', role);
       profile.role = role;
     } else if (profile.role) {
       console.log('Preserving existing role during profile picture upload:', profile.role);
       // Role is already set in the profile, no need to update
+    }
+    
+    // Preserve hourly rate and learning budget if they're provided
+    if (hourlyRate !== undefined) {
+      profile.hourlyRate = Number(hourlyRate);
+    }
+    
+    if (learningBudget !== undefined) {
+      profile.learningBudget = Number(learningBudget);
+    }
+    
+    // Preserve bank details if they're provided
+    const { bankAccountName, bankName, bankAccountNumber, bankIBAN } = req.body;
+    if (bankAccountName || bankName || bankAccountNumber || bankIBAN) {
+      profile.bankDetails = {
+        accountHolderName: bankAccountName || profile.bankDetails?.accountHolderName,
+        bankName: bankName || profile.bankDetails?.bankName,
+        accountNumber: bankAccountNumber || profile.bankDetails?.accountNumber,
+        iban: bankIBAN || profile.bankDetails?.iban
+      };
     }
     
     // Upload the profile picture to Cloudinary

@@ -25,6 +25,7 @@ import {
   XCircle,
   Clock,
   Trash2,
+  DollarSign,
 } from "lucide-react";
 
 const ProfilePage = () => {
@@ -188,9 +189,23 @@ const ProfilePage = () => {
         role: currentRole
       };
       
+      // Add hourly rate for teachers
+      if (currentRole === 'teacher' || currentRole === 'both') {
+        submissionData.hourlyRate = formData.hourlyRate || 0;
+        
+        // Include bank details if hourly rate is greater than 0
+        if (formData.hourlyRate > 0) {
+          submissionData.bankAccountName = formData.bankAccountName;
+          submissionData.bankName = formData.bankName;
+          submissionData.bankAccountNumber = formData.bankAccountNumber;
+          submissionData.bankIBAN = formData.bankIBAN;
+        }
+      }
+      
       // Only include skillLevel for learners
       if (currentRole === 'learner') {
         submissionData.skillLevel = formData.skillLevel || 'Beginner';
+        submissionData.learningBudget = formData.learningBudget || 0;
       }
       
       // Handle skills to learn
@@ -628,6 +643,25 @@ const ProfilePage = () => {
                   />
                 </div>
               )}
+              
+              {/* Learning Budget - Only show for learner/both */}
+              {(formData.role === 'learner' || formData.role === 'both') && (
+                <div>
+                  <label className="flex items-center gap-2 text-gray-600 font-medium">
+                    <DollarSign size={18} className="text-gray-500" /> Your Learning Budget (PKR/hr)
+                  </label>
+                  <input
+                    type="number"
+                    name="learningBudget"
+                    value={formData.learningBudget || 0}
+                    onChange={handleInputChange}
+                    min="0"
+                    placeholder="Maximum amount you're willing to pay per hour"
+                    className="w-full px-4 py-2 border bg-gray-100 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
+                  />
+                  <span className="text-xs text-gray-500 mt-1 block">Enter 0 if you're looking for free sessions only</span>
+                </div>
+              )}
 
               {/* Skills to Teach */}
               {(formData.role === 'teacher' || formData.role === 'both') && (
@@ -644,6 +678,93 @@ const ProfilePage = () => {
                     placeholder="E.g., Node.js, Python"
                     className="w-full px-4 py-2 border bg-gray-100 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
                   />
+                </div>
+              )}
+              
+              {/* Hourly Rate - Only show for teacher/both */}
+              {(formData.role === 'teacher' || formData.role === 'both') && (
+                <div>
+                  <label className="flex items-center gap-2 text-gray-600 font-medium">
+                    <DollarSign size={18} className="text-gray-500" /> Your Teaching Rate (PKR/hr)
+                  </label>
+                  <input
+                    type="number"
+                    name="hourlyRate"
+                    value={formData.hourlyRate || 0}
+                    onChange={handleInputChange}
+                    min="0"
+                    placeholder="Amount you would like to charge per hour"
+                    className="w-full px-4 py-2 border bg-gray-100 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
+                  />
+                  <span className="text-xs text-gray-500 mt-1 block">Enter 0 if you want to teach for free</span>
+                </div>
+              )}
+
+              {/* Bank Account Details - Only show for teacher/both with hourlyRate > 0 */}
+              {(formData.role === 'teacher' || formData.role === 'both') && formData.hourlyRate > 0 && (
+                <div className="border border-yellow-200 bg-yellow-50 p-4 rounded-lg">
+                  <h4 className="font-medium text-yellow-700 mb-3 flex items-center gap-2">
+                    <DollarSign size={18} /> Bank Account Details
+                  </h4>
+                  <p className="text-sm text-yellow-600 mb-4">Please provide your bank details so we can transfer your earnings</p>
+                  
+                  <div className="space-y-3">
+                    <div>
+                      <label className="text-gray-600 font-medium text-sm block mb-1">
+                        Account Holder Name
+                      </label>
+                      <input
+                        type="text"
+                        name="bankAccountName"
+                        value={formData.bankAccountName || ''}
+                        onChange={handleInputChange}
+                        placeholder="Enter your full name as on bank account"
+                        className="w-full px-4 py-2 border bg-gray-100 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="text-gray-600 font-medium text-sm block mb-1">
+                        Bank Name
+                      </label>
+                      <input
+                        type="text"
+                        name="bankName"
+                        value={formData.bankName || ''}
+                        onChange={handleInputChange}
+                        placeholder="Enter your bank name"
+                        className="w-full px-4 py-2 border bg-gray-100 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="text-gray-600 font-medium text-sm block mb-1">
+                        Account Number
+                      </label>
+                      <input
+                        type="text"
+                        name="bankAccountNumber"
+                        value={formData.bankAccountNumber || ''}
+                        onChange={handleInputChange}
+                        placeholder="Enter your bank account number"
+                        className="w-full px-4 py-2 border bg-gray-100 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="text-gray-600 font-medium text-sm block mb-1">
+                        IBAN (Optional)
+                      </label>
+                      <input
+                        type="text"
+                        name="bankIBAN"
+                        value={formData.bankIBAN || ''}
+                        onChange={handleInputChange}
+                        placeholder="Enter your IBAN number"
+                        className="w-full px-4 py-2 border bg-gray-100 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
+                      />
+                    </div>
+                  </div>
                 </div>
               )}
 
@@ -807,6 +928,20 @@ const ProfilePage = () => {
                       {formData.role === 'learner' && (
                         <span className="px-3 py-1 bg-blue-100 text-blue-600 rounded-full text-xs font-medium">
                           {formData.skillLevel || "Beginner"}
+                        </span>
+                      )}
+                      {/* Show teaching rate for teachers */}
+                      {(formData.role === 'teacher' || formData.role === 'both') && (
+                        <span className="px-3 py-1 bg-green-100 text-green-600 rounded-full text-xs font-medium flex items-center">
+                          <DollarSign size={12} className="mr-1" />
+                          {formData.hourlyRate ? `${formData.hourlyRate} PKR/hr` : "Free Teaching"}
+                        </span>
+                      )}
+                      {/* Show learning budget for learners */}
+                      {(formData.role === 'learner' || formData.role === 'both') && (
+                        <span className="px-3 py-1 bg-yellow-100 text-yellow-600 rounded-full text-xs font-medium flex items-center">
+                          <DollarSign size={12} className="mr-1" />
+                          {formData.learningBudget ? `${formData.learningBudget} PKR/hr budget` : "Looking for free sessions"}
                         </span>
                       )}
                       <span 
@@ -1038,6 +1173,76 @@ const ProfilePage = () => {
                     )}
                   </div>
                 </div>
+
+                {/* Payment Information - Only show for teachers charging money */}
+                {(formData.role === 'teacher' || formData.role === 'both') && formData.hourlyRate > 0 && (
+                  <div className="mb-8">
+                    <h3 className="text-xl font-semibold text-gray-800 border-b border-gray-200 pb-2 mb-4 flex items-center gap-2">
+                      <DollarSign size={20} className="text-green-500" />
+                      Payment Information
+                    </h3>
+                    
+                    <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                      <div className="p-4 bg-yellow-50 border-b border-yellow-100">
+                        <p className="text-yellow-700 flex items-center gap-2">
+                          <DollarSign size={16} />
+                          <span className="font-medium">You charge {formData.hourlyRate} PKR per hour</span>
+                        </p>
+                      </div>
+                      
+                      {formData.bankDetails?.accountHolderName ? (
+                        <div className="p-4">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <p className="text-xs text-gray-500">Account Holder</p>
+                              <p className="text-gray-800 font-medium">{formData.bankDetails.accountHolderName}</p>
+                            </div>
+                            <div>
+                              <p className="text-xs text-gray-500">Bank Name</p>
+                              <p className="text-gray-800 font-medium">{formData.bankDetails.bankName || "Not specified"}</p>
+                            </div>
+                            <div>
+                              <p className="text-xs text-gray-500">Account Number</p>
+                              <p className="text-gray-800 font-medium">
+                                {formData.bankDetails.accountNumber ? 
+                                  "••••" + formData.bankDetails.accountNumber.slice(-4) : 
+                                  "Not specified"}
+                              </p>
+                            </div>
+                            {formData.bankDetails.iban && (
+                              <div>
+                                <p className="text-xs text-gray-500">IBAN</p>
+                                <p className="text-gray-800 font-medium">
+                                  {formData.bankDetails.iban ? 
+                                    "••••" + formData.bankDetails.iban.slice(-4) : 
+                                    "Not specified"}
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                          <div className="mt-4 text-center">
+                            <button 
+                              onClick={() => setEditMode(true)}
+                              className="text-sm text-indigo-600 hover:text-indigo-800 transition-colors"
+                            >
+                              Edit Payment Information
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="p-4 text-center">
+                          <p className="text-gray-500 mb-2">Your bank details are not yet set up</p>
+                          <button 
+                            onClick={() => setEditMode(true)}
+                            className="text-sm text-indigo-600 hover:text-indigo-800 transition-colors"
+                          >
+                            Set up payment information
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
 
                 {/* Connections Section with Modern Design */}
                 <div className="mt-8">

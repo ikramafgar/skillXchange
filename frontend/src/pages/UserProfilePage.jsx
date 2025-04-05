@@ -3,7 +3,7 @@ import axios from "axios";
 import PropTypes from "prop-types";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaGithub, FaLinkedin, FaTimes } from "react-icons/fa";
-import { MapPin, Briefcase, Mail, Phone } from "lucide-react";
+import { MapPin, Briefcase, Mail, Phone, DollarSign } from "lucide-react";
 import { toast } from "react-hot-toast";
 
 // Add PropTypes validation
@@ -131,6 +131,17 @@ function UserProfileModal({ userId, isOpen, onClose }) {
                         <h2 className="text-xl font-semibold text-gray-800 mb-3">
                           Skills to Teach
                         </h2>
+                        {/* Display hourly rate */}
+                        <div className="mb-3 flex items-center">
+                          <div className="px-3 py-1.5 bg-white text-gray-800 rounded-lg border border-blue-200 flex items-center">
+                            <DollarSign className="w-4 h-4 mr-1 text-blue-600" />
+                            <span className="font-medium">
+                              {user.hourlyRate > 0 
+                                ? `${user.hourlyRate} PKR/hour` 
+                                : "Teaching for free"}
+                            </span>
+                          </div>
+                        </div>
                         <div className="flex flex-wrap gap-2">
                           {Array.isArray(user.skillsToTeach) &&
                             user.skillsToTeach.map((skillObj, index) => (
@@ -151,6 +162,17 @@ function UserProfileModal({ userId, isOpen, onClose }) {
                         <h2 className="text-xl font-semibold text-gray-800 mb-3">
                           Skills to Learn
                         </h2>
+                        {/* Display learning budget */}
+                        <div className="mb-3 flex items-center">
+                          <div className="px-3 py-1.5 bg-white text-gray-800 rounded-lg border border-green-200 flex items-center">
+                            <DollarSign className="w-4 h-4 mr-1 text-green-600" />
+                            <span className="font-medium">
+                              {user.learningBudget > 0 
+                                ? `Budget: ${user.learningBudget} PKR/hour` 
+                                : "Looking for free sessions"}
+                            </span>
+                          </div>
+                        </div>
                         <div className="flex flex-wrap gap-2">
                           {Array.isArray(user.skillsToLearn) &&
                             user.skillsToLearn.map((skillObj, index) => (
