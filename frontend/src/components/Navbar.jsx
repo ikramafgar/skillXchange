@@ -68,7 +68,7 @@ const Navbar = () => {
 
   const handleLogoClick = () => {
     if (isAuthenticated) {
-      navigate("/xfeed");
+      navigate("/main");
     } else {
       navigate("/");
     }
@@ -105,7 +105,7 @@ const Navbar = () => {
   ];
 
   const navItemsAfterLogin = [
-    { name: "XFeed", href: "/xfeed", icon: <Home className="w-4 h-4" /> },
+    { name: "Main", href: "/main", icon: <Home className="w-4 h-4" /> },
     {
       name: "Dashboard",
       href: "/dashboard",

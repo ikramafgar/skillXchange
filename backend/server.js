@@ -16,10 +16,9 @@ import chatRoutes from './routes/chatRoutes.js'; // Import chat routes
 import messageRoutes from './routes/messageRoutes.js'; // Import message routes
 import sessionRoutes from './routes/sessionRoutes.js'; // Import session routes
 import skillRoutes from './routes/skillRoutes.js'; // Import skill routes
+import paymentRoutes from './routes/paymentRoutes.js'; // Import payment routes
 import { Server } from 'socket.io';
 import { createServer } from 'http';
-// import path from 'path';
-// import fs from 'fs';
 
 // Configure environment variables
 config();
@@ -71,15 +70,6 @@ app.use(passport.session());
 // Connect to Database
 connectDB();
 
-// // Create uploads directory if it doesn't exist
-// const uploadsDir = path.join(process.cwd(), 'uploads');
-// if (!fs.existsSync(uploadsDir)) {
-//   fs.mkdirSync(uploadsDir, { recursive: true });
-// }
-
-// // Serve static files from the uploads directory
-// app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
-
 // Routes
 app.get('/', (req, res) => {
   res.send('Skill Exchange API is running...');
@@ -96,6 +86,10 @@ app.use('/api/chat', chatRoutes); // Use chat routes
 app.use('/api/message', messageRoutes); // Use message routes
 app.use('/api/sessions', sessionRoutes); // Use session routes
 app.use('/api/skills', skillRoutes); // Use skill routes
+app.use('/api/payments', paymentRoutes); // Use payment routes
+
+// Special route for Stripe webhooks (needs raw body)
+app.use('/api/payments/webhook', express.raw({ type: 'application/json' }));
 
 // Error handling middleware
 app.use((err, req, res, next) => {

@@ -77,10 +77,10 @@ export const createSession = async (req, res) => {
     let meetingLink = null;
     let zoomMeetingDetails = null;
 
-    // Create Zoom meeting link if mode is 'online' or 'hybrid'
-    if (mode === "online" || mode === "hybrid") {
+    // Create Zoom meeting link if mode is 'online' or 'hybrid' AND session is free
+    if ((mode === "online" || mode === "hybrid") && sessionPrice === 0) {
       try {
-        console.log("DEBUG - Creating Zoom meeting for new session");
+        console.log("DEBUG - Creating Zoom meeting for new free session");
         zoomMeetingDetails = await createZoomMeeting(
           title,
           startTimeDate.toISOString(),
@@ -97,6 +97,8 @@ export const createSession = async (req, res) => {
           "DEBUG - Will create session without Zoom link due to error"
         );
       }
+    } else if (sessionPrice > 0) {
+      console.log("DEBUG - Paid session - Zoom meeting will be generated after payment");
     }
 
     // Create session

@@ -19,7 +19,6 @@ import HomePage from "./pages/HomePage";
 import AboutPage from "./pages/AboutPage";
 import LoginPage from "./pages/LoginPage";
 import SignUpPage from "./pages/SignUpPage";
-// import Xconnect from "./pages/SkillsPage";
 import ProfilePage from "./pages/ProfilePage";
 import UserProfilePage from "./pages/UserProfilePage"; // New Profile Page
 import DashboardPage from "./pages/DashboardPage";
@@ -29,11 +28,14 @@ import EmailVerificationPage from "./pages/EmailVerificationPage";
 import HelpPage from "./pages/HelpPage";
 import AuthCallbackPage from "./pages/AuthCallbackPage"; // Import the Auth callback component
 import AdminPage from "./pages/AdminPage"; // Import the Admin page component
-import XFeed from "./pages/XFeedPage";
+import Main from "./pages/MainPage";
 import ErrorPage from "./pages/ErrorPage"; // Import the Error page component
+import NotFoundPage from "./pages/NotFoundPage"; // Import the NotFound page component
 import ChatPage from "./pages/ChatPage"; // Import the Chat page component
 import SessionsPage from "./pages/SessionsPage"; // Import the Sessions page component
 import SessionDetailPage from "./pages/SessionDetailPage"; // Import the Session Detail page component
+import PaymentPage from "./pages/PaymentPage"; // Import the Payment page component
+import PaymentResultPage from "./pages/PaymentResultPage"; // Import the Payment Result page component
 
 // Protect routes that require authentication
 const ProtectedRoute = ({ children }) => {
@@ -118,12 +120,20 @@ function App() {
         <Route path="/about" element={<AboutPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignUpPage />} />
-        <Route path="/xfeed" element={<XFeed />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/profile/:userId" element={<UserProfilePage />} /> {/* New Profile Page */}
         <Route path="/contact" element={<Contact />} />
         <Route path="/help" element={<HelpPage />} />
         <Route path="/error" element={<ErrorPage />} /> {/* New Error Page */}
+        <Route path="/verify-email" element={<EmailVerificationPage />} />
+        <Route path="/auth-callback" element={<AuthCallbackPage />} /> 
+        <Route path="/main"
+        element={
+          <ProtectedRoute>
+            <Main />
+          </ProtectedRoute>
+        }
+        />
         <Route
           path="/dashboard"
           element={
@@ -165,8 +175,24 @@ function App() {
             </ProtectedRoute>
           }
         />
-        <Route path="/verify-email" element={<EmailVerificationPage />} />
-        <Route path="/auth-callback" element={<AuthCallbackPage />} /> {/* Auth callback route */}
+        {/* Payment routes */}
+        <Route
+          path="/payment/:sessionId"
+          element={
+            <ProtectedRoute>
+              <PaymentPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/payment-result"
+          element={
+            <ProtectedRoute>
+              <PaymentResultPage />
+            </ProtectedRoute>
+          }
+        />
+       
         <Route
           path="/admin"
           element={
@@ -191,6 +217,8 @@ function App() {
             </RedirectAuthenticatedUser>
           }
         />
+        {/* Catch-all route for 404 errors */}
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </Router>
   );

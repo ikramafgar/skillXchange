@@ -1,5 +1,5 @@
 import { format, isPast } from "date-fns";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../../store/authStore";
 import { useSessionStore } from "../../store/sessionStore";
 import { useProfileStore } from "../../store/ProfileStore";
@@ -25,6 +25,7 @@ const SessionCard = ({ session }) => {
   const { user } = useAuthStore();
   const { profile, fetchProfile } = useProfileStore();
   const { changeSessionStatus, isLoading } = useSessionStore();
+  const navigate = useNavigate();
 
   // Fetch profile data if needed
   useEffect(() => {
@@ -125,19 +126,23 @@ const SessionCard = ({ session }) => {
   };
 
   // Handle payment
-  const handlePayment = () => {
-    // This is a placeholder - will be replaced with actual payment implementation later
-    toast.success("Redirecting to payment page...");
-    // Future implementation will redirect to payment gateway or process payment
-    // For now, we'll just show a toast
+  const handlePayment = (e) => {
+    e.preventDefault(); // Prevent default form submission
     
-    // Simulating redirection to a payment page
-    setTimeout(() => {
-      toast("Payment functionality will be implemented soon", {
-        icon: '💳',
-        duration: 4000,
-      });
-    }, 1500);
+    // Store the sessionId in localStorage for the payment flow
+    localStorage.setItem('current_payment_session', session._id);
+    
+    try {
+      // Create the payment URL and navigate using React Router
+      const paymentUrl = `/payment/${session._id}`;
+      console.log("[SessionCard] Redirecting to:", paymentUrl);
+      
+      // Use React Router's navigate function which preserves auth state
+      navigate(paymentUrl);
+    } catch (error) {
+      console.error("[SessionCard] Error navigating to payment page:", error);
+      toast.error("Error navigating to payment page. Please try again.");
+    }
   };
 
   // Determine status color
@@ -175,12 +180,14 @@ const SessionCard = ({ session }) => {
 
   // Ensure session data is valid
   if (!session || !session._id) {
+    console.error("[SessionCard] Invalid session data:", session);
     return (
       <div className="bg-white rounded-xl shadow-sm p-4 border border-gray-100">
         <p className="text-red-500">Invalid session data</p>
       </div>
     );
   }
+
 
   return (
     <div className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-all duration-300 border border-gray-100">
@@ -216,16 +223,7 @@ const SessionCard = ({ session }) => {
           </div>
 
           <div className="flex items-start">
-            <svg
-              className="w-4 h-4 text-gray-400 mt-0.5 mr-2 flex-shrink-0"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
+          
               {session.mode === "online" ? (
                 <Monitor className="w-4 h-4 text-gray-400 mt-0.5 mr-2 flex-shrink-0" />
               ) : session.mode === "in-person" ? (
@@ -233,7 +231,7 @@ const SessionCard = ({ session }) => {
               ) : (
                 <Monitor className="w-4 h-4 text-gray-400 mt-0.5 mr-2 flex-shrink-0" />
               )}
-            </svg>
+      
             <span>
               {session.mode
                 ? session.mode.charAt(0).toUpperCase() + session.mode.slice(1)
@@ -295,15 +293,17 @@ const SessionCard = ({ session }) => {
             Details
           </Link>
 
-          {/* Payment Button - Only show for learners if session requires payment and is not paid */}
-          {isLearner && session.price > 0 && !session.isPaid && session.status === "scheduled" && (
-            <button
+          {/* Payment Button - For learners only */}
+          {profile?.role && (profile.role === 'learner' || profile.role === 'both') && 
+            session.price > 0 && !session.isPaid && session.status === "scheduled" && (
+            <Link
+              to={`/payment/${session._id}`}
               onClick={handlePayment}
               className="text-sm bg-amber-600 text-white hover:bg-amber-700 px-3 py-2 rounded-lg font-medium transition-colors duration-200 flex items-center"
             >
               <CreditCard className="w-4 h-4 mr-1.5" />
               Pay Now
-            </button>
+            </Link>
           )}
 
           {/* Join Zoom Button - Only show for online/hybrid sessions that are scheduled */}
@@ -319,6 +319,16 @@ const SessionCard = ({ session }) => {
                 <Video className="w-4 h-4 mr-1.5" />
                 Join Zoom
               </button>
+            )}
+
+          {/* Message for online/hybrid paid sessions without payment */}
+          {(session.mode === "online" || session.mode === "hybrid") &&
+            !session.meetingLink &&
+            session.price > 0 && 
+            !session.isPaid && (
+              <div className="text-xs text-amber-600 bg-amber-50 px-3 py-2 rounded-lg border border-amber-100">
+                Zoom link will be available after payment
+              </div>
             )}
 
           {/* Cancel Button - Only show for future scheduled sessions */}

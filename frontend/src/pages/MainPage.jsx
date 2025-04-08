@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react';
 import { useConnectionStore } from '../store/connectionStore';
 import { useMatchStore } from '../store/matchStore';
 import { toast } from 'react-hot-toast';
-import axios from '../utils/axios'; // Use the custom axios instance with baseURL configured
-// import axios from 'axios'; // Remove this import
+import axios from '../utils/axios'; 
+
 
 import { motion } from 'framer-motion';
 import { useAuthStore } from '../store/authStore';
@@ -22,7 +22,7 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import UserProfileModal from './UserProfilePage';
 import MatchCard from '../components/MatchCard';
 
-function XFeed() {
+function Main() {
   const [users, setUsers] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(true);
@@ -574,4 +574,4 @@ function XFeed() {
   );
 }
 
-export default XFeed;
+export default Main;

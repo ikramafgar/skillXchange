@@ -120,11 +120,9 @@ const SessionForm = ({ onSuccess, matchDetails = null, teacherId = null, learner
   const fetchConnections = async () => {
     setIsLoadingConnections(true);
     try {
-      console.log('Fetching connections from /api/users');
       // Use customAxios for consistent auth headers
       const response = await customAxios.get('/api/users');
-      
-      console.log('API Response from /api/users:', response.data);
+
       
       if (Array.isArray(response.data)) {
         console.log('Connected users fetched successfully. Count:', response.data.length);
@@ -413,7 +411,7 @@ const SessionForm = ({ onSuccess, matchDetails = null, teacherId = null, learner
                     name="selectedUserId"
                     value={formData.selectedUserId}
                     onChange={handleChange}
-                    className={`w-full px-3 py-2.5 border ${formErrors.selectedUserId ? 'border-red-300 ring-1 ring-red-300' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors`}
+                    className={`w-full px-3 py-2.5 border ${formErrors.selectedUserId ? 'border-red-300 ring-1 ring-red-300' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors bg-gray-50`}
                     disabled={!!matchDetails} // Disable if match details provided
                   >
                     <option value="">Select a connection</option>
@@ -522,7 +520,7 @@ const SessionForm = ({ onSuccess, matchDetails = null, teacherId = null, learner
                     name="selectedSkillId"
                     value={formData.selectedSkillId}
                     onChange={handleChange}
-                    className={`w-full px-3 py-2.5 border ${formErrors.selectedSkillId ? 'border-red-300 ring-1 ring-red-300' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors`}
+                    className={`w-full px-3 py-2.5 border ${formErrors.selectedSkillId ? 'border-red-300 ring-1 ring-red-300' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors bg-gray-50`}
                     disabled={!!matchDetails} // Disable if match details provided
                   >
                     <option value="">Select a skill</option>
@@ -549,7 +547,7 @@ const SessionForm = ({ onSuccess, matchDetails = null, teacherId = null, learner
                 name="title"
                 value={formData.title}
                 onChange={handleChange}
-                className={`w-full px-3 py-2.5 border ${formErrors.title ? 'border-red-300 ring-1 ring-red-300' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors`}
+                className={`w-full px-3 py-2.5 border ${formErrors.title ? 'border-red-300 ring-1 ring-red-300' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors bg-gray-50`}
                 placeholder="e.g., Javascript Basics Introduction"
               />
               {formErrors.title && <p className="text-red-500 text-sm mt-1">{formErrors.title}</p>}
@@ -564,7 +562,7 @@ const SessionForm = ({ onSuccess, matchDetails = null, teacherId = null, learner
                 value={formData.description}
                 onChange={handleChange}
                 rows="3"
-                className={`w-full px-3 py-2.5 border ${formErrors.description ? 'border-red-300 ring-1 ring-red-300' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors`}
+                className={`w-full px-3 py-2.5 border ${formErrors.description ? 'border-red-300 ring-1 ring-red-300' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors bg-gray-50 resize-none`}
                 placeholder="Briefly describe what will be covered in this session"
               ></textarea>
               {formErrors.description && <p className="text-red-500 text-sm mt-1">{formErrors.description}</p>}
@@ -578,7 +576,7 @@ const SessionForm = ({ onSuccess, matchDetails = null, teacherId = null, learner
                 name="mode"
                 value={formData.mode}
                 onChange={handleChange}
-                className={`w-full px-3 py-2.5 border ${formErrors.mode ? 'border-red-300 ring-1 ring-red-300' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors`}
+                className={`w-full px-3 py-2.5 border ${formErrors.mode ? 'border-red-300 ring-1 ring-red-300' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors bg-gray-50`}
               >
                 <option value="online">Online (Zoom)</option>
                 <option value="in-person">In-person</option>
@@ -597,7 +595,7 @@ const SessionForm = ({ onSuccess, matchDetails = null, teacherId = null, learner
                 value={formData.price}
                 onChange={handleChange}
                 min="0"
-                className={`w-full px-3 py-2.5 border ${formErrors.price ? 'border-red-300 ring-1 ring-red-300' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors`}
+                className={`w-full px-3 py-2.5 border ${formErrors.price ? 'border-red-300 ring-1 ring-red-300' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors bg-gray-50`}
                 placeholder="0 for free sessions"
               />
               {formErrors.price && <p className="text-red-500 text-sm mt-1">{formErrors.price}</p>}
@@ -614,7 +612,7 @@ const SessionForm = ({ onSuccess, matchDetails = null, teacherId = null, learner
                   name="location"
                   value={formData.location}
                   onChange={handleChange}
-                  className={`w-full px-3 py-2.5 border ${formErrors.location ? 'border-red-300 ring-1 ring-red-300' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors`}
+                  className={`w-full px-3 py-2.5 border ${formErrors.location ? 'border-red-300 ring-1 ring-red-300' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors bg-gray-50`}
                   placeholder="e.g., Coffee Shop, Library, etc."
                 />
                 {formErrors.location && <p className="text-red-500 text-sm mt-1">{formErrors.location}</p>}
@@ -649,7 +647,7 @@ const SessionForm = ({ onSuccess, matchDetails = null, teacherId = null, learner
                   name="startDate"
                   value={formData.startDate}
                   onChange={handleChange}
-                  className={`w-full px-3 py-2.5 border ${formErrors.startDate ? 'border-red-300 ring-1 ring-red-300' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors`}
+                  className={`w-full px-3 py-2.5 border ${formErrors.startDate ? 'border-red-300 ring-1 ring-red-300' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors bg-gray-50`}
                   min={format(new Date(), 'yyyy-MM-dd')}
                 />
                 {formErrors.startDate && <p className="text-red-500 text-sm mt-1">{formErrors.startDate}</p>}
@@ -664,7 +662,7 @@ const SessionForm = ({ onSuccess, matchDetails = null, teacherId = null, learner
                   name="startTime"
                   value={formData.startTime}
                   onChange={handleChange}
-                  className={`w-full px-3 py-2.5 border ${formErrors.startTime ? 'border-red-300 ring-1 ring-red-300' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors`}
+                  className={`w-full px-3 py-2.5 border ${formErrors.startTime ? 'border-red-300 ring-1 ring-red-300' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors bg-gray-50`}
                 />
                 {formErrors.startTime && <p className="text-red-500 text-sm mt-1">{formErrors.startTime}</p>}
               </div>
@@ -678,7 +676,7 @@ const SessionForm = ({ onSuccess, matchDetails = null, teacherId = null, learner
                 name="duration"
                 value={formData.duration}
                 onChange={handleChange}
-                className={`w-full px-3 py-2.5 border ${formErrors.duration ? 'border-red-300 ring-1 ring-red-300' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors`}
+                className={`w-full px-3 py-2.5 border ${formErrors.duration ? 'border-red-300 ring-1 ring-red-300' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors bg-gray-50`}
               >
                 <option value="30">30 minutes</option>
                 <option value="60">1 hour</option>
@@ -763,7 +761,10 @@ const SessionForm = ({ onSuccess, matchDetails = null, teacherId = null, learner
                   <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
                 </svg>
                 <p className="text-sm text-blue-700">
-                  A Zoom meeting link will be automatically generated when you create this session.
+                  {Number(formData.price) > 0 ? 
+                    "A Zoom meeting link will be automatically generated after the session is paid for." :
+                    "A Zoom meeting link will be automatically generated when you create this session."
+                  }
                 </p>
               </div>
             )}
