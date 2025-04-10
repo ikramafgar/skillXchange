@@ -18,7 +18,8 @@ import {
   AlertCircle,
   UserCheck,
   BookOpen,
-  Mail
+  Mail,
+  FileCheck
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ContactMessages from './ContactMessages';
@@ -26,6 +27,7 @@ import ContactMessages from './ContactMessages';
 const AdminPanel = () => {
   const { isAdmin } = useAuthStore();
   const [pendingTeachers, setPendingTeachers] = useState([]);
+  const [pendingCertificates, setPendingCertificates] = useState([]);
   const [stats, setStats] = useState({
     totalUsers: 0,
     totalTeachers: 0,
@@ -33,7 +35,8 @@ const AdminPanel = () => {
     pendingVerifications: 0,
     verifiedTeachers: 0,
     totalContactMessages: 0,
-    unreadContactMessages: 0
+    unreadContactMessages: 0,
+    pendingCertificates: 0
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -41,7 +44,9 @@ const AdminPanel = () => {
   const [rejectionReason, setRejectionReason] = useState('');
   const [showRejectionForm, setShowRejectionForm] = useState(false);
   const [selectedTeacherId, setSelectedTeacherId] = useState(null);
-  const [activeTab, setActiveTab] = useState('teachers'); // 'teachers' or 'messages'
+  const [selectedCertificateId, setSelectedCertificateId] = useState(null);
+  const [activeTab, setActiveTab] = useState('teachers'); // 'teachers' or 'messages' or 'certificates'
+  const [expandedCertificate, setExpandedCertificate] = useState(null);
  
 
   const statsCards = [
@@ -67,11 +72,12 @@ const AdminPanel = () => {
       bgGlow: "from-emerald-400/20 to-transparent"
     },
     { 
-      title: "Pending Verifications",
-      value: stats.pendingVerifications,
-      icon: <Clock />,
-      color: "from-amber-500 to-amber-600",
-      bgGlow: "from-amber-400/20 to-transparent"
+      title: "Pending Certificates",
+      value: stats.pendingCertificates,
+      icon: <FileCheck />,
+      color: "from-teal-500 to-teal-600",
+      bgGlow: "from-teal-400/20 to-transparent",
+      onClick: () => setActiveTab('certificates')
     },
     { 
       title: "Unread Messages",
@@ -90,14 +96,23 @@ const AdminPanel = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        // Fetch pending teachers
-        const teachersResponse = await customAxios.get('/api/admin/pending-teachers');
+        // Fetch pending teachers and certificates in parallel
+        const [teachersResponse, certificatesResponse, statsResponse] = await Promise.all([
+          customAxios.get('/api/admin/pending-teachers'),
+          customAxios.get('/api/certificates/admin/pending'),
+          customAxios.get('/api/admin/stats')
+        ]);
+        
         setPendingTeachers(teachersResponse.data);
-
-        // Fetch admin stats
-        const statsResponse = await customAxios.get('/api/admin/stats');
-        setStats(statsResponse.data);
-
+        setPendingCertificates(certificatesResponse.data);
+        
+        // Update stats with certificate count
+        const updatedStats = {
+          ...statsResponse.data,
+          pendingCertificates: certificatesResponse.data.length
+        };
+        
+        setStats(updatedStats);
         setError(null);
       } catch (err) {
         console.error('Error fetching admin data:', err);
@@ -152,6 +167,39 @@ const AdminPanel = () => {
     }
   };
 
+  // Handle certificate approval or rejection
+  const handleProcessCertificate = async (certificateId, status) => {
+    try {
+      let data = { certificateId, status };
+      
+      // If rejecting, include the reason
+      if (status === 'rejected' && rejectionReason) {
+        data.rejectionReason = rejectionReason;
+      }
+      
+      await customAxios.post('/api/certificates/admin/process', data);
+      
+      // Update the local state to remove the processed certificate
+      setPendingCertificates(pendingCertificates.filter(cert => cert._id !== certificateId));
+      
+      // Update stats
+      setStats({
+        ...stats,
+        pendingCertificates: stats.pendingCertificates - 1
+      });
+      
+      // Reset rejection form
+      setRejectionReason('');
+      setShowRejectionForm(false);
+      setSelectedCertificateId(null);
+      
+      toast.success(`Certificate ${status === 'approved' ? 'approved' : 'rejected'} successfully`);
+    } catch (err) {
+      console.error('Error processing certificate:', err);
+      toast.error('Failed to process certificate');
+    }
+  };
+
   // Toggle teacher expansion
   const toggleTeacherExpansion = (teacherId) => {
     if (expandedTeacher === teacherId) {
@@ -165,6 +213,21 @@ const AdminPanel = () => {
   const showRejectForm = (teacherId) => {
     setSelectedTeacherId(teacherId);
     setShowRejectionForm(true);
+  };
+
+  // Show certificate rejection form
+  const showCertificateRejectForm = (certificateId) => {
+    setSelectedCertificateId(certificateId);
+    setShowRejectionForm(true);
+  };
+
+  // Toggle certificate expansion
+  const toggleCertificateExpansion = (certificateId) => {
+    if (expandedCertificate === certificateId) {
+      setExpandedCertificate(null);
+    } else {
+      setExpandedCertificate(certificateId);
+    }
   };
 
   if (!isAdmin) return null;
@@ -253,6 +316,21 @@ const AdminPanel = () => {
             onClick={() => setActiveTab('teachers')}
           >
             Pending Teacher Verifications
+          </button>
+          <button
+            className={`flex-1 py-3 px-4 rounded-lg font-medium text-sm transition-all ${
+              activeTab === 'certificates'
+                ? 'bg-teal-50 text-teal-700'
+                : 'text-gray-600 hover:bg-gray-50'
+            }`}
+            onClick={() => setActiveTab('certificates')}
+          >
+            Certificate Requests
+            {stats.pendingCertificates > 0 && (
+              <span className="ml-2 px-2 py-0.5 bg-teal-100 text-teal-700 rounded-full text-xs">
+                {stats.pendingCertificates}
+              </span>
+            )}
           </button>
           <button
             className={`flex-1 py-3 px-4 rounded-lg font-medium text-sm transition-all ${
@@ -477,6 +555,229 @@ const AdminPanel = () => {
                                     >
                                       <CheckCircle size={18} className="mr-2" />
                                       Approve
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </motion.div>
+                    </AnimatePresence>
+                  ))
+                )}
+              </div>
+            </div>
+          </motion.div>
+        ) : activeTab === 'certificates' ? (
+          <motion.div
+            key="certificates"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+          >
+            {/* Pending Certificates Section */}
+            <div className="bg-white rounded-2xl shadow-lg p-6 lg:p-8">
+              <div className="flex items-center justify-between mb-8">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-r from-teal-500 to-teal-600 flex items-center justify-center text-white">
+                    <FileCheck size={20} />
+                  </div>
+                  <h2 className="text-xl font-bold text-gray-800">Pending Certificate Requests</h2>
+                </div>
+                <span className="px-4 py-2 bg-teal-100 text-teal-700 rounded-xl font-medium">
+                  {pendingCertificates.length} pending
+                </span>
+              </div>
+
+              <div className="space-y-4">
+                {pendingCertificates.length === 0 ? (
+                  <div className="text-center py-10 border-2 border-dashed border-gray-200 rounded-xl">
+                    <div className="w-16 h-16 mx-auto bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                      <FileCheck className="h-8 w-8 text-gray-400" />
+                    </div>
+                    <h3 className="text-lg font-medium text-gray-600 mb-1">No pending certificate requests</h3>
+                    <p className="text-gray-500">All certificate requests are processed</p>
+                  </div>
+                ) : (
+                  pendingCertificates.map((certificate) => (
+                    <AnimatePresence key={certificate._id}>
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        className="border border-gray-100 rounded-xl p-6 hover:shadow-lg transition-all duration-300"
+                      >
+                        <div className="border border-gray-200 rounded-xl overflow-hidden transition-all duration-200 hover:shadow-md">
+                          {/* Certificate Request Header */}
+                          <div 
+                            className={`p-4 flex justify-between items-center cursor-pointer transition-colors ${
+                              expandedCertificate === certificate._id ? 'bg-teal-50' : 'bg-gray-50 hover:bg-gray-100'
+                            }`}
+                            onClick={() => toggleCertificateExpansion(certificate._id)}
+                          >
+                            <div className="flex items-center">
+                              <div className={`p-2 rounded-lg mr-3 ${
+                                expandedCertificate === certificate._id ? 'bg-teal-100' : 'bg-gray-200'
+                              }`}>
+                                <FileCheck className={`${
+                                  expandedCertificate === certificate._id ? 'text-teal-600' : 'text-gray-600'
+                                }`} size={20} />
+                              </div>
+                              <div>
+                                <h4 className="font-medium text-gray-800">
+                                  {certificate.user?.name || 'Unknown User'}
+                                </h4>
+                                <p className="text-sm text-gray-500">{certificate.skill?.name} Certificate</p>
+                              </div>
+                            </div>
+                            <div className="flex items-center">
+                              <span className="px-3 py-1 bg-teal-100 text-teal-800 rounded-full text-xs font-medium mr-3">
+                                {certificate.certificateId}
+                              </span>
+                              {expandedCertificate === certificate._id ? (
+                                <ChevronUp size={20} className="text-teal-600" />
+                              ) : (
+                                <ChevronDown size={20} className="text-gray-500" />
+                              )}
+                            </div>
+                          </div>
+                          
+                          {/* Expanded Content */}
+                          {expandedCertificate === certificate._id && (
+                            <div className="p-5 border-t border-gray-200 bg-white">
+                              {/* Certificate Details */}
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                                <div className="bg-gray-50 p-4 rounded-lg">
+                                  <h5 className="font-medium text-gray-700 mb-2">Student Details</h5>
+                                  <div className="space-y-2">
+                                    <p className="text-sm flex justify-between">
+                                      <span className="text-gray-500">Name:</span>
+                                      <span className="font-medium">{certificate.user?.name}</span>
+                                    </p>
+                                    <p className="text-sm flex justify-between">
+                                      <span className="text-gray-500">Email:</span>
+                                      <span className="font-medium">{certificate.user?.email}</span>
+                                    </p>
+                                    <p className="text-sm flex justify-between">
+                                      <span className="text-gray-500">Request Date:</span>
+                                      <span className="font-medium">
+                                        {new Date(certificate.requestedAt).toLocaleDateString()}
+                                      </span>
+                                    </p>
+                                  </div>
+                                </div>
+                                
+                                <div className="bg-gray-50 p-4 rounded-lg">
+                                  <h5 className="font-medium text-gray-700 mb-2">Certificate Details</h5>
+                                  <div className="space-y-2">
+                                    <p className="text-sm flex justify-between">
+                                      <span className="text-gray-500">Skill:</span>
+                                      <span className="font-medium">{certificate.skill?.name}</span>
+                                    </p>
+                                    <p className="text-sm flex justify-between">
+                                      <span className="text-gray-500">Teacher:</span>
+                                      <span className="font-medium">{certificate.teacher?.name}</span>
+                                    </p>
+                                    <p className="text-sm flex justify-between">
+                                      <span className="text-gray-500">Certificate ID:</span>
+                                      <span className="font-medium">{certificate.certificateId}</span>
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+                              
+                              {/* Sessions Completed */}
+                              <div className="mb-6">
+                                <h5 className="font-medium text-gray-700 mb-3 flex items-center">
+                                  <Clock className="text-teal-500 mr-2" size={16} />
+                                  Completed Sessions:
+                                </h5>
+                                <div className="bg-gray-50 rounded-lg p-3">
+                                  <table className="min-w-full divide-y divide-gray-200">
+                                    <thead>
+                                      <tr>
+                                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
+                                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Duration</th>
+                                      </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-200">
+                                      {certificate.sessions && certificate.sessions.length > 0 ? (
+                                        certificate.sessions.map((session, index) => (
+                                          <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                                            <td className="px-3 py-2 text-sm text-gray-500">
+                                              {new Date(session.startTime).toLocaleDateString()}
+                                            </td>
+                                            <td className="px-3 py-2 text-sm font-medium text-gray-800">
+                                              {session.title}
+                                            </td>
+                                            <td className="px-3 py-2 text-sm text-gray-500">
+                                              {session.duration} minutes
+                                            </td>
+                                          </tr>
+                                        ))
+                                      ) : (
+                                        <tr>
+                                          <td colSpan="3" className="px-3 py-2 text-sm text-gray-500 text-center">
+                                            No session data available
+                                          </td>
+                                        </tr>
+                                      )}
+                                    </tbody>
+                                  </table>
+                                </div>
+                              </div>
+                              
+                              {/* Action Buttons */}
+                              <div className="mt-6 border-t border-gray-100 pt-4">
+                                {showRejectionForm && selectedCertificateId === certificate._id ? (
+                                  <div className="w-full">
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                      Reason for rejection:
+                                    </label>
+                                    <textarea
+                                      value={rejectionReason}
+                                      onChange={(e) => setRejectionReason(e.target.value)}
+                                      placeholder="Please provide a reason for rejection (optional)"
+                                      className="w-full p-3 border border-gray-300 rounded-xl mb-4 focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none transition-all"
+                                      rows="3"
+                                    />
+                                    <div className="flex flex-wrap justify-end gap-3">
+                                      <button
+                                        onClick={() => {
+                                          setShowRejectionForm(false);
+                                          setRejectionReason('');
+                                          setSelectedCertificateId(null);
+                                        }}
+                                        className="px-5 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+                                      >
+                                        Cancel
+                                      </button>
+                                      <button
+                                        onClick={() => handleProcessCertificate(certificate._id, 'rejected')}
+                                        className="px-5 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center font-medium"
+                                      >
+                                        <XCircle size={18} className="mr-2" />
+                                        Confirm Rejection
+                                      </button>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <div className="flex flex-wrap justify-end gap-3">
+                                    <button
+                                      onClick={() => showCertificateRejectForm(certificate._id)}
+                                      className="px-5 py-2.5 bg-white border border-red-200 text-red-600 rounded-lg hover:bg-red-50 transition-colors flex items-center font-medium"
+                                    >
+                                      <XCircle size={18} className="mr-2" />
+                                      Reject
+                                    </button>
+                                    <button
+                                      onClick={() => handleProcessCertificate(certificate._id, 'approved')}
+                                      className="px-5 py-2.5 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors flex items-center font-medium"
+                                    >
+                                      <CheckCircle size={18} className="mr-2" />
+                                      Issue Certificate
                                     </button>
                                   </div>
                                 )}

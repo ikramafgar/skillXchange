@@ -94,6 +94,10 @@ router.get('/api/users', verifyToken, async (req, res) => {
 
 router.get('/api/users/:userId', async (req, res) => {
   try {
+    const { includeDetails } = req.query;
+    const includeSessionData = includeDetails === 'true';
+    
+    // Fetch the user with profile data
     const user = await User.findById(req.params.userId)
       .populate({
         path: 'profile',
@@ -106,6 +110,53 @@ router.get('/api/users/:userId', async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
+    
+    let sessionsData = {};
+    
+    // If details are requested, fetch session data to calculate rating
+    if (includeSessionData) {
+      // Import Session model
+      const Session = mongoose.model('Session');
+      
+      // Count total sessions taught
+      const sessionsTaught = await Session.countDocuments({
+        teacher: user._id,
+        status: 'completed'
+      });
+      
+      // Get all sessions with ratings for this teacher
+      const sessionsWithRatings = await Session.find({
+        teacher: user._id,
+        'feedback.learnerRating': { $exists: true, $ne: null }
+      });
+      
+      // Calculate average rating if not already in user model
+      let rating = user.rating || 0;
+      
+      // If user doesn't have a rating yet, calculate it from sessions
+      if (rating === 0 && sessionsWithRatings.length > 0) {
+        let totalRating = 0;
+        
+        sessionsWithRatings.forEach(session => {
+          if (session.feedback && session.feedback.learnerRating) {
+            totalRating += Number(session.feedback.learnerRating);
+          }
+        });
+        
+        rating = totalRating / sessionsWithRatings.length;
+        rating = parseFloat(rating.toFixed(1));
+        
+        // Update the user model with the calculated rating
+        user.rating = rating;
+        await user.save();
+      }
+      
+      sessionsData = {
+        sessionsTaught: sessionsTaught || 0,
+        totalRatings: sessionsWithRatings.length,
+        rating
+      };
+    }
 
     // Combine user and profile data
     const userData = {
@@ -114,11 +165,14 @@ router.get('/api/users/:userId', async (req, res) => {
       email: user.email,
       isVerified: user.isVerified,
       lastLogin: user.lastLogin,
-      ...(user.profile ? user.profile.toObject() : {})
+      rating: user.rating || 0, // Include the rating from the User model
+      ...(user.profile ? user.profile.toObject() : {}),
+      ...sessionsData
     };
 
     res.json(userData);
   } catch (error) {
+    console.error('Error fetching user profile:', error);
     res.status(500).json({ message: 'Error fetching user profile' });
   }
 });

@@ -1,6 +1,7 @@
 import Profile from '../models/Profile.js';
 import User from '../models/User.js';
 import ContactMessage from '../models/ContactMessage.js';
+import Certificate from '../models/Certificate.js';
 
 // Get all teachers with pending verification
 export const getPendingTeachers = async (req, res) => {
@@ -93,30 +94,42 @@ export const getAdminStats = async (req, res) => {
     }
 
     // Get counts for various stats
-    const totalUsers = await User.countDocuments();
-    const totalTeachers = await Profile.countDocuments({ 
-      $or: [{ role: 'teacher' }, { role: 'both' }]
-    });
-    const totalLearners = await Profile.countDocuments({ 
-      $or: [{ role: 'learner' }, { role: 'both' }]
-    });
-    const pendingVerifications = await Profile.countDocuments({
-      $or: [
-        { role: 'teacher', verificationStatus: 'pending' },
-        { role: 'both', verificationStatus: 'pending' }
-      ],
-      certificates: { $exists: true, $ne: [] }
-    });
-    const verifiedTeachers = await Profile.countDocuments({
-      $or: [
-        { role: 'teacher', verificationStatus: 'approved' },
-        { role: 'both', verificationStatus: 'approved' }
-      ]
-    });
-    
-    // Add contact message counts
-    const totalContactMessages = await ContactMessage.countDocuments();
-    const unreadContactMessages = await ContactMessage.countDocuments({ status: 'unread' });
+    const [
+      totalUsers,
+      totalTeachers,
+      totalLearners,
+      pendingVerifications,
+      verifiedTeachers,
+      totalContactMessages,
+      unreadContactMessages,
+      pendingCertificates,
+      approvedCertificates
+    ] = await Promise.all([
+      User.countDocuments(),
+      Profile.countDocuments({ 
+        $or: [{ role: 'teacher' }, { role: 'both' }]
+      }),
+      Profile.countDocuments({ 
+        $or: [{ role: 'learner' }, { role: 'both' }]
+      }),
+      Profile.countDocuments({
+        $or: [
+          { role: 'teacher', verificationStatus: 'pending' },
+          { role: 'both', verificationStatus: 'pending' }
+        ],
+        certificates: { $exists: true, $ne: [] }
+      }),
+      Profile.countDocuments({
+        $or: [
+          { role: 'teacher', verificationStatus: 'approved' },
+          { role: 'both', verificationStatus: 'approved' }
+        ]
+      }),
+      ContactMessage.countDocuments(),
+      ContactMessage.countDocuments({ status: 'unread' }),
+      Certificate.countDocuments({ status: 'pending' }),
+      Certificate.countDocuments({ status: 'approved' })
+    ]);
 
     res.json({
       totalUsers,
@@ -125,7 +138,9 @@ export const getAdminStats = async (req, res) => {
       pendingVerifications,
       verifiedTeachers,
       totalContactMessages,
-      unreadContactMessages
+      unreadContactMessages,
+      pendingCertificates,
+      approvedCertificates
     });
   } catch (error) {
     console.error('Error fetching admin stats:', error);

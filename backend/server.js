@@ -17,6 +17,7 @@ import messageRoutes from './routes/messageRoutes.js'; // Import message routes
 import sessionRoutes from './routes/sessionRoutes.js'; // Import session routes
 import skillRoutes from './routes/skillRoutes.js'; // Import skill routes
 import paymentRoutes from './routes/paymentRoutes.js'; // Import payment routes
+import certificateRoutes from './routes/certificateRoutes.js'; // Import certificate routes
 import { Server } from 'socket.io';
 import { createServer } from 'http';
 
@@ -87,6 +88,7 @@ app.use('/api/message', messageRoutes); // Use message routes
 app.use('/api/sessions', sessionRoutes); // Use session routes
 app.use('/api/skills', skillRoutes); // Use skill routes
 app.use('/api/payments', paymentRoutes); // Use payment routes
+app.use('/api/certificates', certificateRoutes); // Use certificate routes
 
 // Special route for Stripe webhooks (needs raw body)
 app.use('/api/payments/webhook', express.raw({ type: 'application/json' }));

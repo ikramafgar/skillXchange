@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import {  useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
   UserCheck, Mail, Phone, MapPin, Lightbulb, Book, 
   Award, Briefcase, Calendar, Clock, MessageSquare,
-  X, ExternalLink, Facebook, Twitter, Linkedin, Github, Globe,
-  DollarSign
+  X,  Facebook, Twitter, Linkedin, Github, Globe,
+  DollarSign, Star
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { useProfileStore } from '../store/ProfileStore';
@@ -24,9 +24,10 @@ export default function UserProfileModal({
   useEffect(() => {
     if (isOpen && userData?._id) {
       setLoading(true);
-      // Use the correct API endpoint
-      customAxios.get(`/api/users/${userData._id}`)
+      // Use the correct API endpoint with includeDetails parameter to ensure we get the rating
+      customAxios.get(`/api/users/${userData._id}?includeDetails=true`)
         .then(response => {
+          console.log('User profile data received:', response.data);
           setProfileData(response.data);
           setLoading(false);
         })
@@ -94,6 +95,24 @@ export default function UserProfileModal({
             {displayData.title && (
               <p className="text-gray-600 mt-1">{displayData.title}</p>
             )}
+            
+            {/* User Rating */}
+            <div className="flex items-center justify-center mt-2">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <Star
+                  key={star}
+                  fill={(displayData.rating || 0) >= star ? "#FBBF24" : "none"}
+                  className={`w-4 h-4 ${
+                    (displayData.rating || 0) >= star 
+                      ? "text-amber-400" 
+                      : "text-gray-300"
+                  }`}
+                />
+              ))}
+              <span className="ml-2 text-sm text-gray-600">
+                {(displayData.rating || 0).toFixed(1)}/5
+              </span>
+            </div>
             
             {connectionDate && (
               <div className="flex items-center justify-center mt-2">

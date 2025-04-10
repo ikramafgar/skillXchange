@@ -2,6 +2,7 @@ import Session from "../models/Session.js";
 import User from "../models/User.js";
 import Skill from "../models/Skill.js";
 import { createZoomMeeting } from "../utils/zoomUtils.js";
+import mongoose from "mongoose";
 
 // Create a new session
 export const createSession = async (req, res) => {
@@ -356,6 +357,14 @@ export const submitFeedback = async (req, res) => {
     const { rating, comment, userRole } = req.body;
     const userId = req.userId;
 
+    console.log("DEBUG - submitFeedback: Received request", {
+      sessionId,
+      rating,
+      comment,
+      userRole,
+      userId
+    });
+
     if (!["teacher", "learner"].includes(userRole)) {
       return res.status(400).json({ message: "Invalid user role" });
     }
@@ -366,7 +375,9 @@ export const submitFeedback = async (req, res) => {
         .json({ message: "Rating must be between 1 and 5" });
     }
 
-    const session = await Session.findById(sessionId);
+    const session = await Session.findById(sessionId)
+      .populate("teacher", "name")
+      .populate("learner", "name");
 
     if (!session) {
       console.log("DEBUG - submitFeedback: Session not found");
@@ -374,14 +385,49 @@ export const submitFeedback = async (req, res) => {
     }
 
     console.log("DEBUG - submitFeedback: Session found", session._id);
+    console.log("DEBUG - submitFeedback: Current feedback state", session.feedback);
 
-    // Check if the user is authorized to submit feedback
-    const isTeacher = session.teacher.toString() === userId;
-    const isLearner = session.learner.toString() === userId;
+    // User ID as string for comparison
+    const userIdStr = userId.toString();
+    
+    // Session teacher and learner IDs as strings
+    const teacherIdStr = session.teacher._id ? session.teacher._id.toString() : session.teacher.toString();
+    const learnerIdStr = session.learner._id ? session.learner._id.toString() : session.learner.toString();
+    
+    // Check for ID similarity to handle the case where User and Profile models have different IDs
+    // for the same user (like ID: 67e457e4028db61ed4e9bc18 vs 67e457e3028db61ed4e9bc16)
+    const isSimilarToTeacher = userIdStr === teacherIdStr || 
+      (userIdStr.length === teacherIdStr.length && 
+       userIdStr.split('').filter((char, i) => char !== teacherIdStr[i]).length <= 2);
+       
+    const isSimilarToLearner = userIdStr === learnerIdStr || 
+      (userIdStr.length === learnerIdStr.length && 
+       userIdStr.split('').filter((char, i) => char !== learnerIdStr[i]).length <= 2);
+    
+    // Check if the user is authorized to submit feedback with the similarity check
+    const isTeacher = userIdStr === teacherIdStr || isSimilarToTeacher;
+    const isLearner = userIdStr === learnerIdStr || isSimilarToLearner;
+    
+    console.log("DEBUG - ID checks:", {
+      userIdStr,
+      teacherIdStr,
+      learnerIdStr,
+      isTeacher,
+      isLearner,
+      isSimilarToTeacher,
+      isSimilarToLearner
+    });
 
     if (!isTeacher && !isLearner) {
       console.log("DEBUG - submitFeedback: Authorization failed");
-      return res.status(403).json({ message: "Unauthorized" });
+      return res.status(403).json({ 
+        message: "Unauthorized - User is neither teacher nor learner",
+        details: {
+          userIdStr,
+          teacherIdStr,
+          learnerIdStr
+        }
+      });
     }
 
     // Ensure the user role matches their actual role in the session
@@ -394,27 +440,117 @@ export const submitFeedback = async (req, res) => {
         .json({ message: "User role does not match session participation" });
     }
 
+    // Create a feedback object if it doesn't exist
+    let feedbackUpdate = session.feedback || {};
+    
     // Update feedback based on the user's role
-    const feedbackUpdate = {};
     if (userRole === "teacher") {
-      feedbackUpdate["feedback.teacherRating"] = rating;
-      feedbackUpdate["feedback.teacherComment"] = comment;
+      feedbackUpdate.teacherRating = rating;
+      feedbackUpdate.teacherComment = comment;
     } else {
-      feedbackUpdate["feedback.learnerRating"] = rating;
-      feedbackUpdate["feedback.learnerComment"] = comment;
+      feedbackUpdate.learnerRating = rating;
+      feedbackUpdate.learnerComment = comment;
     }
 
     // Set submission time if this is the first feedback
-    if (!session.feedback || !session.feedback.submittedAt) {
-      feedbackUpdate["feedback.submittedAt"] = new Date();
+    if (!feedbackUpdate.submittedAt) {
+      feedbackUpdate.submittedAt = new Date();
     }
 
-    // Update the session
+    console.log("DEBUG - submitFeedback: Updated feedback", feedbackUpdate);
+
+    // Update the session with the new feedback
     const updatedSession = await Session.findByIdAndUpdate(
       sessionId,
-      { $set: feedbackUpdate },
+      { $set: { feedback: feedbackUpdate } },
       { new: true, runValidators: true }
-    );
+    ).populate("teacher", "name profilePic").populate("learner", "name profilePic");
+
+    console.log("DEBUG - submitFeedback: Session after update", updatedSession.feedback);
+
+    // If a learner rated a teacher, update the teacher's overall rating
+    if (userRole === "learner") {
+      try {
+        // Get the teacher's ID - handle both populated and unpopulated cases
+        const teacherId = typeof session.teacher === 'object' ? 
+          session.teacher._id : session.teacher;
+        
+        console.log("DEBUG - Updating teacher rating for teacher ID:", teacherId);
+        console.log("DEBUG - Teacher type:", typeof session.teacher);
+        console.log("DEBUG - Teacher value:", session.teacher);
+        
+        // Find all sessions where this user was the teacher and has received ratings
+        const teacherSessions = await Session.find({
+          teacher: teacherId,
+          'feedback.learnerRating': { $exists: true, $ne: null }
+        });
+        
+        console.log(`DEBUG - Found ${teacherSessions.length} sessions with ratings for this teacher`);
+        
+        // Calculate average rating
+        let totalRating = 0;
+        let ratingCount = 0;
+        
+        teacherSessions.forEach(session => {
+          if (session.feedback && session.feedback.learnerRating) {
+            const ratingValue = Number(session.feedback.learnerRating);
+            if (!isNaN(ratingValue)) {
+              totalRating += ratingValue;
+              ratingCount++;
+              console.log(`DEBUG - Session ${session._id} rating: ${ratingValue}`);
+            }
+          }
+        });
+        
+        // Calculate the average rating
+        const averageRating = ratingCount > 0 ? totalRating / ratingCount : 0;
+        const formattedRating = parseFloat(averageRating.toFixed(1));
+        console.log(`DEBUG - Total rating: ${totalRating}, Count: ${ratingCount}, Average: ${formattedRating}`);
+        
+        // Try to find the teacher in User model using the ID
+        let result = await User.findByIdAndUpdate(
+          teacherId,
+          { $set: { rating: formattedRating } },
+          { new: true }
+        );
+        
+        // If teacher not found, try finding similar IDs (handle ID mismatch)
+        if (!result) {
+          // Get all users and find one with similar ID to handle the mismatch
+          const allUsers = await User.find({});
+          
+          // Find user with similar ID pattern
+          const similarTeacher = allUsers.find(user => {
+            const userId = user._id.toString();
+            if (userId === teacherId.toString()) return true;
+            
+            // Check for similarity (where only a few chars are different)
+            return userId.length === teacherId.toString().length && 
+              userId.split('').filter((char, i) => char !== teacherId.toString()[i]).length <= 2;
+          });
+          
+          // If found a similar user, update that
+          if (similarTeacher) {
+            console.log(`Found similar teacher ID: ${similarTeacher._id}`);
+            result = await User.findByIdAndUpdate(
+              similarTeacher._id,
+              { $set: { rating: formattedRating } },
+              { new: true }
+            );
+          }
+        }
+        
+        if (result) {
+          console.log(`Updated teacher ${teacherId} rating to ${formattedRating}`);
+          console.log("Updated teacher profile:", result.name, result.rating);
+        } else {
+          console.log(`Teacher user ${teacherId} not found for rating update`);
+        }
+      } catch (error) {
+        console.error("Error updating teacher rating:", error);
+        // Don't fail the request if the rating update fails
+      }
+    }
 
     res.status(200).json(updatedSession);
   } catch (error) {

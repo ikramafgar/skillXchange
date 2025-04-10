@@ -3,6 +3,7 @@ import { useAuthStore } from '../store/authStore';
 import { useState, useEffect, useRef } from 'react';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ConnectionRequests from '../components/ConnectionRequests';
+import Certificates from '../components/Certificates';
 import { motion, AnimatePresence } from 'framer-motion';
 import { socket, authenticateSocket } from '../socket';
 import { 
@@ -43,12 +44,10 @@ function Dashboard() {
   // Initialize socket connection
   useEffect(() => {
     if (user?._id) {
-      console.log('Dashboard: Initializing socket connection for user:', user._id);
       authenticateSocket(user._id);
       
       // Listen for new connection requests
       socket.on('connectionRequest', (data) => {
-        console.log('Dashboard: Received new connection request', data);
         // Increment counter or refresh requests
         setPendingRequestsCount(prev => prev + 1);
         
@@ -149,7 +148,6 @@ function Dashboard() {
   useEffect(() => {
     const fetchPendingRequestsCount = async () => {
       try {
-        console.log('Fetching pending requests count for user:', user?._id);
         const response = await fetch('/api/connections/pending/count', {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -653,6 +651,17 @@ function Dashboard() {
               </div>
             </motion.div>
           </div>
+
+          {/* Certificates Section - Add this right after the Two Column Layout */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3, duration: 0.3 }}
+            className="mt-8"
+          >
+            <h2 className="text-xl font-bold text-gray-800 mb-6">My Certificates</h2>
+            <Certificates />
+          </motion.div>
         </div>
       </main>
     </div>

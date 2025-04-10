@@ -3,7 +3,7 @@ import axios from "axios";
 import PropTypes from "prop-types";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaGithub, FaLinkedin, FaTimes } from "react-icons/fa";
-import { MapPin, Briefcase, Mail, Phone, DollarSign } from "lucide-react";
+import { MapPin, Briefcase, Mail, Phone, DollarSign, Star } from "lucide-react";
 import { toast } from "react-hot-toast";
 
 // Add PropTypes validation
@@ -23,10 +23,11 @@ function UserProfileModal({ userId, isOpen, onClose }) {
       axios
         .get(`/api/users/${userId}`, {
           params: {
-            includeDetails: true, // Request additional details
+            includeDetails: true, // Request additional details including rating
           },
         })
         .then((response) => {
+          console.log('User profile data received:', response.data);
           setUser(response.data);
         })
         .catch((error) => {
@@ -99,8 +100,19 @@ function UserProfileModal({ userId, isOpen, onClose }) {
                           <div className="text-sm text-gray-600">Points</div>
                         </div>
                         <div className="bg-purple-50 rounded-lg p-2 text-center">
-                          <div className="text-xl font-bold text-purple-600">
-                            {user.rating || 0}
+                          <div className="flex justify-center mb-1">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                              <Star
+                                key={star}
+                                fill={(user.rating || 0) >= star ? "#A855F7" : "none"}
+                                className={`w-4 h-4 ${
+                                  (user.rating || 0) >= star ? "text-purple-600" : "text-gray-300"
+                                }`}
+                              />
+                            ))}
+                          </div>
+                          <div className="text-sm font-medium text-purple-600">
+                            {(user.rating || 0).toFixed(1)}
                           </div>
                           <div className="text-sm text-gray-600">Rating</div>
                         </div>
@@ -200,7 +212,7 @@ function UserProfileModal({ userId, isOpen, onClose }) {
                         <span className="text-gray-700">{user.email}</span>
                       </a>
                     )}
-                    {user.phone && (
+                    {/* {user.phone && (
                       <a
                         href={`tel:${user.phone}`}
                         className="flex items-center gap-2 bg-gray-50 rounded-xl p-4 hover:bg-gray-100"
@@ -208,7 +220,7 @@ function UserProfileModal({ userId, isOpen, onClose }) {
                         <Phone className="text-gray-500" />
                         <span className="text-gray-700">{user.phone}</span>
                       </a>
-                    )}
+                    )} */}
                   </div>
 
                   {/* Social Links */}

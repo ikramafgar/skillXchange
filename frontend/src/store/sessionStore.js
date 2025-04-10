@@ -191,7 +191,15 @@ export const useSessionStore = create((set, get) => ({
   submitFeedback: async (sessionId, feedbackData) => {
     set({ isLoading: true, error: null });
     try {
+      console.log("Submitting feedback with data:", {
+        sessionId,
+        ...feedbackData
+      });
+      
       const response = await customAxios.post(`/api/sessions/${sessionId}/feedback`, feedbackData);
+      
+      // Log the response to debug
+      console.log("Feedback submission response:", response.data);
       
       // Check if the updated session has a meeting link
       const updatedSession = response.data;
@@ -203,6 +211,30 @@ export const useSessionStore = create((set, get) => ({
         const newZoomDetails = meetingLink ? 
           { joinUrl: meetingLink } : 
           (state.currentSession?._id === sessionId ? state.zoomMeetingDetails : null);
+        
+        // Make sure to properly update the feedback in the current session
+        if (state.currentSession?._id === sessionId) {
+          // Ensure we're creating a feedback object if it doesn't exist
+          if (!updatedSession.feedback) {
+            updatedSession.feedback = {};
+          }
+          
+          // Set the feedback data based on userRole
+          if (feedbackData.userRole === 'learner') {
+            updatedSession.feedback.learnerRating = feedbackData.rating;
+            updatedSession.feedback.learnerComment = feedbackData.comment;
+          } else {
+            updatedSession.feedback.teacherRating = feedbackData.rating;
+            updatedSession.feedback.teacherComment = feedbackData.comment;
+          }
+          
+          // Set submission time if not already set
+          if (!updatedSession.feedback.submittedAt) {
+            updatedSession.feedback.submittedAt = new Date();
+          }
+          
+          console.log("Updated session feedback in local state:", updatedSession.feedback);
+        }
           
         return {
           sessions: state.sessions.map(session => 
@@ -214,9 +246,19 @@ export const useSessionStore = create((set, get) => ({
         };
       });
       
+      // Fetch the session again to ensure we have the most up-to-date data
+      setTimeout(() => {
+        get().fetchSessionById(sessionId).catch(err => {
+          console.log("Error refreshing session after feedback:", err);
+        });
+      }, 1000);
+      
       return response.data;
     } catch (error) {
       console.error('Error submitting feedback:', error);
+      if (error.response?.data) {
+        console.error('Server error details:', error.response.data);
+      }
       set({ 
         error: error.response?.data?.message || 'Failed to submit feedback', 
         isLoading: false 
