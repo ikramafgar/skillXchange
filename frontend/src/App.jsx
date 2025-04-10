@@ -12,6 +12,7 @@ import { Toaster } from "react-hot-toast"; // Import Toaster component
 
 import Navbar from "./components/Navbar"; // Navbar component
 import Contact from "./components/ContactUs";
+import FloatingChatBot from "./components/FloatingChatBot"; // Import the FloatingChatBot component
 // import MouseTracker from "./components/MouseTracker";
 
 // Pages
@@ -25,7 +26,6 @@ import DashboardPage from "./pages/DashboardPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import EmailVerificationPage from "./pages/EmailVerificationPage";
-import HelpPage from "./pages/HelpPage";
 import AuthCallbackPage from "./pages/AuthCallbackPage"; // Import the Auth callback component
 import AdminPage from "./pages/AdminPage"; // Import the Admin page component
 import Main from "./pages/MainPage";
@@ -123,7 +123,6 @@ function App() {
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/profile/:userId" element={<UserProfilePage />} /> {/* New Profile Page */}
         <Route path="/contact" element={<Contact />} />
-        <Route path="/help" element={<HelpPage />} />
         <Route path="/error" element={<ErrorPage />} /> {/* New Error Page */}
         <Route path="/verify-email" element={<EmailVerificationPage />} />
         <Route path="/auth-callback" element={<AuthCallbackPage />} /> 
@@ -220,6 +219,9 @@ function App() {
         {/* Catch-all route for 404 errors */}
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
+      
+      {/* Add the FloatingChatBot to appear on all pages */}
+      <FloatingChatBot />
     </Router>
   );
 }
