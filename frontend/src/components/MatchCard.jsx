@@ -9,7 +9,8 @@ import {
   Clock,
   Globe,
   User,
-  Sparkles
+  Sparkles,
+  CheckCircle
 } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { useConnectionStore } from '../store/connectionStore';
@@ -39,12 +40,6 @@ const MatchCard = ({ match, onViewProfile }) => {
     skillToTeach,
     groupChain
   } = match;
-
-  // Debug log to see the data structure
-  console.log('MatchCard matchedUser:', matchedUser);
-  console.log('MatchCard matchedUser profile:', matchedUser?.profile);
-  console.log('MatchCard matchedUser role:', matchedUser?.role);
-  console.log('MatchCard matchedUser profile role:', matchedUser?.profile?.role);
 
   // Format score as percentage
   const scorePercentage = Math.round(score);
@@ -90,7 +85,6 @@ const MatchCard = ({ match, onViewProfile }) => {
   // Get user role
   const getUserRole = () => {
     const role = matchedUser?.profile?.role;
-    console.log('User role:', role);
     return role;
   };
   
@@ -205,7 +199,18 @@ const MatchCard = ({ match, onViewProfile }) => {
 
           {/* User Info */}
           <div className="text-center w-full flex-1 flex flex-col">
-            <h3 className="font-semibold text-lg text-gray-800 mb-1">{matchedUser.name || 'User'}</h3>
+            <div className="flex items-center justify-center gap-1.5 mb-1">
+              <h3 className="font-semibold text-lg text-gray-800">{matchedUser.name || 'User'}</h3>
+              {/* Verification badge */}
+              {(matchedUser?.profile?.verificationStatus === "approved" || matchedUser?.verificationStatus === "approved") && (
+                <span 
+                  className="inline-flex bg-blue-500 text-white p-1 rounded-full"
+                  title="Verified Teacher"
+                >
+                  <CheckCircle size={14} />
+                </span>
+              )}
+            </div>
             <p className="text-gray-500 text-xs font-medium uppercase tracking-wide mb-4">
               {getUserRole() === 'both' 
                 ? 'Learner & Teacher' 
@@ -366,9 +371,12 @@ MatchCard.propTypes = {
       _id: PropTypes.string,
       name: PropTypes.string,
       role: PropTypes.string,
+      verificationStatus: PropTypes.string,
       profile: PropTypes.shape({
         role: PropTypes.string,
-        profilePic: PropTypes.string
+        profilePic: PropTypes.string,
+        verificationStatus: PropTypes.string
+        
       })
     }),
     matchType: PropTypes.string,

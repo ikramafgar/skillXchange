@@ -5,10 +5,10 @@ import {
   UserCheck, Mail, Phone, MapPin, Lightbulb, Book, 
   Award, Briefcase, Calendar, Clock, MessageSquare,
   X,  Facebook, Twitter, Linkedin, Github, Globe,
-  DollarSign, Star
+  DollarSign, Star, CheckCircle
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import { useProfileStore } from '../store/ProfileStore';
+import PropTypes from 'prop-types';
 import customAxios from '../utils/axios';
 
 export default function UserProfileModal({ 
@@ -52,84 +52,118 @@ export default function UserProfileModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4 overflow-y-auto">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-3 sm:p-4 overflow-y-auto">
       <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: 20 }}
-        className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto relative"
+        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 10 }}
+        transition={{ duration: 0.2, ease: "easeOut" }}
+        className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto relative"
       >
         {/* Close button */}
         <button 
           onClick={onClose}
-          className="absolute right-4 top-4 p-1.5 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors z-10"
+          className="absolute right-4 top-4 p-1.5 bg-white/90 rounded-full hover:bg-gray-100  z-10 shadow-md hover:shadow-lg transition-all duration-200"
           aria-label="Close profile"
         >
-          <X className="w-5 h-5 text-gray-600" />
+          <X className="w-5 h-5 text-gray-700" />
         </button>
         
         {loading ? (
-          <div className="flex justify-center items-center p-12 min-h-[400px]">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+          <div className="flex flex-col justify-center items-center p-16 min-h-[400px]">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-t-2 border-blue-500"></div>
+            <p className="mt-4 text-gray-500 font-medium">Loading profile...</p>
           </div>
         ) : (
-        <>
-        {/* Header section with background and profile image */}
-        <div className="relative">
-          <div className="h-32 md:h-40 bg-gradient-to-r from-blue-600 to-indigo-700 rounded-t-xl"></div>
-          <div className="absolute bottom-0 left-0 right-0 transform translate-y-1/2 flex justify-center">
-            <img 
-              src={displayData.profilePic || '/default-avatar.png'} 
-              alt={displayData.name}
-              className="w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-white object-cover"
-            />
-          </div>
-        </div>
-        
-        {/* Profile content with padding to accommodate the profile image */}
-        <div className="pt-16 md:pt-20 px-6 pb-6">
-          {/* Name and basic info */}
-          <div className="text-center mb-6">
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-900">{displayData.name}</h1>
-            
-            {displayData.title && (
-              <p className="text-gray-600 mt-1">{displayData.title}</p>
-            )}
-            
-            {/* User Rating */}
-            <div className="flex items-center justify-center mt-2">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <Star
-                  key={star}
-                  fill={(displayData.rating || 0) >= star ? "#FBBF24" : "none"}
-                  className={`w-4 h-4 ${
-                    (displayData.rating || 0) >= star 
-                      ? "text-amber-400" 
-                      : "text-gray-300"
-                  }`}
-                />
-              ))}
-              <span className="ml-2 text-sm text-gray-600">
-                {(displayData.rating || 0).toFixed(1)}/5
-              </span>
+        <div className="p-6 sm:p-8 pt-10 sm:pt-6">
+          {/* Profile header with image and name */}
+          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 mb-8 pb-6 border-b border-gray-200">
+            <div className="relative">
+              <img 
+                src={displayData.profilePic || '/default-avatar.png'} 
+                alt={displayData.name}
+                className="w-28 h-28 rounded-full object-cover border-2 border-white shadow-lg"
+              />
+              <div className="absolute -bottom-2 -right-2 bg-blue-100 rounded-full p-1.5 border-2 border-white shadow-sm">
+                <UserCheck className="w-5 h-5 text-blue-600" />
+              </div>
             </div>
             
-            {connectionDate && (
-              <div className="flex items-center justify-center mt-2">
-                <UserCheck className="w-4 h-4 text-green-500 mr-1" />
-                <span className="text-sm text-gray-600">Connected since {new Date(connectionDate).toLocaleDateString()}</span>
+            <div className="text-center sm:text-left flex-1">
+              <div className="flex items-center justify-center sm:justify-start gap-2">
+                <h1 className="text-2xl font-bold text-gray-900 mb-1">{displayData.name}</h1>
+                {/* Verification badge */}
+                {displayData.verificationStatus === "approved" && (
+                  <span 
+                    className="inline-flex ml-1 bg-blue-500 text-white p-1 rounded-full"
+                    title="Verified Teacher"
+                  >
+                    <CheckCircle size={14} />
+                  </span>
+                )}
               </div>
-            )}
+              
+              {displayData.title && (
+                <p className="text-gray-600 font-medium">{displayData.title}</p>
+              )}
+              
+              {/* User Rating */}
+              <div className="flex items-center justify-center sm:justify-start mt-3 bg-amber-50 px-3 py-1.5 rounded-full w-fit mx-auto sm:mx-0">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <Star
+                    key={star}
+                    fill={(displayData.rating || 0) >= star ? "#FBBF24" : "none"}
+                    className={`w-4 h-4 ${
+                      (displayData.rating || 0) >= star 
+                        ? "text-amber-400" 
+                        : "text-gray-300"
+                    }`}
+                  />
+                ))}
+                <span className="ml-2 text-sm font-medium text-amber-800">
+                  {(displayData.rating || 0).toFixed(1)}/5
+                </span>
+              </div>
+              
+              {connectionDate && (
+                <div className="flex items-center justify-center sm:justify-start mt-2">
+                  <UserCheck className="w-4 h-4 text-green-500 mr-1" />
+                  <span className="text-sm text-gray-600">Connected since {new Date(connectionDate).toLocaleDateString()}</span>
+                </div>
+              )}
+              
+              {/* Message button for small screens */}
+              <div className="mt-4 sm:hidden">
+                <button
+                  onClick={handleNavigateToChat}
+                  className="w-full flex items-center justify-center px-5 py-2.5 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-all duration-200 text-sm font-medium shadow-md hover:shadow-lg"
+                >
+                  <MessageSquare className="w-4 h-4 mr-2" />
+                  Chat with {displayData.name}
+                </button>
+              </div>
+            </div>
+
+            {/* Message button for medium+ screens */}
+            <div className="hidden sm:block sm:ml-auto">
+              <button
+                onClick={handleNavigateToChat}
+                className="flex items-center justify-center px-5 py-2.5 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-all duration-200 text-sm font-medium whitespace-nowrap shadow-md hover:shadow-lg"
+              >
+                <MessageSquare className="w-4 h-4 mr-2" />
+                Chat with {displayData.name.split(' ')[0]}
+              </button>
+            </div>
           </div>
           
           {/* Main content grid */}
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
-            {/* Left column (3/5 width on md+) */}
-            <div className="md:col-span-3 space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Left column (2/3 width on md+) */}
+            <div className="md:col-span-2 space-y-6">
               {/* Bio section */}
               {displayData.bio && (
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <h3 className="font-medium text-gray-900 mb-2">About</h3>
+                <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-5 rounded-xl shadow-sm border border-gray-200">
+                  <h3 className="font-semibold text-gray-900 mb-3">About</h3>
                   <p className="text-gray-700">{displayData.bio}</p>
                 </div>
               )}
@@ -138,16 +172,24 @@ export default function UserProfileModal({
               <div className="space-y-6">
                 {/* Skills teaching */}
                 {displayData.skillsToTeach && displayData.skillsToTeach.length > 0 && (
-                  <div className="bg-amber-50 p-4 rounded-lg border border-amber-100">
-                    <div className="flex items-center mb-3">
-                      <Lightbulb className="w-5 h-5 text-amber-600 mr-2" />
-                      <h3 className="font-medium text-gray-900">Skills Teaching</h3>
+                  <div className="bg-gradient-to-br from-amber-50 to-amber-100 p-5 rounded-xl shadow-sm border border-amber-200">
+                    <div className="flex items-center mb-4">
+                      <div className="p-2 bg-amber-200 rounded-full mr-3">
+                        <Lightbulb className="w-5 h-5 text-amber-700" />
+                      </div>
+                      <h3 className="font-semibold text-gray-900">Skills Teaching</h3>
+                      {/* Teaching verification badge */}
+                      {displayData.verificationStatus === "approved" && (
+                        <span className="text-xs bg-blue-500 text-white px-2 py-1 rounded-full flex items-center ml-2">
+                          <CheckCircle size={10} className="mr-1" /> Verified Teacher
+                        </span>
+                      )}
                     </div>
                     
                     {/* Show hourly rate */}
                     {typeof displayData.hourlyRate !== 'undefined' && (
-                      <div className="mb-3 flex items-center px-3 py-1.5 bg-white text-amber-800 rounded-lg border border-amber-200 w-fit">
-                        <DollarSign className="w-4 h-4 mr-1 text-amber-600" />
+                      <div className="mb-4 flex items-center px-4 py-2 bg-white text-amber-800 rounded-lg shadow-sm border border-amber-200 w-fit">
+                        <DollarSign className="w-4 h-4 mr-2 text-amber-600" />
                         <span className="font-medium">
                           {displayData.hourlyRate > 0 
                             ? `${displayData.hourlyRate} PKR/hour` 
@@ -164,11 +206,11 @@ export default function UserProfileModal({
                         return skillName ? (
                           <div 
                             key={index} 
-                            className="px-3 py-1.5 bg-white text-amber-800 rounded-full text-sm border border-amber-200 flex items-center"
+                            className="px-4 py-1.5 bg-white text-amber-800 rounded-full text-sm border border-amber-200 flex items-center shadow-sm"
                           >
                             <span>{skillName}</span>
                             {skillLevel && (
-                              <span className="ml-1.5 px-1.5 py-0.5 bg-amber-100 text-amber-800 rounded text-xs">
+                              <span className="ml-2 px-2 py-0.5 bg-amber-100 text-amber-800 rounded-full text-xs font-medium">
                                 {skillLevel}
                               </span>
                             )}
@@ -181,16 +223,18 @@ export default function UserProfileModal({
                 
                 {/* Skills learning */}
                 {displayData.skillsToLearn && displayData.skillsToLearn.length > 0 && (
-                  <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
-                    <div className="flex items-center mb-3">
-                      <Book className="w-5 h-5 text-blue-600 mr-2" />
-                      <h3 className="font-medium text-gray-900">Skills Learning</h3>
+                  <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-5 rounded-xl shadow-sm border border-blue-200">
+                    <div className="flex items-center mb-4">
+                      <div className="p-2 bg-blue-200 rounded-full mr-3">
+                        <Book className="w-5 h-5 text-blue-700" />
+                      </div>
+                      <h3 className="font-semibold text-gray-900">Skills Learning</h3>
                     </div>
                     
                     {/* Show learning budget */}
                     {typeof displayData.learningBudget !== 'undefined' && (
-                      <div className="mb-3 flex items-center px-3 py-1.5 bg-white text-blue-800 rounded-lg border border-blue-200 w-fit">
-                        <DollarSign className="w-4 h-4 mr-1 text-blue-600" />
+                      <div className="mb-4 flex items-center px-4 py-2 bg-white text-blue-800 rounded-lg shadow-sm border border-blue-200 w-fit">
+                        <DollarSign className="w-4 h-4 mr-2 text-blue-600" />
                         <span className="font-medium">
                           {displayData.learningBudget > 0 
                             ? `Budget: ${displayData.learningBudget} PKR/hour` 
@@ -205,7 +249,7 @@ export default function UserProfileModal({
                         return skillName ? (
                           <div 
                             key={index} 
-                            className="px-3 py-1.5 bg-white text-blue-800 rounded-full text-sm border border-blue-200"
+                            className="px-4 py-1.5 bg-white text-blue-800 rounded-full text-sm border border-blue-200 shadow-sm"
                           >
                             {skillName}
                           </div>
@@ -218,19 +262,21 @@ export default function UserProfileModal({
               
               {/* Experience & Education (if available) */}
               {displayData.experience && displayData.experience.length > 0 && (
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <div className="flex items-center mb-3">
-                    <Briefcase className="w-5 h-5 text-gray-700 mr-2" />
-                    <h3 className="font-medium text-gray-900">Experience</h3>
+                <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-5 rounded-xl shadow-sm border border-gray-200">
+                  <div className="flex items-center mb-4">
+                    <div className="p-2 bg-gray-200 rounded-full mr-3">
+                      <Briefcase className="w-5 h-5 text-gray-700" />
+                    </div>
+                    <h3 className="font-semibold text-gray-900">Experience</h3>
                   </div>
-                  <div className="space-y-3">
+                  <div className="space-y-4">
                     {displayData.experience.map((exp, index) => (
-                      <div key={index} className="border-l-2 border-gray-300 pl-3 py-1">
-                        <h4 className="font-medium">{exp.role || exp.title}</h4>
+                      <div key={index} className="border-l-3 border-gray-300 pl-4 py-2 hover:border-blue-400 transition-colors">
+                        <h4 className="font-semibold">{exp.role || exp.title}</h4>
                         <p className="text-sm text-gray-600">{exp.company || exp.organization}</p>
                         {(exp.startDate || exp.endDate) && (
-                          <p className="text-xs text-gray-500 flex items-center mt-1">
-                            <Calendar className="w-3 h-3 mr-1" />
+                          <p className="text-sm text-gray-500 flex items-center mt-1">
+                            <Calendar className="w-4 h-4 mr-2" />
                             {exp.startDate && exp.endDate 
                               ? `${exp.startDate} - ${exp.endDate}` 
                               : exp.startDate || exp.endDate}
@@ -243,19 +289,21 @@ export default function UserProfileModal({
               )}
               
               {displayData.education && displayData.education.length > 0 && (
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <div className="flex items-center mb-3">
-                    <Award className="w-5 h-5 text-gray-700 mr-2" />
-                    <h3 className="font-medium text-gray-900">Education</h3>
+                <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-5 rounded-xl shadow-sm border border-gray-200">
+                  <div className="flex items-center mb-4">
+                    <div className="p-2 bg-gray-200 rounded-full mr-3">
+                      <Award className="w-5 h-5 text-gray-700" />
+                    </div>
+                    <h3 className="font-semibold text-gray-900">Education</h3>
                   </div>
-                  <div className="space-y-3">
+                  <div className="space-y-4">
                     {displayData.education.map((edu, index) => (
-                      <div key={index} className="border-l-2 border-gray-300 pl-3 py-1">
-                        <h4 className="font-medium">{edu.degree || edu.course}</h4>
+                      <div key={index} className="border-l-3 border-gray-300 pl-4 py-2 hover:border-blue-400 transition-colors">
+                        <h4 className="font-semibold">{edu.degree || edu.course}</h4>
                         <p className="text-sm text-gray-600">{edu.institution || edu.school}</p>
                         {(edu.startYear || edu.endYear) && (
-                          <p className="text-xs text-gray-500 flex items-center mt-1">
-                            <Calendar className="w-3 h-3 mr-1" />
+                          <p className="text-sm text-gray-500 flex items-center mt-1">
+                            <Calendar className="w-4 h-4 mr-2" />
                             {edu.startYear && edu.endYear 
                               ? `${edu.startYear} - ${edu.endYear}` 
                               : edu.startYear || edu.endYear}
@@ -268,36 +316,39 @@ export default function UserProfileModal({
               )}
             </div>
             
-            {/* Right column (2/5 width on md+) */}
-            <div className="md:col-span-2 space-y-6">
+            {/* Right column (1/3 width on md+) */}
+            <div className="space-y-6">
               {/* Contact card */}
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <h3 className="font-medium text-gray-900 mb-3">Contact Information</h3>
-                <div className="space-y-3">
+              <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-5 rounded-xl shadow-sm border border-gray-200">
+                <h3 className="font-semibold text-gray-900 mb-4 flex items-center">
+                  <Mail className="w-5 h-5 mr-2 text-gray-700" />
+                  Contact Information
+                </h3>
+                <div className="space-y-4">
                   {displayData.email && (
-                    <div className="flex items-center">
-                      <Mail className="w-4 h-4 text-gray-500 mr-2 flex-shrink-0" />
+                    <div className="flex items-center p-3 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow">
+                      <Mail className="w-5 h-5 text-blue-500 mr-3 flex-shrink-0" />
                       <span className="text-sm text-gray-700 break-all">{displayData.email}</span>
                     </div>
                   )}
                   
                   {displayData.phone && (
-                    <div className="flex items-center">
-                      <Phone className="w-4 h-4 text-gray-500 mr-2 flex-shrink-0" />
+                    <div className="flex items-center p-3 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow">
+                      <Phone className="w-5 h-5 text-green-500 mr-3 flex-shrink-0" />
                       <span className="text-sm text-gray-700">{displayData.phone}</span>
                     </div>
                   )}
                   
                   {displayData.location && (
-                    <div className="flex items-center">
-                      <MapPin className="w-4 h-4 text-gray-500 mr-2 flex-shrink-0" />
+                    <div className="flex items-center p-3 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow">
+                      <MapPin className="w-5 h-5 text-red-500 mr-3 flex-shrink-0" />
                       <span className="text-sm text-gray-700">{displayData.location}</span>
                     </div>
                   )}
                   
                   {displayData.availability && (
-                    <div className="flex items-start">
-                      <Clock className="w-4 h-4 text-gray-500 mr-2 mt-0.5 flex-shrink-0" />
+                    <div className="flex items-start p-3 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow">
+                      <Clock className="w-5 h-5 text-purple-500 mr-3 mt-0.5 flex-shrink-0" />
                       <span className="text-sm text-gray-700">{displayData.availability}</span>
                     </div>
                   )}
@@ -306,15 +357,19 @@ export default function UserProfileModal({
               
               {/* Social links if available */}
               {displayData.socialLinks && Object.values(displayData.socialLinks).some(link => link) && (
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <h3 className="font-medium text-gray-900 mb-3">Connect Online</h3>
+                <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-5 rounded-xl shadow-sm border border-gray-200">
+                  <h3 className="font-semibold text-gray-900 mb-4 flex items-center">
+                    <Globe className="w-5 h-5 mr-2 text-gray-700" />
+                    Connect Online
+                  </h3>
                   <div className="flex flex-wrap gap-3">
                     {displayData.socialLinks.website && (
                       <a 
                         href={displayData.socialLinks.website} 
                         target="_blank" 
                         rel="noopener noreferrer"
-                        className="flex items-center p-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                        className="flex items-center p-2.5 bg-white rounded-lg transition-all duration-200 border border-gray-200 hover:bg-gray-100 hover:shadow-md shadow-sm"
+                        aria-label="Personal website"
                       >
                         <Globe className="w-5 h-5 text-gray-700" />
                       </a>
@@ -325,7 +380,8 @@ export default function UserProfileModal({
                         href={displayData.socialLinks.linkedin} 
                         target="_blank" 
                         rel="noopener noreferrer"
-                        className="flex items-center p-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                        className="flex items-center p-2.5 bg-white rounded-lg transition-all duration-200 border border-gray-200 hover:bg-gray-100 hover:shadow-md shadow-sm"
+                        aria-label="LinkedIn profile"
                       >
                         <Linkedin className="w-5 h-5 text-blue-700" />
                       </a>
@@ -336,7 +392,8 @@ export default function UserProfileModal({
                         href={displayData.socialLinks.twitter} 
                         target="_blank" 
                         rel="noopener noreferrer"
-                        className="flex items-center p-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                        className="flex items-center p-2.5 bg-white rounded-lg transition-all duration-200 border border-gray-200 hover:bg-gray-100 hover:shadow-md shadow-sm"
+                        aria-label="Twitter profile"
                       >
                         <Twitter className="w-5 h-5 text-blue-400" />
                       </a>
@@ -347,7 +404,8 @@ export default function UserProfileModal({
                         href={displayData.socialLinks.facebook} 
                         target="_blank" 
                         rel="noopener noreferrer"
-                        className="flex items-center p-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                        className="flex items-center p-2.5 bg-white rounded-lg transition-all duration-200 border border-gray-200 hover:bg-gray-100 hover:shadow-md shadow-sm"
+                        aria-label="Facebook profile"
                       >
                         <Facebook className="w-5 h-5 text-blue-600" />
                       </a>
@@ -358,7 +416,8 @@ export default function UserProfileModal({
                         href={displayData.socialLinks.github} 
                         target="_blank" 
                         rel="noopener noreferrer"
-                        className="flex items-center p-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                        className="flex items-center p-2.5 bg-white rounded-lg transition-all duration-200 border border-gray-200 hover:bg-gray-100 hover:shadow-md shadow-sm"
+                        aria-label="GitHub profile"
                       >
                         <Github className="w-5 h-5 text-gray-800" />
                       </a>
@@ -366,24 +425,37 @@ export default function UserProfileModal({
                   </div>
                 </div>
               )}
-              
-              {/* Message button */}
-              <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
-                <h3 className="font-medium text-gray-900 mb-3">Direct Message</h3>
-                <button
-                  onClick={handleNavigateToChat}
-                  className="w-full flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  <MessageSquare className="w-4 h-4 mr-2" />
-                  Chat with {displayData.name}
-                </button>
-              </div>
             </div>
           </div>
         </div>
-        </>
         )}
       </motion.div>
     </div>
   );
-} 
+}
+
+UserProfileModal.propTypes = {
+  isOpen: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  userData: PropTypes.shape({
+    _id: PropTypes.string.isRequired,
+    name: PropTypes.string.isRequired,
+    profilePic: PropTypes.string,
+    title: PropTypes.string,
+    rating: PropTypes.number,
+    bio: PropTypes.string,
+    skillsToTeach: PropTypes.array,
+    skillsToLearn: PropTypes.array,
+    hourlyRate: PropTypes.number,
+    learningBudget: PropTypes.number,
+    experience: PropTypes.array,
+    education: PropTypes.array,
+    email: PropTypes.string,
+    phone: PropTypes.string,
+    location: PropTypes.string,
+    availability: PropTypes.string,
+    socialLinks: PropTypes.object,
+    verificationStatus: PropTypes.string
+  }).isRequired,
+  connectionDate: PropTypes.string
+}; 

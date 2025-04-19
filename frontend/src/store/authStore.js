@@ -130,7 +130,7 @@ export const useAuthStore = create((set) => ({
 		    throw new Error('Invalid response from server');
 		  }
 		} catch (error) {
-		  console.error('Check auth error:', error);
+
 		  set({
 			isAuthenticated: false,
 			isAdmin: false,

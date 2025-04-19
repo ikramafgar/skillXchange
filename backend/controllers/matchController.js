@@ -953,7 +953,7 @@ export const getMatches = async (req, res) => {
         select: 'name email',
         populate: {
           path: 'profile',
-          select: 'profilePic title location work preferredMode rating role'
+          select: 'profilePic title location work preferredMode rating role verificationStatus'
         }
       })
       .populate('skillToLearn skillToTeach')
