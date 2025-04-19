@@ -198,7 +198,9 @@ export const checkAuth = async (req, res) => {
   try {
     const user = await User.findById(req.userId).populate('profile');
     if (!user) {
-      return res.status(400).json({ message: "User not found" });
+      return res
+        .status(404)
+        .json({ message: "User not found", isAuthenticated: false });
     }
     
     // Combine user and profile data
@@ -212,19 +214,60 @@ export const checkAuth = async (req, res) => {
     };
     
     // Check if this user has admin credentials
-    const isAdmin = user.email === process.env.ADMIN_USERNAME;
-    
+    const isAdmin = (user.email === process.env.ADMIN_USERNAME);
     if (isAdmin) {
       userData.isAdmin = true;
     }
     
+    return res.status(200).json({ 
+      isAuthenticated: true, 
+      user: userData 
+    });
+  } catch (error) {
+    return res.status(500).json({ 
+      message: error.message, 
+      isAuthenticated: false 
+    });
+  }
+};
+
+// Update user name
+export const updateName = async (req, res) => {
+  try {
+    const { name } = req.body;
+    
+    if (!name || name.trim() === '') {
+      return res.status(400).json({ message: 'Name cannot be empty' });
+    }
+
+    // Find the user
+    const user = await User.findById(req.userId).populate('profile');
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Update the name
+    user.name = name.trim();
+    await user.save();
+    
+    // Return updated user data
+    const userData = {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      isVerified: user.isVerified,
+      lastLogin: user.lastLogin,
+      ...(user.profile ? user.profile.toObject() : {})
+    };
+    
     res.status(200).json({
       success: true,
-      message: "User found",
+      message: 'Name updated successfully',
       user: userData
     });
   } catch (error) {
-    return res.status(400).json({ message: error.message });
+    console.error('Error updating name:', error);
+    return res.status(500).json({ message: error.message });
   }
 };
 

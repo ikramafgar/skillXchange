@@ -1,7 +1,7 @@
 import express from "express";
 import passport from "passport";
 const router = express.Router ();
-import {signup, login, logout, verifyEmail, forgotPassword, resetPassword, checkAuth, googleLogin, deleteAccount } from "../controllers/authController.js";
+import {signup, login, logout, verifyEmail, forgotPassword, resetPassword, checkAuth, googleLogin, deleteAccount, updateName } from "../controllers/authController.js";
 import { verifyToken } from "../middleware/verifyToken.js";
 import { generateTokenAndSetCookie } from "../utils/generateTokenAndSetCookie.js";
 import jwt from "jsonwebtoken";
@@ -15,6 +15,7 @@ router.post("/forgot-password", forgotPassword)
 router.post("/reset-password/:token", resetPassword)
 router.post("/google-login", googleLogin)
 router.delete("/delete-account", verifyToken, deleteAccount)
+router.put("/update-name", verifyToken, updateName)
 
 // Google OAuth login route
 router.get('/google',

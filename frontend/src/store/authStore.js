@@ -54,6 +54,25 @@ export const useAuthStore = create((set) => ({
 		}
 	},
 
+	updateName: async (name) => {
+		set({ isLoading: true, error: null });
+		try {
+			const response = await customAxios.put(`/api/auth/update-name`, { name });
+			set({ 
+				user: response.data.user, 
+				isLoading: false,
+				error: null
+			});
+			return response.data;
+		} catch (error) {
+			set({ 
+				error: error.response?.data?.message || "Error updating name", 
+				isLoading: false 
+			});
+			throw error;
+		}
+	},
+
 	deleteAccount: async (password) => {
 		set({ isLoading: true, error: null });
 		try {
