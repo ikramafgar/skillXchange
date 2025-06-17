@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const instance = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000',
+  baseURL: import.meta.env.VITE_API_URL || 'https://skill-x-change.onrender.com',
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json'
@@ -15,7 +15,8 @@ instance.interceptors.response.use(
     // If the error is due to authentication (401)
     if (error.response && error.response.status === 401) {
       // Clear any local auth state if needed
-      console.log('Authentication error detected');
+      // console.log('Authentication error detected');
+      
     }
     return Promise.reject(error);
   }
